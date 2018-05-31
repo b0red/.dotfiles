@@ -14,5 +14,6 @@ ln -s ~/dotfiles/.profile ~/.profile
 ```
 ...
 ### Some links to where I've stolen stuff from
-[I'm an inline-style link](https://www.google.com)
+[https://sanctum.geek.nz/arabesque/shell-config-subfiles/](https://sanctum.geek.nz/arabesque/shell-config-subfiles/)
+ more to come
 
