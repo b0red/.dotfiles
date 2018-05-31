@@ -60,4 +60,7 @@ export ARCHFLAGS="-arch x86_64"
 #[ -d /usr/local/opt/ncurses/bin ] \
 #    && export PATH="/usr/local/opt/ncurses/bin:$PATH
 #
+
+###     Just to check if loaded
 #
+# echo ${file##*/}

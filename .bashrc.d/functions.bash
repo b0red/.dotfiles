@@ -231,3 +231,7 @@ if [[ $TMUX ]]; then
 fi
 
 ### echo ".bash_functions loaded"
+
+###     Just to check if loaded
+#
+# echo ${file##*/}

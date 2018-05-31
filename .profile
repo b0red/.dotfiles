@@ -20,10 +20,10 @@ fi
 PATH="$HOME/bin:$HOME/.local/bin:$PATH"
 
 # Load any supplementary scripts
-if [-d "$HOME"/dotfiles/.profile.d ]; then
-    for config in "$HOME"/.profile.d/*.sh ; do
-        . "$config"
-     done
-     unset -v config
-fi
+#if [-d "$HOME"/dotfiles/.profile.d ]; then
+#    for config in "$HOME"/.profile.d/*.sh ; do
+#        . "$config"
+#     done
+#     unset -v config
+#fi
 

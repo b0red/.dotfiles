@@ -29,3 +29,7 @@ alias {gdiff,gd}="git status"
 alias gg='git grep '
 alias cdgit='cd "$(git rev-parse --show-toplevel 2> /dev/null)"'
 alias git-pull-all='find $(git rev-parse --show-toplevel 2> /dev/null) -name .git -type d -execdir git pull -v ";"'
+
+###     Just checking
+#
+# echo ${file##*/}

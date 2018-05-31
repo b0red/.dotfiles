@@ -12,6 +12,15 @@ git clone git@bitbucket.org:b0red/dotfiles.git ~/dotfiles
 ln -s ~/dotfiles/.bashrc ~/.bashrc
 ln -s ~/dotfiles/.profile ~/.profile
 ```
+### Other stuff thats good to have
+* htop 
+* ncdu 
+* pydf
+Install with 
+```
+sudo apt install htop ncdu pydf
+```
+
 ...
 ### Some links to where I've stolen stuff from
 [https://sanctum.geek.nz/arabesque/shell-config-subfiles/](https://sanctum.geek.nz/arabesque/shell-config-subfiles/)

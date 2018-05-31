@@ -153,3 +153,7 @@ case "$TERM" in
 *)
     ;;
 esac
+
+###     Just to check if loaded
+#
+# echo ${file##*/}
