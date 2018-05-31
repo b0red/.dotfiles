@@ -19,11 +19,12 @@ fi
 # set PATH so it includes user's private bin directories
 PATH="$HOME/bin:$HOME/.local/bin:$PATH"
 
-# Load any supplementary scripts
-#if [-d "$HOME"/dotfiles/.profile.d ]; then
-#    for config in "$HOME"/.profile.d/*.sh ; do
-#        . "$config"
-#     done
-#     unset -v config
+###     Load any supplementary scripts in $HOME/.profile.d directory
+# if [-d $HOME/dotfiles/.profile.d ]; then
+    for config in "$HOME"/dotfiles/.profile.d/*.sh ; do
+        . "$config"; echo $config loaded.
+     done
+     unset -v config
 #fi
 
+echo HOME: $HOME
