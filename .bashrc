@@ -6,13 +6,12 @@
 #
 if [ ! -z "$PS1" ]; then
     :
-    echo " .bashrc loaded, running interactively."
-    #echo
+    # echo " .bashrc loaded, running interactively."
 else
     # If not running interactively, don't do anything
     [ -z "$PS1" ] && return
     :
-    echo ".bashrc loaded, not running interactively"
+    #echo ".bashrc loaded, not running interactively"
 fi
 
 # Clear away all aliases; we do this here rather than in the $ENV file shared
@@ -84,11 +83,11 @@ export PAGER='less'
 ###     Load any supplementary scripts
 #       Stolen from (https://bit.ly/2slDBSV)
 #
-#if [ -d "$HOME"/dotfiles/.bashrc.d ]; then
+if [ -d "$HOME"/dotfiles/.bashrc.d ]; then
     for config in $HOME/dotfiles/.bashrc.d/*.bash;
         do
             source "$config"
-            echo "file $config loaded"
+            # echo "file $config loaded"
         done
     unset -v config
-#fi
+fi

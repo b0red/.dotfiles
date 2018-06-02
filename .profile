@@ -27,4 +27,4 @@ PATH="$HOME/bin:$HOME/.local/bin:$PATH"
      unset -v config
 #fi
 
-echo HOME: $HOME
+# echo HOME: $HOME

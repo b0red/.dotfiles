@@ -9,16 +9,16 @@
 #
 mcd () {
     mkdir -p -- "$1" &&
-    cd -p -- "$1"
+        cd -p -- "$1"
 }
 
 ###	Startbitbucket - creates remote bitbucket repo and adds it as git remote to cwd
 #
 function startbitbucket () {
-#echo 'Username?'
-#read username
-#echo 'Password?'
-#read -s password  # -s flag hides password text
+    #echo 'Username?'
+    #read username
+    #echo 'Password?'
+    #read -s password  # -s flag hides password text
     echo 'Repo name?'
     read reponame
     username="b0red";password="AxREYw2WNEKj8YxTrRBt" 
@@ -64,11 +64,11 @@ function extract() {
         return 1
     else
         for n in $@
-            do
+        do
             if [ -f "$n" ] ; then
                 case "${n%,}" in
                     *.tar.bz2|*.tar.gz|*.tar.xz|*.tbz2|*.tgz|*.txz|*.tar) 
-                    tar xvf "$n"       ;;
+                        tar xvf "$n"       ;;
                     *.lzma)      unlzma ./"$n"      ;;
                     *.bz2)       bunzip2 ./"$n"     ;;
                     *.rar)       unrar x -ad ./"$n" ;;
@@ -76,17 +76,17 @@ function extract() {
                     *.zip)       unzip ./"$n"       ;;
                     *.z)         uncompress ./"$n"  ;;
                     *.7z|*.arj|*.cab|*.chm|*.deb|*.dmg|*.iso|*.lzh|*.msi|*.rpm|*.udf|*.wim|*.xar)
-                    7z x ./"$n"        ;;
+                        7z x ./"$n"        ;;
                     *.xz)        unxz ./"$n"        ;;
                     *.exe)       cabextract ./"$n"  ;;
                     *)
-                    echo "extract: '$n' - unknown archive method"
-                    return 1
-                    ;;
+                        echo "extract: '$n' - unknown archive method"
+                        return 1
+                        ;;
                 esac
-                else
-                    echo "'$n' - file does not exist"
-                   return 1
+            else
+                echo "'$n' - file does not exist"
+                return 1
             fi
         done
     fi
@@ -143,22 +143,22 @@ function cdl () {
 #
 function fstr() {
     OPTIND=1
-        local mycase=""
-        local usage="fstr: find string in files.
-        Usage: fstr [-i] \"pattern\" [\"filename pattern\"] "
-        while getopts :it opt
-            do
-            case "$opt" in
-                i) mycase="-i " ;;
-                *) echo "$usage"; return ;;
-            esac
-            done
-        shift $(( $OPTIND - 1 ))
-        if [ "$#" -lt 1 ]; then
-            echo "$usage"
-            return;
-        fi
-        find . -type f -name "${2:-*}" -print0 | \
+    local mycase=""
+    local usage="fstr: find string in files.
+    Usage: fstr [-i] \"pattern\" [\"filename pattern\"] "
+    while getopts :it opt
+    do
+        case "$opt" in
+            i) mycase="-i " ;;
+            *) echo "$usage"; return ;;
+        esac
+    done
+    shift $(( $OPTIND - 1 ))
+    if [ "$#" -lt 1 ]; then
+        echo "$usage"
+        return;
+    fi
+    find . -type f -name "${2:-*}" -print0 | \
         xargs -0 egrep --color=always -sn ${case} "$1" 2>&- | more
 }
 
@@ -169,8 +169,8 @@ function fstr() {
 function mydf() {
     for fs ; do
         if [ ! -d $fs ]
-            then
-                echo -e $fs" :No such file or directory" ; continue
+        then
+            echo -e $fs" :No such file or directory" ; continue
         fi
         local info=( $(command df -P $fs | awk 'END{ print $2,$3,$5 }') )
         local free=( $(command df -Pkh $fs | awk 'END{ print $4 }') )
@@ -194,8 +194,7 @@ function mydf() {
 function ii() {
     echo -e "\nYou are logged on ${BRed}$HOST"
     echo -e "\n${BRed}Additionnal information:$NC " ; uname -a
-    echo -e "\n${BRed}Users logged on:$NC " ; w -hs |
-    cut -d " " -f1 | sort | uniq
+    echo -e "\n${BRed}Users logged on:$NC " ; w -hs | cut -d " " -f1 | sort | uniq
     echo -e "\n${BRed}Current date :$NC " ; date
     echo -e "\n${BRed}Machine stats :$NC " ; uptime
     echo -e "\n${BRed}Memory stats :$NC " ; free
@@ -217,10 +216,10 @@ function myip() {
 function pushover() {
     $include $HOME/bin/email_varibles.cfg
     curl -s -F "token=$APP_TOKEN" \
-    -F "user=$USER_KEY" \
-    -F "title=$(uname -n) Says:" \
-    # -F "device=s5"\
-    -F "message=$1" https://api.pushover.net/1/messages.json
+        -F "user=$USER_KEY" \
+        -F "title=$(uname -n) Says:" \
+        # -F "device=s5"\
+        -F "message=$1" https://api.pushover.net/1/messages.json
     https://api.pushover.net/1/messages.json > /dev/null 2>&1
 }
 alias comstat="push \"Kommandot kört! (uname -n)\" || push \"Kommandot misslyckades!\""
@@ -229,6 +228,12 @@ alias comstat="push \"Kommandot kört! (uname -n)\" || push \"Kommandot misslyck
 if [[ $TMUX ]]; then
     source ~/.tmux-git/tmux-git.sh
 fi
+
+###     Check if command exists
+function command_exists() {
+   command -v "$1" &> /dev/null 
+}
+
 
 ### echo ".bash_functions loaded"
 
