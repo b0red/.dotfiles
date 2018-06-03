@@ -4,14 +4,6 @@
 #
 #  -----------------------------------------------------------------------
 
-###	EDITOR
-# export EDITOR="/usr/local/bin/nano"
-export EDITOR=vim
-
-###	Hosts
-# Put a list of remote hosts in ~/.hosts
-export HOSTFILE=$HOME/.hosts
-
 ###	PATH
 # yum
 if [ -f /usr/bin/yum ]
@@ -48,30 +40,24 @@ then
 	#    alias uninstall="sudo yum remove"
 fi
 
-PATH=$PATH:$HOME/bin:/usr/sfw/bin/gcc
-export PATH
-
-BLOCKSIZE=M; export BLOCKSIZE
-CLICOLOR=1
-
-###	for setting history length see HISTSIZE and HISTFILESIZE in bash(1)
-#
-HISTSIZE=10000
-HISTFILESIZE=20000
-
 # check the window size after each command and, if necessary,
 # update the values of LINES and COLUMNS.
 shopt -s checkwinsize
 
-###	Avoid succesive duplicates in the bash command history.
-#
-export HISTCONTROL=ignoredups
-
-# ... and ignore same sucessive entries.
-#
+###	Avoid duplicates in the bash command history. And ignore commands with leading space.
+#	(IGNORESPACE AND IGNOREDUPE)
 HISTCONTROL=ignoreboth
 
-###	Combine multiline commands into one in history
+###	Ignore certain commands in histor
+#
+HISTIGNORE='ls:bg:fg:history:exit:clear:cls:q:pwd:* --help'
+
+
+###	Record timestamps in history
+#
+HISTTIMEFORMAT='%F %T '
+
+###	One command per line n history
 #
 shopt -s cmdhist
 
@@ -88,8 +74,19 @@ shopt -s checkwinsize
 #
 shopt -s histappend
 
-### Color in alla grep
-# export GREP_OPTIONS='--color=auto'
+###	Make new shells get the history lines from all previous
+# 	shells instead of the default "last window closed" history.
+#
+export PROMPT_COMMAND="history -a; $PROMPT_COMMAND"
+
+###	Allow a larger history file
+#
+HISTFILESIZE=1000000
+HISTSIZE=1000000
+
+# Highlight section titles in manual pages.
+export LESS_TERMCAP_md="${yellow}";
+
 
 ################################################################################
 #

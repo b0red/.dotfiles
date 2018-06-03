@@ -7,9 +7,9 @@
 
 ###	Create dir and enter it
 #
-mcd () {
+function mcd () {
     mkdir -p -- "$1" &&
-        cd -p -- "$1"
+    cd -p -- "$1"
 }
 
 ###	Startbitbucket - creates remote bitbucket repo and adds it as git remote to cwd
@@ -28,29 +28,26 @@ function startbitbucket () {
     git push -u origin --tags
 }
 
-###	Find files/dirs by name recursively.
-#
-# Usage: ff (file)
-#f() {
-#  find . -name "*$1*"
-#}
-
 ###	Find file by exact name recursively.
 #
 # Usage: ff (file)
-ff() {
+function ff() {
+    echo "searching for: $1"
     find . -name "$1"
 }
 
 # Allows you to search for any text in any file recursively.
 # Usage: ft "my string" *.php
-fif() {
-    find . -name "$2" -exec grep -il "$1" {} \;
+function fif() {
+    echo "searching for $1 in $PWD"
+    grep --exclude-dir='.git|~/.ssh' -Ril . -e "$1"
+	# find . -maxdepth 2 -type f -exec grep "$1" '{}' \;
+    #find . -maxdepth 2 -type f exec -exec grep -il "$1" {} \;
 }
 
 # Search for command in history.
 # Usage: hs (string)
-hs() {
+function hs() {
     history | grep "$1"
 }
 
