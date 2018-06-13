@@ -84,7 +84,7 @@ export PAGER='less'
 #       Stolen from (https://bit.ly/2slDBSV)
 #
 if [ -d "$HOME"/dotfiles/.bashrc.d ]; then
-    for config in $HOME/dotfiles/.bashrc.d/*.bash;
+    for config in $HOME/dotfiles/.bashrc.d/*.bash ;
         do
             source "$config"
             # echo "file $config loaded"
