@@ -106,7 +106,7 @@ alias lll="ls -alFGH --color | less -R"
 # sleep 10; alert
 #alias alert ='notify-send --urgency=low -i "$([ $? = 0 ] && echo terminal || echo error)" "$(history|tail -n1|sed -e '\''s/^\s*[0-9]\+\s*//;s/[;&|]\s*alert$//'\'')"'
 
-###     Replace top
+###     Replace top, du, df
 #
 alias top="htop"
 alias du="ncdu"
