@@ -16,8 +16,10 @@ if [ -n "$BASH_VERSION" ]; then
     fi
 fi
 
-# set PATH so it includes user's private bin directories
-PATH="$HOME/bin:$HOME/.local/bin:$PATH"
+# set PATH so it includes user's private bin dir if it exists
+if [ -d "$HOME/bin" ]; then 
+    PATH="$HOME/bin:$PATH"
+fi
 
 ###     Load any supplementary scripts in $HOME/.profile.d directory
 #if [-d $HOME/dotfiles/.profile.d ]; then
