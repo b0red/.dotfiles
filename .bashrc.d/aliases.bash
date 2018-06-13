@@ -118,6 +118,11 @@ alias psg="ps aux | grep -v grep | grep -i -e VSZ -e"
 #
 alias tm=":tmux new -s main \; split-window -h \; split-window -v -p 30 \;"
 alias tmkill="tmux ls | grep : | cut -d. -f1 | awk '{print substr($1, 0, length($1)-1)}' | xargs kill"
+### WIP
+#   Trying to make so it's not nesting session and always starting one with a name
+# session=$(uname -n); session=${session,,}; tmux new -s $session
+
+
 
 ###     Misc
 #
