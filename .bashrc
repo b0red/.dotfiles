@@ -84,8 +84,8 @@ export PAGER='less'
 #
 ssh-add &>/dev/null || eval `ssh-agent` &>/dev/null  # start ssh-agent if not present
 [ $? -eq 0 ] && {                                     # ssh-agent has started
-#ssh-add ~/.ssh/your_private.key1 &>/dev/null        # Load key 1
-#ssh-add ~/.ssh/your_private.key2 &>/dev/null        # Load key 2
+ssh-add ~/.ssh/id_rsa &>/dev/null        # Load key 1
+ssh-add ~/.ssh/id_dsa &>/dev/null        # Load key 2
 }
 
 ###     Load any supplementary scripts
