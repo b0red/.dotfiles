@@ -88,6 +88,7 @@ alias uninstall="sudo apt remove $1"
 alias clean="audo apt y"
 
 ###     Enable colorsupport of ls and add hanndy aliases
+#
 if [ -x /usr/bin/dircolors ]; then
     test -r ~/.dircolors && eval "$(dircolors -b ~/.dircolors)"||eval "$(dircolors -b)"
     alias ls="ls --color=auto"
@@ -117,4 +118,9 @@ alias psg="ps aux | grep -v grep | grep -i -e VSZ -e"
 #
 alias tm=":tmux new -s main \; split-window -h \; split-window -v -p 30 \;"
 alias tmkill="tmux ls | grep : | cut -d. -f1 | awk '{print substr($1, 0, length($1)-1)}' | xargs kill"
+
+###     Misc
+#
+alias latest='grep " install " /var/log/dpkg.log.1 /var/dpkg.log'
+alias sshrestart='service ssh restart'
 
