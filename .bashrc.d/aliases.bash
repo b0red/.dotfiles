@@ -113,4 +113,8 @@ alias du="ncdu"
 alias df="pydf"
 alias psg="ps aux | grep -v grep | grep -i -e VSZ -e"
 
+###     TMUX
+#
+alias tm=":tmux new -s main \; split-window -h \; split-window -v -p 30 \;"
+alias tmkill="tmux ls | grep : | cut -d. -f1 | awk '{print substr($1, 0, length($1)-1)}' | xargs kill"
 
