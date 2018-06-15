@@ -232,6 +232,12 @@ function command_exists() {
 }
 
 
+####    get active NIC
+#
+###     Get active Network Interface
+Active_Nic=$(ip route | grep default | sed -e "s/^.*dev.//" -e "s/.proto.*//")
+# echo nic: $NIC
+
 ### echo ".bash_functions loaded"
 
 ###     Just to check if loaded
