@@ -26,7 +26,7 @@ unalias -a
 ###     Clear away command_not_found_handle if a system bashrc file set it up
 #
 unset -f command_not_found_handle
-
+/
 if [ -x /usr/bin/dircolors ]; then
     test -r ~/.dircolors && eval "$(dircolors -b ~/.dircolors)" || eval "$(dircolors -b)"
 fi
@@ -87,7 +87,7 @@ if [ -d "$HOME"/dotfiles/.bashrc.d ]; then
     for config in $HOME/dotfiles/.bashrc.d/*.bash;
         do
             source "$config"
-            # echo "file $config loaded"
+            #echo "file $config loaded"
         done
     unset -v config
 fi
