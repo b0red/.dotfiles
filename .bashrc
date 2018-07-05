@@ -80,11 +80,19 @@ export LESS_TERMCAP_ue=$'\E[0m'        # reset underline
 export GROFF_NO_SGR=1                  # for konsole and gnome-terminal
 export PAGER='less'
 
+###     ssh-agent
+#
+ssh-add &>/dev/null || eval `ssh-agent` &>/dev/null  # start ssh-agent if not present
+[ $? -eq 0 ] && {                                     # ssh-agent has started
+ssh-add ~/.ssh/id_rsa &>/dev/null        # Load key 1
+ssh-add ~/.ssh/id_dsa &>/dev/null        # Load key 2
+}
+
 ###     Load any supplementary scripts
 #       Stolen from (https://bit.ly/2slDBSV)
 #
 if [ -d "$HOME"/dotfiles/.bashrc.d ]; then
-    for config in $HOME/dotfiles/.bashrc.d/*.bash;
+    for config in $HOME/dotfiles/.bashrc.d/*.bash ;
         do
             source "$config"
             #echo "file $config loaded"

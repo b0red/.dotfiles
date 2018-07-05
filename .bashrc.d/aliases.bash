@@ -88,6 +88,7 @@ alias uninstall="sudo apt remove $1"
 alias clean="audo apt y"
 
 ###     Enable colorsupport of ls and add hanndy aliases
+#
 if [ -x /usr/bin/dircolors ]; then
     test -r ~/.dircolors && eval "$(dircolors -b ~/.dircolors)"||eval "$(dircolors -b)"
     alias ls="ls --color=auto"
@@ -100,16 +101,31 @@ fi
 alias ll="ls -alF"
 alias la="ls -A"
 alias l="ls -CF"
+alias lll="ls -alFGH --color | less -R"
 
 ###     Add an alert alias for long running commands. Use liek:
 # sleep 10; alert
 #alias alert ='notify-send --urgency=low -i "$([ $? = 0 ] && echo terminal || echo error)" "$(history|tail -n1|sed -e '\''s/^\s*[0-9]\+\s*//;s/[;&|]\s*alert$//'\'')"'
 
-###     Replace top
+###     Replace top, du, df
 #
 alias top="htop"
 alias du="ncdu"
 alias df="pydf"
 alias psg="ps aux | grep -v grep | grep -i -e VSZ -e"
 
+###     TMUX
+#
+alias tm=":tmux new -s main \; split-window -h \; split-window -v -p 30 \;"
+alias tmkill="tmux ls | grep : | cut -d. -f1 | awk '{print substr($1, 0, length($1)-1)}' | xargs kill"
+### WIP
+#   Trying to make so it's not nesting session and always starting one with a name
+# session=$(uname -n); session=${session,,}; tmux new -s $session
+
+
+
+###     Misc
+#
+alias latest='grep " install " /var/log/dpkg.log.1 /var/dpkg.log'
+alias sshrestart='service ssh restart'
 
