@@ -68,7 +68,7 @@ alias ssh='if [ "$(ssh-add -l)" = "The agent has no identities." ]; then ssh-add
 
 
 ###	Get weeknumber
-alias week="date +V%"
+alias week="/bin/date +V%"
 
 
 ###	Tree
