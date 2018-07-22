@@ -130,4 +130,4 @@ alias latest='grep " install " /var/log/dpkg.log.1 /var/dpkg.log'
 alias sshrestart='service ssh restart'
 
 alias module-update="git submodule foreach git pull origin master"
-
+alias weather="curl wttr.in/stockholm"
