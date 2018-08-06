@@ -32,10 +32,10 @@ if [ -x /usr/bin/dircolors ]; then
 fi
 
 #   If not running interactively, don't do anything
-#case $- in
-#    *i*) ;;
-#    *) return;;
-#esac
+case $- in
+    *i*) ;;
+    *) return;;
+esac
 
 
 ###     Set a fancy prompt (non-color, unless we know we "want" color)

@@ -132,6 +132,7 @@ alias sshrestart='service ssh restart'
 
 alias module-update="git submodule foreach git pull origin master"
 alias weather="curl wttr.in/stockholm"
+alias comstat="push \"Command ran! (uname -n)\" || push \"Command failed!\""
 
 ###     Kill all zombieprocesses
 #
