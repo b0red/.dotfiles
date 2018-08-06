@@ -29,6 +29,7 @@ alias ......='cd ../../../../../'
 ###	Various
 # 
 alias h='history | grep '
+alias historyreverse="history | sort -rn"
 alias mv='mv -v' 
 alias rm='rm -v'
 
@@ -131,3 +132,7 @@ alias sshrestart='service ssh restart'
 
 alias module-update="git submodule foreach git pull origin master"
 alias weather="curl wttr.in/stockholm"
+
+###     Kill all zombieprocesses
+#
+alias zombiekill="ps axo state,ppid | awk '!/PPID/$1~"Z"{print $2}' | xargs -r kill -9"

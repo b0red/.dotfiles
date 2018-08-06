@@ -235,11 +235,21 @@ function command_exists() {
 ####    get active NIC
 #
 ###     Get active Network Interface
-Active_Nic=$(ip route | grep default | sed -e "s/^.*dev.//" -e "s/.proto.*//")
-# echo nic: $NIC
+#
+function ActiveNic() { 
+    Active_Nic=$(ip route | grep default | sed -e "s/^.*dev.//" -e "s/.proto.*//")
+    echo $Active_nic
+}
 
-### echo ".bash_functions loaded"
+### Function to backup latest commands
+#
+function backup() { 
+    local CA=c T=/backup.tar.gz; [[ -f  ]]&& C=r; find ~ -type f -newer  | tar vfz  -T - ;
+}
 
 ###     Just to check if loaded
 #
 # echo ${file##*/}
+###     Function for backing up latest command
+
+
