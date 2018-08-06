@@ -228,7 +228,8 @@ function myip() {
 }
 
 ###	Send pushover messages
-#
+#   https://www.reddit.com/r/pushover/comments/1ezepb/howto_using_wget_instead_of_curl_to_send_pushover/
+#   Not working right now
 function pushover() {
     source $HOME/bin/email_variables.cfg
         wget -q \
