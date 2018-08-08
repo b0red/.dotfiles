@@ -251,6 +251,12 @@ function pushover() {
     #https://api.pushover.net/1/messages.json > /dev/null 2>&1
 }
 
+function push {
+    curl -s -F "token=$APP_TOKEN" \
+    -F "user=$USER_KEY" \
+    # -F "title=Title" \
+    -F "message=$1" https://api.pushover.net/1/messages.json
+    }
 ###     Check so not to nest tmux sessions
 if [[ $TMUX ]]; then
     source ~/.tmux-git/tmux-git.sh
