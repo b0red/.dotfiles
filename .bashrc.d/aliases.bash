@@ -15,7 +15,7 @@ alias wget="wget -c $1"
 
 ###	Recursive directory listing
 # 
-alias lr="ls -R | grep ":$" | sed -e '\''s/:$//'\'' -e '\''s/[^-][^\/]*\//--/g'\'' -e '\''s/^/   /'\'' -e '\''s/-/|/'\''"
+# alias lr="ls -R | grep ':$' | sed -e '\''s/:$//'\'' -e '\''s/[^-][^\/]*\//--/g'\'' -e '\''s/^/   /'\'' -e '\''s/-/|/'\''"
 
 ###	Getting colored results when using a pipe from grep to less.
 # 
@@ -32,7 +32,7 @@ alias ......='cd ../../../../../'
 ###	Various
 # 
 alias h='history | grep '
-alias historyreverse="history | sort -rn"
+alias hr="history | sort -rn"
 alias mv='mv -v' 
 alias rm='rm -v'
 
@@ -55,7 +55,7 @@ alias back="cd $OLDPWD"
 ###	Rootstuf
 # 
 alias root="sudo su"
-alias su="sudo -l"
+alias su="sudo -i"
 alias f="find . | grep "
 
 ###	Dirsize in human readable form
@@ -72,7 +72,7 @@ alias ssh='if [ "$(ssh-add -l)" = "The agent has no identities." ]; then ssh-add
 
 
 ###	Get weeknumber
-alias week="(/bin/date +V%)"
+alias week="(/bin/date +%V)"
 
 
 ###	Tree
@@ -150,3 +150,7 @@ alias cat="bat"
 #   curl -O https://raw.githubusercontent.com/denilsonsa/prettyping/master/prettyping; chmod +x prettyping; mv prettyping ~/bin
 alias ping="prettyping --nolegend"
 
+###     Services
+#
+alias services="service --status-all"
+alias services_run="service --status-all | grep running"
