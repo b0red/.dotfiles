@@ -2,6 +2,9 @@
 #
 #		.bash_aliases
 #
+#       Locations
+#       https://remysharp.com/2018/08/23/cli-improved
+#       
 #-------------------------------------------------------------------------
 ###     Reload aliases
 #
@@ -137,3 +140,13 @@ alias comstat="push \"Command ran! (uname -n)\" || push \"Command failed!\""
 ###     Kill all zombieprocesses
 #
 alias zombiekill="ps axo state,ppid | awk '!/PPID/$1~"Z"{print $2}' | xargs -r kill -9"
+
+###     Install bat
+#
+https://github.com/sharkdp/bat/releases/download/v0.6.0/bat-musl_0.6.0_amd64.deb; sudo dpkg -i bat; rm -f bat*
+alias cat="bat"
+
+### Install prettyping
+#   curl -O https://raw.githubusercontent.com/denilsonsa/prettyping/master/prettyping; chmod +x prettyping; mv prettyping ~/bin
+alias ping="prettyping --nolegend"
+
