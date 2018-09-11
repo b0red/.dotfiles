@@ -128,4 +128,4 @@ alias tmkill="tmux ls | grep : | cut -d. -f1 | awk '{print substr($1, 0, length(
 #
 alias latest='grep " install " /var/log/dpkg.log.1 /var/dpkg.log'
 alias sshrestart='service ssh restart'
-
+alias no_extensions='find . -type f ! -name "*.*"'
