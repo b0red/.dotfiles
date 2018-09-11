@@ -9,6 +9,9 @@
 if [ -f /usr/bin/yum ]
 then
 	PATH=$PATH:$HOME/bin
+    alias install="sudo yum install" $1
+    alias remove="sudo yum remove" $1
+    alias update="yum update"
 fi
 
 
@@ -16,6 +19,7 @@ fi
 if [ -f /usr/bin/pacman ]
 then
 	alias update='install'
+
 	#    alias upgrade='sudo pacman -Syu'
 	#    alias install='sudo pacman -Sy'
 	#    alias uninstall='sudo pacman -Rs'

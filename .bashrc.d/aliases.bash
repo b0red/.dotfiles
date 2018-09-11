@@ -2,6 +2,9 @@
 #
 #		.bash_aliases
 #
+#       Locations
+#       https://remysharp.com/2018/08/23/cli-improved
+#       
 #-------------------------------------------------------------------------
 ###     Reload aliases
 #
@@ -12,7 +15,7 @@ alias wget="wget -c $1"
 
 ###	Recursive directory listing
 # 
-alias lr="ls -R | grep ":$" | sed -e '\''s/:$//'\'' -e '\''s/[^-][^\/]*\//--/g'\'' -e '\''s/^/   /'\'' -e '\''s/-/|/'\''"
+# alias lr="ls -R | grep ':$' | sed -e '\''s/:$//'\'' -e '\''s/[^-][^\/]*\//--/g'\'' -e '\''s/^/   /'\'' -e '\''s/-/|/'\''"
 
 ###	Getting colored results when using a pipe from grep to less.
 # 
@@ -29,6 +32,7 @@ alias ......='cd ../../../../../'
 ###	Various
 # 
 alias h='history | grep '
+alias hr="history | sort -rn"
 alias mv='mv -v' 
 alias rm='rm -v'
 
@@ -51,7 +55,7 @@ alias back="cd $OLDPWD"
 ###	Rootstuf
 # 
 alias root="sudo su"
-alias su="sudo -l"
+alias su="sudo -i"
 alias f="find . | grep "
 
 ###	Dirsize in human readable form
@@ -68,7 +72,7 @@ alias ssh='if [ "$(ssh-add -l)" = "The agent has no identities." ]; then ssh-add
 
 
 ###	Get weeknumber
-alias week="date +V%"
+alias week="(/bin/date +%V)"
 
 
 ###	Tree
@@ -129,3 +133,25 @@ alias tmkill="tmux ls | grep : | cut -d. -f1 | awk '{print substr($1, 0, length(
 alias latest='grep " install " /var/log/dpkg.log.1 /var/dpkg.log'
 alias sshrestart='service ssh restart'
 alias no_extensions='find . -type f ! -name "*.*"'
+
+alias module-update="git submodule foreach git pull origin master"
+alias weather="curl wttr.in/stockholm"
+alias comstat="push \"Command ran! (uname -n)\" || push \"Command failed!\""
+
+###     Kill all zombieprocesses
+#
+alias zombiekill="ps axo state,ppid | awk '!/PPID/$1~"Z"{print $2}' | xargs -r kill -9"
+
+###     Install bat
+#
+#   https://github.com/sharkdp/bat/releases/download/v0.6.0/bat-musl_0.6.0_amd64.deb; sudo dpkg -i bat; rm -f bat*
+alias cat="bat"
+
+###     Install prettyping
+#   curl -O https://raw.githubusercontent.com/denilsonsa/prettyping/master/prettyping; chmod +x prettyping; mv prettyping ~/bin
+alias ping="prettyping --nolegend"
+
+###     Services
+#
+alias services="service --status-all"
+alias services_run="service --status-all | grep running"

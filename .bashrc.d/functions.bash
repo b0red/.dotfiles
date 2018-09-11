@@ -4,6 +4,25 @@
 #
 # ---------------------------------------------------------------------------------
 #
+###     Define colors
+#
+red='\[\e[0;31m\]'
+RED='\[\e[1;31m\]'
+blue='\[\e[0;34m\]'
+BLUE='\[\e[1;34m\]'
+cyan='\[\e[0;36m\]'
+CYAN='\[\e[1;36m\]'
+NC='\[\e[0m\]'          # No Color
+black='\[\e[0;30m\]'
+BLACK='\[\e[1;30m\]'
+green='\[\e[0;32m\]'
+GREEN='\[\e[1;32m\]'
+yellow='\[\e[0;33m\]'
+YELLOW='\[\e[1;33m\]'
+magenta='\[\e[0;35m\]'
+MAGENTA='\[\e[1;35m\]'
+white='\[\e[0;37m\]'
+WHITE='\[\e[1;37m\]'
 
 ###	Create dir and enter it
 #
@@ -39,7 +58,7 @@ function ff() {
 # Allows you to search for any text in any file recursively.
 # Usage: ft "my string" *.php
 function fif() {
-    echo "searching for $1 in $PWD"
+    echo "searching for\'$1\' in \'$PWD\'"
     grep --exclude-dir='.git|~/.ssh' -Ril . -e "$1"
 	# find . -maxdepth 2 -type f -exec grep "$1" '{}' \;
     #find . -maxdepth 2 -type f exec -exec grep -il "$1" {} \;
@@ -194,9 +213,9 @@ function ii() {
     echo -e "\n${BRed}Users logged on:$NC " ; w -hs | cut -d " " -f1 | sort | uniq
     echo -e "\n${BRed}Current date :$NC " ; date
     echo -e "\n${BRed}Machine stats :$NC " ; uptime
-    echo -e "\n${BRed}Memory stats :$NC " ; free
+    echo -e "\n${BRed}Memory stats :$NC " ; free -h
     echo -e "\n${BRed}Diskspace :$NC " ; mydf / $HOME
-    echo -e "\n${BRed}Local IP Address :$NC" ; my_ip
+    echo -e "\n${BRed}Local IP Address :$NC" ; myip
     echo -e "\n${BRed}Open connections :$NC "; netstat -pan --inet;
     echo
 }
@@ -209,18 +228,35 @@ function myip() {
 }
 
 ###	Send pushover messages
-#
+#   https://www.reddit.com/r/pushover/comments/1ezepb/howto_using_wget_instead_of_curl_to_send_pushover/
+#   Not working right now
 function pushover() {
-    $include $HOME/bin/email_varibles.cfg
-    curl -s -F "token=$APP_TOKEN" \
-        -F "user=$USER_KEY" \
-        -F "title=$(uname -n) Says:" \
-        # -F "device=s5"\
-        -F "message=$1" https://api.pushover.net/1/messages.json
-    https://api.pushover.net/1/messages.json > /dev/null 2>&1
+    source $HOME/bin/email_variables.cfg
+        wget -q \
+        --post-data="token=$APP_TOKEN \ 
+        &user=$USER_KEY \
+        &title=$(uname -n) says: \ 
+        # &priority=PPPP \
+        # &retry=RRRR \
+        # &expire=EEEE \ 
+        # &sound=SSSSSS \ 
+        &message=$1" \
+        https://api.pushover.net/1/messages.json 
+     #    ||
+     #   curl -s -F "token=$APP_TOKEN" \
+     #   -F "user=$USER_KEY" \
+     #   -F "title=$(uname -n) Says:" \
+     #   # -F "device=s5"\
+     #   -F "message=$1" https://api.pushover.net/1/messages.json
+    #https://api.pushover.net/1/messages.json > /dev/null 2>&1
 }
-alias comstat="push \"Kommandot kört! (uname -n)\" || push \"Kommandot misslyckades!\""
 
+function push {
+    curl -s -F "token=$APP_TOKEN" \
+    -F "user=$USER_KEY" \
+    # -F "title=Title" \
+    -F "message=$1" https://api.pushover.net/1/messages.json
+    }
 ###     Check so not to nest tmux sessions
 if [[ $TMUX ]]; then
     source ~/.tmux-git/tmux-git.sh
@@ -235,11 +271,21 @@ function command_exists() {
 ####    get active NIC
 #
 ###     Get active Network Interface
-Active_Nic=$(ip route | grep default | sed -e "s/^.*dev.//" -e "s/.proto.*//")
-# echo nic: $NIC
+#
+function ActiveNic() { 
+    Active_Nic=$(ip route | grep default | sed -e "s/^.*dev.//" -e "s/.proto.*//")
+    echo $Active_Nic
+}
 
-### echo ".bash_functions loaded"
+### Function to backup latest commands
+#
+#function backup() { 
+#    local CA=c T=/backup.tar.gz; [[ -f  ]]&& C=r; find ~ -type f -newer  | tar vfz  -T - ;
+#}
 
 ###     Just to check if loaded
 #
 # echo ${file##*/}
+###     Function for backing up latest command
+
+
