@@ -32,7 +32,7 @@ export HISTSIZE=100000
 export HISTFILESIZE=100000
 
 # Keep the times of the commands in history
-HISTTIMEFORMAT='%F %T'
+export HISTTIMEFORMAT="%d/%m/%y %T "
 
 # Use a more compact format for the 'time' builtin's output.
 TIMEFORMAT='real:%lR user:%lU sys:%lS'
