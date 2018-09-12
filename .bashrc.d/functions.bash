@@ -6,23 +6,7 @@
 #
 ###     Define colors
 #
-red='\[\e[0;31m\]'
-RED='\[\e[1;31m\]'
-blue='\[\e[0;34m\]'
-BLUE='\[\e[1;34m\]'
-cyan='\[\e[0;36m\]'
-CYAN='\[\e[1;36m\]'
-NC='\[\e[0m\]'          # No Color
-black='\[\e[0;30m\]'
-BLACK='\[\e[1;30m\]'
-green='\[\e[0;32m\]'
-GREEN='\[\e[1;32m\]'
-yellow='\[\e[0;33m\]'
-YELLOW='\[\e[1;33m\]'
-magenta='\[\e[0;35m\]'
-MAGENTA='\[\e[1;35m\]'
-white='\[\e[0;37m\]'
-WHITE='\[\e[1;37m\]'
+source $HOME/bin/ColorCodes.inc
 
 ###	Create dir and enter it
 #
@@ -251,10 +235,10 @@ function pushover() {
     #https://api.pushover.net/1/messages.json > /dev/null 2>&1
 }
 
-function push {
+function push() {
     curl -s -F "token=$APP_TOKEN" \
     -F "user=$USER_KEY" \
-    # -F "title=Title" \
+    -F "title=${TITLE:-No_Title}" \
     -F "message=$1" https://api.pushover.net/1/messages.json
     }
 ###     Check so not to nest tmux sessions
@@ -277,6 +261,15 @@ function ActiveNic() {
     echo $Active_Nic
 }
 
+### Function for simple search and replace in folder
+#
+function SR() {
+    echo -e "Search and replace for text in: $PWD\nSearch for:"
+    read string_1
+    echo "Replace ${yellow}$string_1 with:"
+    read string_2
+    find ./ -type f -exec sed -i 's/$string_1/$string_2/g' {} \;
+}
 ### Function to backup latest commands
 #
 #function backup() { 
