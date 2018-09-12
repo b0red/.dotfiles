@@ -26,7 +26,7 @@ unalias -a
 ###     Clear away command_not_found_handle if a system bashrc file set it up
 #
 unset -f command_not_found_handle
-/
+
 if [ -x /usr/bin/dircolors ]; then
     test -r ~/.dircolors && eval "$(dircolors -b ~/.dircolors)" || eval "$(dircolors -b)"
 fi

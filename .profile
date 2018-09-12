@@ -22,7 +22,7 @@ if [ -d "$HOME/bin" ]; then
 fi
 
 ###     Load any supplementary scripts in $HOME/.profile.d directory
-if [-d $HOME/dotfiles/.profile.d ]; then
+if [ -d $HOME/dotfiles/.profile.d ]; then
     for config in "$HOME"/dotfiles/.profile.d/*.sh ; do
         . "$config"
         # echo $config loaded.
@@ -31,5 +31,7 @@ if [-d $HOME/dotfiles/.profile.d ]; then
 fi
 
 # echo HOME: $HOME
-
-export PATH="$HOME/.cargo/bin:$PATH"
+# Check if .cargo exists, then add to path
+if [ -d "$HOME"/.cargo ]; then
+    export PATH="$HOME/.cargo/bin:$PATH"
+fi
