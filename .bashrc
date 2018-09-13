@@ -109,3 +109,6 @@ fi
 #    unset -v config
 #fi
 
+###     For getting gitstatus in tmux
+#       stolen from https://github.com/drmad/tmux-git
+if [[ $TMUX ]]; then source ~/.tmux-git/tmux-git.sh; fi
