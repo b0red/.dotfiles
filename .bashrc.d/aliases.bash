@@ -34,7 +34,7 @@ alias ......='cd ../../../../../'
 alias h='history | grep '
 alias hr="history | sort -rn"
 alias mv='mv -v' 
-alias rm='rm -v'
+alias rm='rm -i'
 
 ###	One letter quickies:
 # 
@@ -72,6 +72,7 @@ alias ssh='if [ "$(ssh-add -l)" = "The agent has no identities." ]; then ssh-add
 
 
 ###	Get weeknumber
+#
 alias week="(/bin/date +%V)"
 
 
@@ -102,14 +103,10 @@ if [ -x /usr/bin/dircolors ]; then
     unset GREP_OPTIONS
 fi
 
-alias ll="ls -alF"
+alias ll="ls -alF --group-directories-first"
 alias la="ls -A"
 alias l="ls -CF"
 alias lll="ls -alFGH --color | less -R"
-
-###     Add an alert alias for long running commands. Use liek:
-# sleep 10; alert
-#alias alert ='notify-send --urgency=low -i "$([ $? = 0 ] && echo terminal || echo error)" "$(history|tail -n1|sed -e '\''s/^\s*[0-9]\+\s*//;s/[;&|]\s*alert$//'\'')"'
 
 ###     Replace top, du, df
 #
@@ -126,23 +123,21 @@ alias tmkill="tmux ls | grep : | cut -d. -f1 | awk '{print substr($1, 0, length(
 #   Trying to make so it's not nesting session and always starting one with a name
 # session=$(uname -n); session=${session,,}; tmux new -s $session
 
-
-
 ###     Misc
 #
 alias latest='grep " install " /var/log/dpkg.log.1 /var/dpkg.log'
 alias sshrestart='service ssh restart'
 alias no_extensions='find . -type f ! -name "*.*"'
-
 alias module-update="git submodule foreach git pull origin master"
 alias weather="curl wttr.in/stockholm"
 alias comstat="push \"Command ran! (uname -n)\" || push \"Command failed!\""
+alias mc="sudo mc"
 
 ###     Kill all zombieprocesses
 #
 alias zombiekill="ps axo state,ppid | awk '!/PPID/$1~"Z"{print $2}' | xargs -r kill -9"
 
-###     Install bat
+###     Replace cat with bat, nicer output
 #
 #   https://github.com/sharkdp/bat/releases/download/v0.6.0/bat-musl_0.6.0_amd64.deb; sudo dpkg -i bat; rm -f bat*
 alias cat="bat"

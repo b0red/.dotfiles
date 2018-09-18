@@ -12,7 +12,7 @@ source $HOME/bin/ColorCodes.inc
 #
 function mcd () {
     mkdir -p -- "$1" &&
-    cd -p -- "$1"
+        cd -p -- "$1"
 }
 
 ###	Startbitbucket - creates remote bitbucket repo and adds it as git remote to cwd
@@ -44,7 +44,7 @@ function ff() {
 function fif() {
     echo "searching for\'$1\' in \'$PWD\'"
     grep --exclude-dir='.git|~/.ssh' -Ril . -e "$1"
-	# find . -maxdepth 2 -type f -exec grep "$1" '{}' \;
+    # find . -maxdepth 2 -type f -exec grep "$1" '{}' \;
     #find . -maxdepth 2 -type f exec -exec grep -il "$1" {} \;
 }
 
@@ -216,7 +216,7 @@ function myip() {
 #   Not working right now
 function pushover() {
     source $HOME/bin/email_variables.cfg
-        wget -q \
+    wget -q \
         --post-data="token=$APP_TOKEN \ 
         &user=$USER_KEY \
         &title=$(uname -n) says: \ 
@@ -226,21 +226,21 @@ function pushover() {
         # &sound=SSSSSS \ 
         &message=$1" \
         https://api.pushover.net/1/messages.json 
-     #    ||
-     #   curl -s -F "token=$APP_TOKEN" \
-     #   -F "user=$USER_KEY" \
-     #   -F "title=$(uname -n) Says:" \
-     #   # -F "device=s5"\
-     #   -F "message=$1" https://api.pushover.net/1/messages.json
+    #    ||
+        #   curl -s -F "token=$APP_TOKEN" \
+        #   -F "user=$USER_KEY" \
+        #   -F "title=$(uname -n) Says:" \
+        #   # -F "device=s5"\
+        #   -F "message=$1" https://api.pushover.net/1/messages.json
     #https://api.pushover.net/1/messages.json > /dev/null 2>&1
 }
 
 function push() {
     curl -s -F "token=$APP_TOKEN" \
-    -F "user=$USER_KEY" \
-    -F "title=${TITLE:-No_Title}" \
-    -F "message=$1" https://api.pushover.net/1/messages.json
-    }
+        -F "user=$USER_KEY" \
+        -F "title=${TITLE:-No_Title}" \
+        -F "message=$1" https://api.pushover.net/1/messages.json
+}
 ###     Check so not to nest tmux sessions
 if [[ $TMUX ]]; then
     source ~/.tmux-git/tmux-git.sh
@@ -248,7 +248,7 @@ fi
 
 ###     Check if command exists
 function command_exists() {
-   command -v "$1" &> /dev/null 
+    command -v "$1" &> /dev/null 
 }
 
 
@@ -270,6 +270,7 @@ function SR() {
     read string_2
     find ./ -type f -exec sed -i 's/$string_1/$string_2/g' {} \;
 }
+
 ### Function to backup latest commands
 #
 #function backup() { 
