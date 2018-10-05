@@ -103,7 +103,7 @@ if [ -x /usr/bin/dircolors ]; then
     unset GREP_OPTIONS
 fi
 
-alias ll="ls -alF --group-directories-first"
+alias {ll,öö}="ls -alF --group-directories-first"
 alias la="ls -A"
 alias l="ls -CF"
 alias lll="ls -alFGH --color | less -R"
@@ -140,13 +140,16 @@ alias zombiekill="ps axo state,ppid | awk '!/PPID/$1~"Z"{print $2}' | xargs -r k
 ###     Replace cat with bat, nicer output
 #
 #   https://github.com/sharkdp/bat/releases/download/v0.6.0/bat-musl_0.6.0_amd64.deb; sudo dpkg -i bat; rm -f bat*
-alias cat="bat"
+if command_exists bat; then alias cat="bat" ; fi
 
 ###     Install prettyping
 #   curl -O https://raw.githubusercontent.com/denilsonsa/prettyping/master/prettyping; chmod +x prettyping; mv prettyping ~/bin
-alias ping="prettyping --nolegend"
+# alias ping="prettyping --nolegend"
+if command_exists prettyping; then alias ping="prettyping --nolegend"; fi
 
 ###     Services
 #
 alias services="service --status-all"
 alias services_run="service --status-all | grep running"
+
+

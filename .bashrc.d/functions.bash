@@ -264,11 +264,27 @@ function ActiveNic() {
 ### Function for simple search and replace in folder
 #
 function SR() {
-    echo -e "Search and replace for text in: $PWD\nSearch for:"
+    echo -e "Search and replace for text in files: ${ORANGE} $PWD ${NC}\nSearch for:"
     read string_1
-    echo "Replace ${yellow}$string_1 with:"
+    echo -e "Replace ${yellow}$string_1 with:"
     read string_2
     find ./ -type f -exec sed -i 's/$string_1/$string_2/g' {} \;
+}
+
+### Function for renaming parts of or whole filnem
+#
+function FR() {
+    echo -e "Search and replace in filename in current ($PWD) folder\nSearch for:"
+    read string_1
+    echo -e "Replace ${yellow}$string_1 with:"
+    read string_2
+    find ./ -type -f exec rename 's/$string_1/$string_2/g' *
+}
+
+### Function for dotfind (find folders with space in name
+#
+function dotfind(){
+    find . -maxdepth 2 -type d -regex '.*/[^./][^/]*\.[^/]*'
 }
 
 ### Function to backup latest commands
