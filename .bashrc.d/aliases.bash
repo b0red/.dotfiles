@@ -13,6 +13,12 @@ alias reload='source ~/.bashrc'
 alias nano="nano -c"
 alias wget="wget -c $1"
 
+###     Check if command exists             # Needs to be here first
+#
+function command_exists() {
+        command -v "$1" &> /dev/null
+    }
+
 ###	Recursive directory listing
 # 
 # alias lr="ls -R | grep ':$' | sed -e '\''s/:$//'\'' -e '\''s/[^-][^\/]*\//--/g'\'' -e '\''s/^/   /'\'' -e '\''s/-/|/'\''"
