@@ -29,7 +29,7 @@ ARCHIVE="$FILE"
 ### 	Debug on/off
 #
 debug=1
-trace_debug=0
+trace_debug=1
 
 ###     Notifications
 #
