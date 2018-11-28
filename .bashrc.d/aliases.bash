@@ -125,6 +125,8 @@ alias psg="ps aux | grep -v grep | grep -i -e VSZ -e"
 #
 alias tm=":tmux new -s main \; split-window -h \; split-window -v -p 30 \;"
 alias tmkill="tmux ls | grep : | cut -d. -f1 | awk '{print substr($1, 0, length($1)-1)}' | xargs kill"
+alias tmx="tmux a -t 0"
+
 ### WIP
 #   Trying to make so it's not nesting session and always starting one with a name
 # session=$(uname -n); session=${session,,}; tmux new -s $session
@@ -158,4 +160,9 @@ if command_exists prettyping; then alias ping="prettyping --nolegend"; fi
 alias services="service --status-all"
 alias services_run="service --status-all | grep running"
 
-
+###     Docker commands
+#
+alias dcp='docker-compose -f ~/docker/compose/docker-compose-basic.yml '
+alias dcpull='docker-compose -f ~/docker/compose/docker-compose-basic.yml pull --parallel'
+alias dclogs='docker-compose -f ~/docker/compose/docker-compose-basic.yml logs -tf --tail="50" '
+alias dtail='docker logs -tf --tail="50" "$@"'

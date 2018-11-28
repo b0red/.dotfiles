@@ -44,6 +44,9 @@ export PROMPT_COMMAND="history -a; $PROMPT_COMMAND"
 ###	Don't clear the screen after quitting a manual page
 export MANPAGER="less -X"
 
+### Colorize manpages 
+export pager="most"
+
 BLOCKSIZE=M
 export BLOCKSIZE
 CLICOLOR=1
