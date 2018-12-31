@@ -166,3 +166,8 @@ alias dcp='docker-compose -f ~/docker/compose/docker-compose-basic.yml '
 alias dcpull='docker-compose -f ~/docker/compose/docker-compose-basic.yml pull --parallel'
 alias dclogs='docker-compose -f ~/docker/compose/docker-compose-basic.yml logs -tf --tail="50" '
 alias dtail='docker logs -tf --tail="50" "$@"'
+
+###     Replace ifconfig
+#
+alias ifconfig="ip -c a"
+
