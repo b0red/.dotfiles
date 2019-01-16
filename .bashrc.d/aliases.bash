@@ -139,7 +139,7 @@ alias no_extensions='find . -type f ! -name "*.*"'
 alias module-update="git submodule foreach git pull origin master"
 alias weather="curl wttr.in/stockholm"
 alias comstat="push \"Command ran! (uname -n)\" || push \"Command failed!\""
-alias mc="sudo mc"
+if command_exist mc; then alias mc="sudo mc"; fi
 
 ###     Kill all zombieprocesses
 #
