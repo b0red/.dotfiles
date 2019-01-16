@@ -17,11 +17,15 @@ ln -s ~/dotfiles/.profile ~/.profile
 * ncdu 
 * pydf
 * tree
+* bat (alternative to cat)
+    https://www.ostechnix.com/bat-a-cat-clone-with-syntax-highlighting-and-git-integration/
+
 
 Install with 
 ```
 sudo apt install htop ncdu pydf tree
 ```
+
 
 ...
 ### Some links to where I've stolen stuff from
