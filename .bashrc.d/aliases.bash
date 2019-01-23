@@ -15,7 +15,7 @@ alias wget="wget -c $1"
 
 ###     Check if command exists             # Needs to be here first
 #
-function command_exists() {
+function command_exist() {
         command -v "$1" &> /dev/null
     }
 

@@ -4,20 +4,22 @@
 #
 # ---------------------------------------------------------------------------------
 #
-###     Define colors
+###     Define  & source colors
 #
 source $HOME/bin/ColorCodes.inc
 
 ###	Create dir and enter it
 #
-function mcd () {
+function mcd () # Makes a directory and enters it
+{
     mkdir -p -- "$1" &&
         cd -p -- "$1"
 }
 
 ###	Startbitbucket - creates remote bitbucket repo and adds it as git remote to cwd
 #
-function startbitbucket () {
+function startbitbucket () # Creates a remote bitbucketrepo & adds it as a git remote
+{
     #echo 'Username?'
     #read username
     #echo 'Password?'
@@ -297,5 +299,9 @@ function dotfind(){
 #
 # echo ${file##*/}
 ###     Function for backing up latest command
+
+
+
+
 
 
