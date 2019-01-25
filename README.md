@@ -12,7 +12,8 @@ git clone git@bitbucket.org:b0red/dotfiles.git ~/dotfiles
 mv ~/.profile ~/.profile.old \
 mv ~/.bashrc ~/.bashrc.old \
 ln -s ~/dotfiles/.bashrc ~/.bashrc \
-ln -s ~/dotfiles/.profile ~/.profile
+ln -s ~/dotfiles/.profile ~/.profile \
+git submodule init && git submodule update
 ```
 ### Other stuff thats good to have
 * htop 
@@ -23,6 +24,10 @@ ln -s ~/dotfiles/.profile ~/.profile
 Install with 
 ```
 sudo apt install htop ncdu pydf tree
+```
+### Updating submodules
+```
+git submodule foreach git pull origin master
 ```
 ### Added things into an 'extras' directory
 * git@github.com:denilsonsa/prettyping.git
