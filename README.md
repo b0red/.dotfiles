@@ -6,10 +6,12 @@
 git clone git@bitbucket.org:b0red/dotfiles.git ~/dotfiles
 ```
 
-& then symlink the two files .bashrc and .profile
+& then (backup the 2 old files, .bashrc & .profile) and symlink the two files.
 
 ```
-ln -s ~/dotfiles/.bashrc ~/.bashrc
+mv ~/.profile ~/.profile.old \
+mv ~/.bashrc ~/.bashrc.old \
+ln -s ~/dotfiles/.bashrc ~/.bashrc \
 ln -s ~/dotfiles/.profile ~/.profile
 ```
 ### Other stuff thats good to have
@@ -17,15 +19,14 @@ ln -s ~/dotfiles/.profile ~/.profile
 * ncdu 
 * pydf
 * tree
-* bat (alternative to cat)
-    https://www.ostechnix.com/bat-a-cat-clone-with-syntax-highlighting-and-git-integration/
-
 
 Install with 
 ```
 sudo apt install htop ncdu pydf tree
 ```
-
+### Added things into an 'extras' directory
+* git@github.com:denilsonsa/prettyping.git
+* https://github.com/sharkdp/bat
 
 ...
 ### Some links to where I've stolen stuff from

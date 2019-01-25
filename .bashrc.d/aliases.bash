@@ -147,7 +147,7 @@ alias zombiekill="ps axo state,ppid | awk '!/PPID/$1~"Z"{print $2}' | xargs -r k
 
 ###     Replace cat with bat, nicer output
 #
-#   https://github.com/sharkdp/bat/releases/download/v0.6.0/bat-musl_0.6.0_amd64.deb; sudo dpkg -i bat; rm -f bat*
+#   https://github.com/sharkdp/bat/releases/download/v0.9.0/bat-musl_0.9.0_amd64.deb; sudo dpkg -i bat; rm -f bat*
 if command_exists bat; then alias cat="bat" ; fi
 
 ###     Install prettyping
