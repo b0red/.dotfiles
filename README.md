@@ -9,10 +9,7 @@ git clone git@bitbucket.org:b0red/dotfiles.git ~/dotfiles
 & then (backup the 2 old files, .bashrc & .profile) and symlink the two files.
 
 ```
-mv ~/.profile ~/.profile.old \
-mv ~/.bashrc ~/.bashrc.old \
-ln -s ~/dotfiles/.bashrc ~/.bashrc \
-ln -s ~/dotfiles/.profile ~/.profile \
+mv ~/.profile ~/.profile.old; mv ~/.bashrc ~/.bashrc.old; ln -s ~/dotfiles/.bashrc ~/.bashrc; ln -s ~/dotfiles/.profile ~/.profile 
 git submodule init && git submodule update
 ```
 ### Other stuff thats good to have
