@@ -219,7 +219,7 @@ function myip() {
 #   https://www.reddit.com/r/pushover/comments/1ezepb/howto_using_wget_instead_of_curl_to_send_pushover/
 #   Not working right now
 function pushover() {
-    source $HOME/bin/email_variables.inc
+    source $HOME/bin/email_variables.inc 
     wget -q \
         --post-data="token=$APP_TOKEN \ 
         &user=$USER_KEY \
@@ -240,6 +240,7 @@ function pushover() {
 }
 
 function push() {
+    source $HOME/bin/email_variables.ínc
     curl -s -F "token=$APP_TOKEN" \
         -F "user=$USER_KEY" \
         -F "title=${TITLE:-No_Title}" \
