@@ -287,43 +287,32 @@ function dotfind(){
     find . -maxdepth 2 -type d -regex '.*/[^./][^/]*\.[^/]*'
 }
 
-function reverseempty() {
-echo -e "Choose what to search for, will delete folders ${ORANGE}NOT${NC} containing (music|movies|epub).\nEnter choice:"
+function reverseempty(){
+    #echo -e "$1"
     source ~/bin/gits/bash-spinner/spinner.sh
-    while :
-    do read choice
-        case $choice in     
-            music)
-                #music
-                echo -e "searching for folders not containing ${GREEN} music files ${NC} in $pwd"
-                start_spinner 'searching...'
-                find . -depth -type d \! -exec sh -c 'find "$1" \( -iname "*.mp3" -o -iname "*.flac" -o -iname "*.ogg" -o -iname "*.wav" -o -iname "*.m4a" \) -type f | read a' _ {} \;-print  $1\; # -exec rm -rfv -- {} \;
-                stop_spinner $?
-                #exit 0
-                ;;
-            movies)
-                #movies
-                echo -e "searching for folders not containing ${GREEN} video files ${NC} in $pwd"
-                start_spinner 'searching...'
-                find . -depth -type d \! -exec sh -c 'find "$1" \( -iname "*.mov" -o -iname "*.avi" -o -iname "*.mkv" -o -iname "*.vob" -o -iname "*.ogg" -o -iname "*.wmv" -o -iname "*m4v" \) -type f | read a' _ {} \;-print \;# -exec rm -rfv -- {} \;
-                stop_spinner $?
-               # exit 0
-                ;;
-            epub)
-                #epub
-                echo -e "searching for folders not containing  ${GREEN} epubs ${choice} ${NC} in $pwd"
-                start_spinner 'searching...'
-                find . -depth -type d \! -exec sh -c 'find "$1" \( -iname "*.epub" -o -iname "*.azw" -o -iname "*.mobi" -o -iname "*.pdf" \) -type f | read a' _ {} \;-print \;# -exec rm -rfv -- {} \;
-                stop_spinner $?
-                #exit 0
-                ;;
-            *)
-                #else
-                echo -e "Nothing choosen!\n exiting!"
-                exit 0
-                ;;
-        esac
-    done
+    case $1 in
+        music)
+            echo -e "Searching for folders ${ORANGE}not${NC} containing ${GREEN} $1-files ${NC} in $PWD"
+            start_spinner 'searching...'
+            find . -depth -type d \! -exec sh -c 'find "$1" \( -iname "*.mp3" -o -iname "*.flac" -o -iname "*.ogg" -o -iname "*.wav" -o -iname "*.m4a" \) -type f | read a' _ {} \; -exec rm -rfv -- {} \;
+            stop_spinner $?
+            ;;
+        (movie|movies)
+            echo -e "Searching for folders ${ORANGE}not${NC} containing ${GREEN} $1-files ${NC} in $PWD"
+            start_spinner 'searching...'
+            find . -depth -type d \! -exec sh -c 'find "$1" \( -iname "*.mov" -o -iname "*.avi" -o -iname "*.mkv" -o -iname "*.vob" -o -iname "*.ogg" -o -iname "*.wmv" -o -iname "*m4v" \) -type f | read a' _ {} \; -exec rm -rfv -- {} \;
+            stop_spinner $?
+            ;;
+        epub)
+            echo -e "Searching for folders ${ORANGE}not${NC} containing ${GREEN} $1-files ${NC} in $PWD"
+            start_spinner 'searching...'
+            find . -depth -type d \! -exec sh -c 'find "$1" \( -iname "*.epub" -o -iname "*.azw" -o -iname "*.mobi" -o -iname "*.pdf" \) -type f | read a' _ {} \; -exec rm -rfv -- {} \;
+            stop_spinner $?
+            ;;
+        *)
+            echo -e nothing choosen
+            ;;
+    esac
 }
 
 ### Function to backup latest commands
