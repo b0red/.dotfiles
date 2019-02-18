@@ -95,7 +95,8 @@ if [ -d "$HOME"/dotfiles/.bashrc.d ]; then
     for config in $HOME/dotfiles/.bashrc.d/*.bash ;
         do
             source "$config"
-            #echo "file $config loaded"
+            # echo alias as loaded
+            # echo "file $config loaded"
         done
     unset -v config
 fi

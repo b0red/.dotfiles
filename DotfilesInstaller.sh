@@ -50,12 +50,20 @@ pushit=0
 #
 # ~--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
 #
+
+
 ###    Tracedebug
 #
 if [ $trace_debug -eq 1 ]; then
     set -x
     trap read debug
 fi
+
+###     Function for updating submodules
+#
+function update_modules() {
+git submodule init && git submodule update
+}
 
 
 ###     Create backupdir
@@ -96,6 +104,10 @@ fi
 #
 ln -s ~/dotfiles/.bashrc ~/.bashrc
 ln -s ~/dotfiles/.profile ~/.profile
+
+### Continue install fo .vim and tmux
+### Ask for .vim
+
 
 # ~--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
 ###     Debuginfo

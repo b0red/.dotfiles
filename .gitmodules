@@ -1,0 +1,6 @@
+[submodule "extras/bat"]
+	path = extras/bat
+	url = git@github.com:sharkdp/bat.git
+[submodule "extras/prettyping"]
+	path = extras/prettyping
+	url = git@github.com:denilsonsa/prettyping.git

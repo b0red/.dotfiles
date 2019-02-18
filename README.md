@@ -6,11 +6,11 @@
 git clone git@bitbucket.org:b0red/dotfiles.git ~/dotfiles
 ```
 
-& then symlink the two files .bashrc and .profile
+& then (backup the 2 old files, .bashrc & .profile) and symlink the two files.
 
 ```
-ln -s ~/dotfiles/.bashrc ~/.bashrc
-ln -s ~/dotfiles/.profile ~/.profile
+mv ~/.profile ~/.profile.old; mv ~/.bashrc ~/.bashrc.old; ln -s ~/dotfiles/.bashrc ~/.bashrc; ln -s ~/dotfiles/.profile ~/.profile 
+git submodule init && git submodule update
 ```
 ### Other stuff thats good to have
 * htop 
@@ -22,6 +22,13 @@ Install with
 ```
 sudo apt install htop ncdu pydf tree
 ```
+### Updating submodules
+```
+git submodule foreach git pull origin master
+```
+### Added things into an 'extras' directory
+* git@github.com:denilsonsa/prettyping.git
+* https://github.com/sharkdp/bat
 
 ...
 ### Some links to where I've stolen stuff from

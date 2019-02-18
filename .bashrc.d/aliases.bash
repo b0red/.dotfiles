@@ -15,7 +15,7 @@ alias wget="wget -c $1"
 
 ###     Check if command exists             # Needs to be here first
 #
-function command_exists() {
+function command_exist() {
         command -v "$1" &> /dev/null
     }
 
@@ -136,10 +136,10 @@ alias tmx="tmux a -t 0"
 alias latest='grep " install " /var/log/dpkg.log.1 /var/dpkg.log'
 alias sshrestart='service ssh restart'
 alias no_extensions='find . -type f ! -name "*.*"'
-alias module-update="git submodule foreach git pull origin master"
+alias {module-update,modup}="git submodule foreach git pull origin master"
 alias weather="curl wttr.in/stockholm"
 alias comstat="push \"Command ran! (uname -n)\" || push \"Command failed!\""
-alias mc="sudo mc"
+if command_exists mc; then alias mc="sudo mc"; fi
 
 ###     Kill all zombieprocesses
 #
@@ -147,7 +147,7 @@ alias zombiekill="ps axo state,ppid | awk '!/PPID/$1~"Z"{print $2}' | xargs -r k
 
 ###     Replace cat with bat, nicer output
 #
-#   https://github.com/sharkdp/bat/releases/download/v0.6.0/bat-musl_0.6.0_amd64.deb; sudo dpkg -i bat; rm -f bat*
+#   https://github.com/sharkdp/bat/releases/download/v0.9.0/bat-musl_0.9.0_amd64.deb; sudo dpkg -i bat; rm -f bat*
 if command_exists bat; then alias cat="bat" ; fi
 
 ###     Install prettyping
