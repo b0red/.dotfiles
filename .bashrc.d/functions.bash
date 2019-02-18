@@ -195,22 +195,23 @@ function mydf() {
 ###	    Get current host related info.
 #
 function ii() {
-    echo -e "\nYou are logged on ${BRed}$HOST"
-    echo -e "\n${BRed}Additionnal information:$NC " ; uname -a
-    echo -e "\n${BRed}Users logged on:$NC " ; w -hs | cut -d " " -f1 | sort | uniq
-    echo -e "\n${BRed}Current date :$NC " ; date
-    echo -e "\n${BRed}Machine stats :$NC " ; uptime
-    echo -e "\n${BRed}Memory stats :$NC " ; free -h
-    echo -e "\n${BRed}Diskspace :$NC " ; mydf / $HOME
-    echo -e "\n${BRed}Local IP Address :$NC" ; myip
-    echo -e "\n${BRed}Open connections :$NC "; netstat -pan --inet;
+    echo -e "\nThis is ${ORANGE}$HOSTNAME$NC"
+    echo -e "\n${ORANGE}Additionnal information:${NC} " ; uname -a
+    echo -e "\n${ORANGE}Users logged on:$NC " ; w -hs | cut -d " " -f1 | sort | uniq
+    echo -e "\n${ORANGE}Current date :$NC " ; date
+    echo -e "\n${ORANGE}Machine stats :$NC " ; uptime
+    echo -e "\n${ORANGE}Memory stats :$NC " ; free -h
+    echo -e "\n${ORANGE}Diskspace :$NC " ; mydf / $HOME
+    echo -e "\n${ORANGE}Local IP Address :$NC" ; myip
+    echo -e "\n${ORANGE}Open connections :$NC "; netstat -pan --inet;
     echo
 }
 
 ###	    Get IP adress on ethernet.
 #
 function myip() {
-    MY_IP=$(/sbin/ifconfig eth0 | awk '/inet/ { print $2 } ' | sed -e s/addr://)
+    #MY_IP=$(/sbin/ifconfig eth0 | awk '/inet/ { print $2 } ' | sed -e s/addr://)
+    MY_IP=$(/sbin/ifconfig $(getnic) | awk '/inet/ { print $2 } ' | sed -e s/addr://)
     echo ${MY_IP:-"Not connected"}
 }
 
@@ -218,7 +219,7 @@ function myip() {
 #   https://www.reddit.com/r/pushover/comments/1ezepb/howto_using_wget_instead_of_curl_to_send_pushover/
 #   Not working right now
 function pushover() {
-    source $HOME/bin/email_variables.cfg
+    source $HOME/bin/email_variables.inc
     wget -q \
         --post-data="token=$APP_TOKEN \ 
         &user=$USER_KEY \
