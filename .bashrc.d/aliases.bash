@@ -172,3 +172,6 @@ alias dclean="docker run --rm -v /var/run/docker.sock:/var/run/docker.sock zzrot
 #
 alias ifconfig="ip -c a"
 
+###     Lock folder
+#
+touch .donotdelete; chmod 444 .donotdelete
