@@ -3,12 +3,12 @@
 #	.bash_functions
 #
 # ---------------------------------------------------------------------------------
-#
+
 ###     Define  & source colors
 #
 source $HOME/bin/ColorCodes.inc
 
-###	Create dir and enter it
+###	    Create dir and enter it
 #
 function mcd () # Makes a directory and enters it
 {
@@ -16,7 +16,7 @@ function mcd () # Makes a directory and enters it
         cd -p -- "$1"
 }
 
-###	Startbitbucket - creates remote bitbucket repo and adds it as git remote to cwd
+###	    Startbitbucket - creates remote bitbucket repo and adds it as git remote to cwd
 #
 function startbitbucket () # Creates a remote bitbucketrepo & adds it as a git remote
 {
@@ -33,30 +33,33 @@ function startbitbucket () # Creates a remote bitbucketrepo & adds it as a git r
     git push -u origin --tags
 }
 
-###	Find file by exact name recursively.
-#
-# Usage: ff (file)
+###	    Find file by exact name recursively.
+#       Usage: ff (file)
 function ff() {
+    start_spinner 'searching...'
     echo "searching for: $1"
     find . -name "$1"
+    stop_spinner $?
 }
 
-# Allows you to search for any text in any file recursively.
-# Usage: ft "my string" *.php
+###     Allows you to search for any text in any file recursively.
+#       Usage: ft "my string" *.php
 function fif() {
     echo "searching for\'$1\' in \'$PWD\'"
+    start_spinner 'searching...'
     grep --exclude-dir='.git|~/.ssh' -Ril . -e "$1"
+    stop_spinner $?
     # find . -maxdepth 2 -type f -exec grep "$1" '{}' \;
     #find . -maxdepth 2 -type f exec -exec grep -il "$1" {} \;
 }
 
-# Search for command in history.
-# Usage: hs (string)
+###     Search for command in history.
+#       Usage: hs (string)
 function hs() {
     history | grep "$1"
 }
 
-###	Extract most know archives
+###	    Extract most know archives
 #
 function extract() {
     if [ -z "$1" ]; then
@@ -94,32 +97,32 @@ function extract() {
     fi
 }
 
-###	Debug
+###	    Debug
 #
 function debug() {
     bash -x "$1"
 }
 
 
-###	Creates an archive (*.tar.gz) from given directory.
+###	    Creates an archive (*.tar.gz) from given directory.
 #
 function maketar() {
     tar cvzf "${1%%/}.tar.gz"  "${1%%/}/";
 }
 
-###	Create a ZIP archive of a file or folder.
+###	    Create a ZIP archive of a file or folder.
 #
 function makezip() {
     zip -r "${1%%/}.zip" "$1" ;
 }
 
-###	Reconnect or start a tmux or screen session over ssh
+###	    Reconnect or start a tmux or screen session over ssh
 #
 function sssh () {
     ssh -t "$1" 'tmux attach || tmux new || screen -DR';
 }
 
-###	Copy public key to remote machine (dependency-less)
+###	    Copy public key to remote machine (dependency-less)
 #
 function authme() {
     echo Server?
@@ -128,21 +131,20 @@ function authme() {
     ssh $server 'mkdir -p ~/.ssh && cat >> ~/.ssh/authorized_keys' < ~/.ssh/id_dsa.pub
 }
 
-###	Paginated colored tree
+###	    Paginated colored tree
 #
 function ltree() {
     tree -C $* | less -R
 }
 
-###	CD and ls a directory
+###	    CD and ls a directory
 #
 function cdl () {
     cd $1; ls
 }
 
-###	Find a pattern in a set of files and highlight them:
-#	+ (needs a recent version of egrep).
-#
+###	    Find a pattern in a set of files and highlight them:
+#	      + (needs a recent version of egrep).
 function fstr() {
     OPTIND=1
     local mycase=""
@@ -165,9 +167,8 @@ function fstr() {
 }
 
 
-###	Pretty-print of 'df' output.
-#	Inspired by 'dfc' utility.
-#
+###	    Pretty-print of 'df' output.
+#	    Inspired by 'dfc' utility.
 function mydf() {
     for fs ; do
         if [ ! -d $fs ]
@@ -191,7 +192,7 @@ function mydf() {
 }
 
 
-###	Get current host related info.
+###	    Get current host related info.
 #
 function ii() {
     echo -e "\nYou are logged on ${BRed}$HOST"
@@ -206,7 +207,7 @@ function ii() {
     echo
 }
 
-###	Get IP adress on ethernet.
+###	    Get IP adress on ethernet.
 #
 function myip() {
     MY_IP=$(/sbin/ifconfig eth0 | awk '/inet/ { print $2 } ' | sed -e s/addr://)
