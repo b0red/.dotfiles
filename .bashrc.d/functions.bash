@@ -6,7 +6,8 @@
 
 ###     Define  & source colors
 #
-source $HOME/bin/ColorCodes.inc
+source $HOME/bin/ColorCodes.inc             #For printing output i pretty colors
+source $HOME/bin/spinner.sh            #Running a spinner for long commands
 
 ###	    Create dir and enter it
 #
@@ -36,27 +37,41 @@ function startbitbucket () # Creates a remote bitbucketrepo & adds it as a git r
 ###	    Find file by exact name recursively.
 #       Usage: ff (file)
 function ff() {
-    start_spinner 'searching...'
-    echo "searching for: $1"
-    find . -name "$1"
-    stop_spinner $?
+    if [ -z "$1" ]; then
+        echo "Usage: 'ff <filename to search for>'"
+        return 1
+    else
+        start_spinner 'searching...'
+        echo "searching for: $1"
+        find . -name "$1"
+        stop_spinner $?
+    fi
 }
 
 ###     Allows you to search for any text in any file recursively.
 #       Usage: ft "my string" *.php
 function fif() {
-    echo "searching for\'$1\' in \'$PWD\'"
-    start_spinner 'searching...'
-    grep --exclude-dir='.git|~/.ssh' -Ril . -e "$1"
-    stop_spinner $?
-    # find . -maxdepth 2 -type f -exec grep "$1" '{}' \;
-    #find . -maxdepth 2 -type f exec -exec grep -il "$1" {} \;
+    if [ -z "$1" ]; then
+        echo "Usage: Enter 'fif <text>' to search for in file recursevly from <location>. Default is: $PWD"
+        return 1
+    else
+        echo "searching for\'$1\' in \'$PWD\'"
+        #start_spinner 'searching...'
+        grep --exclude-dir='.git|~/.ssh' -Ril . -e "$1"
+        #stop_spinner $?
+        # find . -maxdepth 2 -type f -exec grep "$1" '{}' \;
+        #find . -maxdepth 2 -type f exec -exec grep -il "$1" {} \;
+    fi
 }
 
 ###     Search for command in history.
 #       Usage: hs (string)
 function hs() {
-    history | grep "$1"
+    if [ -z "$1" ]; then
+        echo "Usage: 'hs <command to search for with grep>'"
+    else
+        history | grep "$1"
+    fi
 }
 
 ###	    Extract most know archives
