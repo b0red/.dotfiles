@@ -7,13 +7,13 @@
 ###     Define  & source colors
 #
 source $HOME/bin/ColorCodes.inc             #For printing output i pretty colors
-source $HOME/bin/spinner.sh            #Running a spinner for long commands
+source $HOME/bin/spinner.sh                 #Running a spinner for long commands
 
 ###	    Create dir and enter it
 #
 function mcd () # Makes a directory and enters it
 {
-    mkdir -p -- "$1" &&
+    mkdir -p -- "$1" && 
         cd -p -- "$1"
 }
 
@@ -68,7 +68,7 @@ function fif() {
 #       Usage: hs (string)
 function hs() {
     if [ -z "$1" ]; then
-        echo "Usage: 'hs <command to search for with grep>'"
+        echo "Usage: 'hs <command to search for.>'"
     else
         history | grep "$1"
     fi
@@ -128,7 +128,13 @@ function maketar() {
 ###	    Create a ZIP archive of a file or folder.
 #
 function makezip() {
-    zip -r "${1%%/}.zip" "$1" ;
+    if [ $# -ne 1 ]
+    then
+        echo "Usage: makezip  <filename to create>.zip <folder to zip>"
+        #exit 0 
+    fi
+    #zip -r "${1%%/}.zip" "$1" ;
+    zip -r "${1}.zip" "$2"
 }
 
 ###	    Reconnect or start a tmux or screen session over ssh
@@ -181,7 +187,6 @@ function fstr() {
         xargs -0 egrep --color=always -sn ${case} "$1" 2>&- | more
 }
 
-
 ###	    Pretty-print of 'df' output.
 #	    Inspired by 'dfc' utility.
 function mydf() {
@@ -205,7 +210,6 @@ function mydf() {
         echo -e $out
     done
 }
-
 
 ###	    Get current host related info.
 #
@@ -273,7 +277,6 @@ function command_exists() {
     command -v "$1" &> /dev/null 
 }
 
-
 ###     Get active Network Interface
 #
 function getnic() { 
@@ -308,7 +311,11 @@ function dotfind(){
 }
 
 function reverseempty(){
-    #echo -e "$1"
+    if [ $# -ne 1 ]
+    then
+        echo "Usage : reverseempty <${ORANGE} music|movies|epub${NC} >"
+        #exit 0 
+    fi
     source ~/bin/gits/bash-spinner/spinner.sh
     case $1 in
         music)
@@ -323,7 +330,7 @@ function reverseempty(){
             find . -maxdepth 1 -mindepth 1 -type d \! -exec sh -c 'find "$1" \( -iname "*.mov" -o -iname "*.avi" -o -iname "*.mkv" -o -iname "*.vob" -o -iname "*.ogg" -o -iname "*.wmv" -o -iname "*m4v" \) -type f | read a' _ {} \; -exec rm -rfv -- {} \;
             stop_spinner $?
             ;;
-        epub)
+        epubs)
             echo -e "Searching for folders ${ORANGE}not${NC} containing ${GREEN} $1-files ${NC} in $PWD"
             start_spinner 'searching...'
             find . -maxdepth 1 -mindepth 1 -type d \! -exec sh -c 'find "$1" \( -iname "*.epub" -o -iname "*.azw" -o -iname "*.mobi" -o -iname "*.pdf" \) -type f | read a' _ {} \; -exec rm -rfv -- {} \;
