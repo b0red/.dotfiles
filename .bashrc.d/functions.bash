@@ -247,11 +247,13 @@ function push() {
         -F "message=$1" https://api.pushover.net/1/messages.json
 }
 ###     Check so not to nest tmux sessions
+#
 if [[ $TMUX ]]; then
     source ~/.tmux-git/tmux-git.sh
 fi
 
 ###     Check if command exists
+#
 function command_exists() {
     command -v "$1" &> /dev/null 
 }
@@ -266,7 +268,7 @@ function getnic() {
 
 ###     Function for simple search and replace in current folder
 #
-function SR() {
+function searchreplace() {
     echo -e "Search and replace for text in files: ${ORANGE} $PWD ${NC}\nSearch for:"
     read string_1
     echo -e "Replace ${yellow}$string_1 with:"
@@ -276,7 +278,7 @@ function SR() {
 
 ###     Function for renaming parts of or whole filnem
 #
-function FR() {
+function fnamereplace() {
     echo -e "Search and replace in filename in current ($PWD) folder\nSearch for:"
     read string_1
     echo -e "Replace ${yellow} $string_1 with:"
@@ -297,25 +299,44 @@ function reverseempty(){
         music)
             echo -e "Searching for folders ${ORANGE}not${NC} containing ${GREEN} $1-files ${NC} in $PWD"
             start_spinner 'searching...'
-            find . -maxdepth 1 -type d \! -exec sh -c 'find "$1" \( -iname "*.mp3" -o -iname "*.flac" -o -iname "*.ogg" -o -iname "*.wav" -o -iname "*.m4a" \) -type f | read a' _ {} \; -exec rm -rfv -- {} \;
+            find . -maxdepth 1 -mindepth 1 -type d \! -exec sh -c 'find "$1" \( -iname "*.mp3" -o -iname "*.flac" -o -iname "*.ogg" -o -iname "*.wav" -o -iname "*.m4a" \) -type f | read a' _ {} \; -exec rm -rfv -- {} \;
             stop_spinner $?
             ;;
         (movie|movies)
             echo -e "Searching for folders ${ORANGE}not${NC} containing ${GREEN} $1-files ${NC} in $PWD"
             start_spinner 'searching...'
-            find . -maxdepth 1 -type d \! -exec sh -c 'find "$1" \( -iname "*.mov" -o -iname "*.avi" -o -iname "*.mkv" -o -iname "*.vob" -o -iname "*.ogg" -o -iname "*.wmv" -o -iname "*m4v" \) -type f | read a' _ {} \; -exec rm -rfv -- {} \;
+            find . -maxdepth 1 -mindepth 1 -type d \! -exec sh -c 'find "$1" \( -iname "*.mov" -o -iname "*.avi" -o -iname "*.mkv" -o -iname "*.vob" -o -iname "*.ogg" -o -iname "*.wmv" -o -iname "*m4v" \) -type f | read a' _ {} \; -exec rm -rfv -- {} \;
             stop_spinner $?
             ;;
         epub)
             echo -e "Searching for folders ${ORANGE}not${NC} containing ${GREEN} $1-files ${NC} in $PWD"
             start_spinner 'searching...'
-            find . -maxdepth 1 -type d \! -exec sh -c 'find "$1" \( -iname "*.epub" -o -iname "*.azw" -o -iname "*.mobi" -o -iname "*.pdf" \) -type f | read a' _ {} \; -exec rm -rfv -- {} \;
+            find . -maxdepth 1 -mindepth 1 -type d \! -exec sh -c 'find "$1" \( -iname "*.epub" -o -iname "*.azw" -o -iname "*.mobi" -o -iname "*.pdf" \) -type f | read a' _ {} \; -exec rm -rfv -- {} \;
             stop_spinner $?
             ;;
         *)
             echo -e nothing choosen
             ;;
     esac
+}
+
+###     Help function - list all functions
+#
+function funchelp() {
+    echo -e "Functions available:"
+    typeset -f | awk '/ \(\) $/ && !/^main / {print $1}'
+}
+
+
+###     Lock folder
+#
+function lockfolder() {
+    if ! [ $(id -u) = 0 ]; then
+   echo "This function must run as root"
+   exit 1
+else touch .donotdelete
+    chmod 444 .dotnotdelete
+fi
 }
 
 ### Function to backup latest commands
