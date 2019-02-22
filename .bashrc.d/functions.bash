@@ -281,9 +281,9 @@ fi
 
 ###     Check if command exists
 #
-function command_exists() {
-    command -v "$1" &> /dev/null 
-}
+#function command_exists() {
+#    command -v "$1" &> /dev/null 
+#}
 
 ###     Get active Network Interface
 #
@@ -368,6 +368,13 @@ else
     touch .donotdelete
     chmod 444 .dotnotdelete
 fi
+}
+
+###     Clone all repos from user
+#           (https://github.com/kenorb/dotfiles/blob/master/.bash_functions)
+gh-clone-user() {
+    [ -z "$1" ] && { echo "Usage: 'git clone <user>'" >&2; return; }
+    curl -sL "https://api.github.com/users/$1/repos?per_page=1000" | jq -r '.[]|.clone_url' | xargs -L1 git clone --recurse-submodules
 }
 
 
