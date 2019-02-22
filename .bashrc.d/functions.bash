@@ -11,10 +11,10 @@ source $HOME/bin/spinner.sh                 #Running a spinner for long commands
 
 ###	    Create dir and enter it
 #
-function mcd () # Makes a directory and enters it
-{
-    mkdir -p -- "$1" && 
-        cd -p -- "$1"
+function mcd () { # Makes a directory and enters it
+    [ -z "$1" ] && { echo "Usage: 'mcd <directory name> (Need to be root if outside of $HOME)'" >&2; return; }
+        mkdir -p "$1" && 
+        cd "$1"
 }
 
 ###	    Startbitbucket - creates remote bitbucket repo and adds it as git remote to cwd
@@ -52,7 +52,7 @@ function ff() {
 #       Usage: ft "my string" *.php
 function fif() {
     if [ -z "$1" ]; then
-        echo "Usage: Enter 'fif <text>' to search for in file recursevly from <location>. Default is: $PWD"
+        echo "Usage: Enter 'fif <text>' to search for in files recursevly from <location>. Default is: $PWD"
         return 1
     else
         echo "searching for\'$1\' in \'$PWD\'"
@@ -161,7 +161,11 @@ function ltree() {
 ###	    CD and ls a directory
 #
 function cdl () {
-    cd $1; ls
+    if [ -z "$1" ]; then
+        echo "Usage: 'cdl <folder to enter and list>'"
+       else
+        cd $1; ls
+    fi
 }
 
 ###	    Find a pattern in a set of files and highlight them:
@@ -190,25 +194,29 @@ function fstr() {
 ###	    Pretty-print of 'df' output.
 #	    Inspired by 'dfc' utility.
 function mydf() {
-    for fs ; do
-        if [ ! -d $fs ]
-        then
-            echo -e $fs" :No such file or directory" ; continue
-        fi
-        local info=( $(command df -P $fs | awk 'END{ print $2,$3,$5 }') )
-        local free=( $(command df -Pkh $fs | awk 'END{ print $4 }') )
-        local nbstars=$(( 20 * ${info[1]} / ${info[0]} ))
-        local out="["
-        for ((j=0;j<20;j++)); do
-            if [ ${j} -lt ${nbstars} ]; then
-                out=$out"*"
-            else
-                out=$out"-"
+    if [ -z "$1" ]; then
+        echo "Usage: 'mydf <folder>'"
+    else
+        for fs ; do
+            if [ ! -d $fs ]
+            then
+                echo -e $fs" :No such file or directory" ; continue
             fi
+            local info=( $(command df -P $fs | awk 'END{ print $2,$3,$5 }') )
+            local free=( $(command df -Pkh $fs | awk 'END{ print $4 }') )
+            local nbstars=$(( 20 * ${info[1]} / ${info[0]} ))
+            local out="["
+            for ((j=0;j<20;j++)); do
+                if [ ${j} -lt ${nbstars} ]; then
+                    out=$out"*"
+                else
+                    out=$out"-"
+                fi
+            done
+            out=${info[2]}" "$out"] ("$free" free on "$fs")"
+            echo -e $out
         done
-        out=${info[2]}" "$out"] ("$free" free on "$fs")"
-        echo -e $out
-    done
+    fi
 }
 
 ###	    Get current host related info.
@@ -353,13 +361,15 @@ function funchelp() {
 ###     Lock folder
 #
 function lockfolder() {
-    if ! [ $(id -u) = 0 ]; then
-   echo "This function must run as root"
+if ! [ $(id -u) = 0 ]; then
+   echo "This command must run as root"
    exit 1
-else touch .donotdelete
+else 
+    touch .donotdelete
     chmod 444 .dotnotdelete
 fi
 }
+
 
 ### Function to backup latest commands
 #
