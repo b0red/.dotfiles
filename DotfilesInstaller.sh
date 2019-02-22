@@ -21,20 +21,15 @@ clear
 #
 
 ###     Settings
-BACKUPDIR=~/dotfiles/oldfiles
-OLDFILES=oldfiles.txt
-FILE="$HOSTNAME-`date +%Y-%m-%d-%H:%M`.zip"
-ARCHIVE="$FILE"
+BACKUPDIR=~/dotfiles/OLDFILES                   # Where to store old backuped files
+OLDFILES=oldfiles.txt                           # Filelist
+FILE="$HOSTNAME-`date +%Y-%m-%d-%H:%M`.zip"     # Filename
+ARCHIVE="$FILE"                                 #
 
 ### 	Debug on/off
 #
 debug=1
-trace_debug=0
-
-###     Notifications
-#
-mailit=0
-pushit=0
+trace_debug=1
 
 ###     Variables/constants
 #
@@ -45,12 +40,7 @@ pushit=0
 #source $SCRIPTPATH/email_variables.inc
 #source $SCRIPTPATH/ColorCodes.inc
 #source $SCRIPTPATH
-
-
-#
 # ~--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-#
-
 
 ###    Tracedebug
 #
@@ -65,41 +55,81 @@ function update_modules() {
 git submodule init && git submodule update
 }
 
+function info () {
+  printf "\r  [ \033[00;34m..\033[0m ] $1\n"
+}
 
-###     Create backupdir
-#
-if [[ ! -d "$BACKUPDIR/$HOSTNAME" ]]; then 
-    mkdir $BACKUPDIR/$HOSTNAME
-    DIRSTATUS="$BACKUPDIR/$HOSTNAME created!"
-else
-    DIRSTATUs="$BACKUPDIR/$HOSTNAME already exists!"
-fi
+function user () {
+  printf "\r  [ \033[0;33m??\033[0m ] $1\n"
+}
 
-### Move old .dotfiles to backupfolder and archive them
-#   skip symlinked files
-#
-cat $OLDFILES | while read FILE ; 
-do 
-    # Symlink check
-    # [[ -L $HOME/$FILE ]] && echo symlink || echo not symlink
-    if [[ ! -f $HOME/$FILE ]]; then
-        echo "$FILE does not exist"
-        # MVSTATUS="$FILE copied to $BACKUPDIR/$HOSTNAME"
-    else
-        [[ -L $HOME/$FILE ]] && echo "$FILE is a symlink, not moved!" || cp $FILE $BACKUPDIR/$HOSTNAME;
-    fi
+function success () {
+  printf "\r\033[2K  [ \033[00;32mOK\033[0m ] $1\n"
+}
+
+function fail () {
+  printf "\r\033[2K  [\033[0;31mFAIL\033[0m] $1\n"
+  echo ''
+  exit
+}
+
+function yes_no() {
+    echo "Do you wish to clone the dotfiles-repo?"
+    select yn in "Yes" "No"; do
+    case $yn in
+        Yes ) git clone git@bitbucket.org:b0red/dotfiles.git ~/dotfiles; 
+        break
+        ;;
+        No ) 
+        exit 0
+        ;;
+    esac
 done
+}
 
-### Archive the files if there are any
+###     Check if folder ~/dotfiles exists
 #
-if [ ! -n "$(find "$BACKUPDIR/$HOSTNAME" -maxdepth 0 -type d -empty 2>/dev/null)" ]; then
-    zip -r -q -u -m $BACKUPDIR/$HOSTNAME/$ARCHIVE $BACKUPDIR/$HOSTNAME && FILE_STATUS="Files compressed ok!" || FILE_STATUS="Files not compressed!"
-    # echo $FILE_STATUS
+if [[ ! -d ~/dotfiles ]]; then
+    printf "Folder & repo ~/dotfiles not found."
+    status="~/dotfiles not found!"; echo $status
+    yes_no
 else
-    FILE_STATUS="Empty directory, nothing to archive!"
-    # echo $FILE_STATUS
-fi
+status="~/dotfiles found!"; echo $status
+    ###     Create backupdir
+    #
+    if [[ ! -d "$BACKUPDIR/$HOSTNAME" ]]; then 
+        mkdir $BACKUPDIR/$HOSTNAME
+        DIRSTATUS="$BACKUPDIR/$HOSTNAME created!"
+    else
+        DIRSTATUs="$BACKUPDIR/$HOSTNAME already exists!"
+    fi
 
+    ### Move old .dotfiles to backupfolder and archive them
+    #   skip symlinked files
+    #
+    cat $OLDFILES | while read FILE ; 
+    do 
+        # Symlink check
+        # [[ -L $HOME/$FILE ]] && echo symlink || echo not symlink
+        if [[ ! -f $HOME/$FILE ]]; then
+            echo "$FILE does not exist"
+            # MVSTATUS="$FILE copied to $BACKUPDIR/$HOSTNAME"
+        else
+            [[ -L $HOME/$FILE ]] && echo "$FILE is a symlink, not moved!" || cp $FILE $BACKUPDIR/$HOSTNAME;
+        fi
+    done
+
+    ### Archive the files if there are any
+    #
+    if [ ! -n "$(find "$BACKUPDIR/$HOSTNAME" -maxdepth 0 -type d -empty 2>/dev/null)" ]; then
+        zip -r -q -u -m $BACKUPDIR/$HOSTNAME/$ARCHIVE $BACKUPDIR/$HOSTNAME && FILE_STATUS="Files compressed ok!" || FILE_STATUS="Files not compressed!"
+        # echo $FILE_STATUS
+    else
+        FILE_STATUS="Empty directory, nothing to archive!"
+        # echo $FILE_STATUS
+    fi
+
+fi
 ### Symlink the new files
 #
 ln -s ~/dotfiles/.bashrc ~/.bashrc
