@@ -33,7 +33,15 @@ git submodule foreach git pull origin master
 ...
 ### Some links to where I've stolen stuff from
 [https://sanctum.geek.nz/arabesque/shell-config-subfiles/](https://sanctum.geek.nz/arabesque/shell-config-subfiles/)
- more to come
+[https://remysharp.com/2018/08/23/cli-improved](https://remysharp.com/2018/08/23/cli-improved)
+[https://github.com/kenorb/dotfiles/blob/master/.bash_functions](https://github.com/kenorb/dotfiles/blob/master/.bash_functions)
+[https://github.com/kenorb/dotfiles/blob/master/.bash_aliases](https://github.com/kenorb/dotfiles/blob/master/.bash_aliases)
+[https://github.com/sharkdp/bat/](https://github.com/sharkdp/bat/)
+[https://raw.githubusercontent.com/denilsonsa/prettyping/master/prettyping](https://raw.githubusercontent.com/denilsonsa/prettyping/master/prettyping)
+
+Info
+[https://www.reddit.com/r/pushover/comments/1ezepb/howto_using_wget_instead_of_curl_to_send_pushover](https://www.reddit.com/r/pushover/comments/1ezepb/howto_using_wget_instead_of_curl_to_send_pushover)
+...
 
 ### Steps for manual installation
 1. git clone git@bitbucket.org:b0red/dotfiles.git ~/dotfiles
@@ -41,4 +49,4 @@ git submodule foreach git pull origin master
 3. git submodule init && git submodule update
 4. sudo apt install htop ncdu pydf tree mc
 5. (update submodules)
-* git submodule foreach git pull origin master
+  * git submodule foreach git pull origin master
