@@ -32,15 +32,15 @@ git submodule foreach git pull origin master
 
 ...
 ### Some links to where I've stolen stuff from
-[https://sanctum.geek.nz/arabesque/shell-config-subfiles/](https://sanctum.geek.nz/arabesque/shell-config-subfiles/)
-[https://remysharp.com/2018/08/23/cli-improved](https://remysharp.com/2018/08/23/cli-improved)
-[https://github.com/kenorb/dotfiles/blob/master/.bash_functions](https://github.com/kenorb/dotfiles/blob/master/.bash_functions)
-[https://github.com/kenorb/dotfiles/blob/master/.bash_aliases](https://github.com/kenorb/dotfiles/blob/master/.bash_aliases)
-[https://github.com/sharkdp/bat/](https://github.com/sharkdp/bat/)
-[https://raw.githubusercontent.com/denilsonsa/prettyping/master/prettyping](https://raw.githubusercontent.com/denilsonsa/prettyping/master/prettyping)
+* [https://sanctum.geek.nz/arabesque/shell-config-subfiles/](https://sanctum.geek.nz/arabesque/shell-config-subfiles/)
+* [https://remysharp.com/2018/08/23/cli-improved](https://remysharp.com/2018/08/23/cli-improved)
+* [https://github.com/kenorb/dotfiles/blob/master/.bash_functions](https://github.com/kenorb/dotfiles/blob/master/.bash_functions)
+* [https://github.com/kenorb/dotfiles/blob/master/.bash_aliases](https://github.com/kenorb/dotfiles/blob/master/.bash_aliases)
+* [https://github.com/sharkdp/bat/](https://github.com/sharkdp/bat/)
+* [https://raw.githubusercontent.com/denilsonsa/prettyping/master/prettyping](https://raw.githubusercontent.com/denilsonsa/prettyping/master/prettyping)
 
 Info
-[https://www.reddit.com/r/pushover/comments/1ezepb/howto_using_wget_instead_of_curl_to_send_pushover](https://www.reddit.com/r/pushover/comments/1ezepb/howto_using_wget_instead_of_curl_to_send_pushover)
+* [https://www.reddit.com/r/pushover/comments/1ezepb/howto_using_wget_instead_of_curl_to_send_pushover](https://www.reddit.com/r/pushover/comments/1ezepb/howto_using_wget_instead_of_curl_to_send_pushover)
 ...
 
 ### Steps for manual installation
