@@ -57,7 +57,7 @@ if ! shopt -oq posix; then
 fi
 
 
-###	If id command returns zero, you’ve root access.
+###	If id command returns zero, youâ€™ve root access.
 #
 if [ $(id -u) -eq 0 ];
     then # you are root, set red colour prompt

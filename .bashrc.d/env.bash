@@ -4,44 +4,79 @@
 #
 #  -----------------------------------------------------------------------
 
-###	PATH
-# yum
+###     PATH
+###     YUM (RedHat Linux)
+#
 if [ -f /usr/bin/yum ]
 then
 	PATH=$PATH:$HOME/bin
-    alias install="sudo yum install" $1
-    alias remove="sudo yum remove" $1
-    alias update="yum update"
+    alias install="sudo yum install -y" $1
+    alias uninstall="sudo yum remove" $1
+    alias update="sudo yum update -y"
+    alias upgrade="sudo yum upgrade -y"
 fi
 
+###     DNF Fedorah
+#
+if [ -f /usr/bin/dnf ]
+then
+    alias upgrade="dnf upgrade"
+    alias install="dnf install" $1
+    alias uninstall="dnf remove" $1
+    alias search="dnf search" $1
+    alias autoremove="dnf remove" $1
+    alias clean="dnf clean all"
+fi
 
-###	Pacman (ArchLinux)
+###	    Pacman (ArchLinux)
+#
 if [ -f /usr/bin/pacman ]
 then
-	alias update='install'
-
-	#    alias upgrade='sudo pacman -Syu'
+	alias update='pacman -Syu' $1
+    alias install="pacman -S" $1
+    alias force_install="pacman -S --force" $1
+    alias uninstall="pacman -Rs" $1
+    #    alias upgrade='sudo pacman -Syu'
 	#    alias install='sudo pacman -Sy'
 	#    alias uninstall='sudo pacman -Rs'
 fi
 
 
 ###		APT (apt get...)
-if [ -f /usr/bin/aptitude ]
+#
+if [ -f /usr/bin/apt* ]
 then
-	alias update="sudo aptitude update"
-	#    alias upgrade="sudo aptitude safe-upgrade"
-	#    alias install="sudo aptitude install"
-	#    alias uninstall="sudo aptitude remove"
+	alias apt_update="sudo aptitude update"
+    alias update="sudo apt-get update && sudo apt-get upgrade"
+    alias install="sudo apt install $1"
+    alias uninstall="sudo apt remove $1"
+    alias clean="sudp apt clean; sudo apt autoremove; sudo apt purge"
 fi
 
-###	YUM (RedHat Linux)
+### 	Zypper (opensuse, fedora)
+#
 if [ -f /usr/bin/yum ]
 then
-	alias update="sudo yum update"
-	#    alias upgrade="sudo yum safe-upgrade"
+	alias app_search="zypper search" $1
+    alias install="zypper install" $1
+    alias uninstall="zypper remove" $1
+    alias update="sudo zypper refresh; sudo zypper dup"
+    #    alias upgrade="sudo yum safe-upgrade"
 	#    alias install="sudo yum install"
 	#    alias uninstall="sudo yum remove"
+fi
+
+###     Freebsd)
+#
+if [ -f /usr/bin/yum ]
+then
+    alias app_search="zypper search" $1
+    alias install="zypper install" $1
+    alias uninstall="zypper remove" $1
+    alias update="sudo zypper refresh; sudo zypper dup"
+    #    alias upgrade="sudo yum safe-upgrade"
+    #    alias install="sudo yum install"
+    #    alias uninstall="sudo yum remove"
 fi
 
 # check the window size after each command and, if necessary,

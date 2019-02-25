@@ -1,3 +1,4 @@
 .bashrc.d/local_alias.bash
 .bashrc.d/messages.json
 oldfiles/
+install_progress.log
