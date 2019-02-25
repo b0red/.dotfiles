@@ -35,3 +35,10 @@ git submodule foreach git pull origin master
 [https://sanctum.geek.nz/arabesque/shell-config-subfiles/](https://sanctum.geek.nz/arabesque/shell-config-subfiles/)
  more to come
 
+### Steps for manual installation
+1. git clone git@bitbucket.org:b0red/dotfiles.git ~/dotfiles
+2. mv ~/.profile ~/.profile.old; mv ~/.bashrc ~/.bashrc.old; ln -s ~/dotfiles/.bashrc ~/.bashrc; ln -s ~/dotfiles/.profile ~/.profile 
+3. git submodule init && git submodule update
+4. sudo apt install htop ncdu pydf tree mc
+5. (update submodules)
+* git submodule foreach git pull origin master
