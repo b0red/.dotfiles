@@ -1,3 +1,15 @@
-Files not compressed!
-.profile is not a symlink. Moving it
-.bashrc is not a symlink. Moving it
+
+
+Dotfiles installer Script - 2019-02-25 21:38:34
+Created /home/patrick/dotfiles/oldfiles
+curl already installed!
+htop already installed!
+ncdu already installed!
+pydf already installed!
+tree already installed!
+tmux already installed!
+vim already installed!
+mc already installed!
+Moved old files and symlinked the new ones!
+submodules added!
+Sumodules updated!
