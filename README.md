@@ -20,17 +20,15 @@ git submodule init && git submodule update
 
 Install with 
 ```
-sudo apt install htop ncdu pydf tree
+sudo apt install htop ncdu pydf tree mc
 ```
 ### Updating submodules
 ```
 git submodule foreach git pull origin master
 ```
 ### Added things into an 'extras' directory
-* git@github.com:denilsonsa/prettyping.git
 * https://github.com/sharkdp/bat
 
-...
 ### Some links to where I've stolen stuff from
 * [https://sanctum.geek.nz/arabesque/shell-config-subfiles/](https://sanctum.geek.nz/arabesque/shell-config-subfiles/)
 * [https://remysharp.com/2018/08/23/cli-improved](https://remysharp.com/2018/08/23/cli-improved)
