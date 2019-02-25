@@ -138,7 +138,7 @@ alias comstat="push \"Command ran! (uname -n)\" || push \"Command failed!\""
 
 ###		MidnightCommande
 #
-if command_existss mc; then alias mc="sudo mc"; fi
+if command_exists mc; then alias mc="sudo mc"; fi
 
 ###     Kill all zombieprocesses
 #
@@ -146,11 +146,11 @@ alias zombiekill="ps axo state,ppid | awk '!/PPID/$1~"Z"{print $2}' | xargs -r k
 
 ###     Replace cat with bat, nicer output
 #   	https://github.com/sharkdp/bat/releases/download/v0.10.0/bat_0.10.0_amd64.deb; sudo dpkg -i bat_0.10.0_amd64.deb; rm -f bat*
-if command_existss bat; then alias cat="bat" ; fi
+if command_exists bat; then alias cat="bat" ; fi
 
 ###     Install prettyping
 #  		curl -O https://raw.githubusercontent.com/denilsonsa/prettyping/master/prettyping; chmod +x prettyping; mv prettyping ~/bin
-if command_existss prettyping; then alias ping="prettyping --nolegend"; fi
+if command_exists prettyping; then alias ping="prettyping --nolegend"; fi
 
 ###     Services
 #
