@@ -3,8 +3,7 @@ SHELL=/bin/bash
 PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 export TERM=${TERM:-dumb}
 export DISPLAY=:0.0
-
-################################################################################################
+################################################################################################################################
 ##
 ##                   W A R N I N G !  - You ar running this on your own risk½
 ##
@@ -19,35 +18,35 @@ export DISPLAY=:0.0
 ##
 ##          v2.0
 ##
-################################################################################################
+################################################################################################################################
 clear
 
 #
-# ~--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+# ~--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--++--+--+--+--+--++--+--+--+--+--+
 #
 
-###     Settings
-DIR=~/dotfiles/oldfiles                         # Where to store old backuped files
-OLDFILES=oldfiles.txt                           # Filelist
-FILE="$HOSTNAME-`date +%Y-%m-%d-%H:%M`.zip"     # Filename
-ARCHIVE="$FILE"                                 #
-LOG=install_progress_log                        # Installation prograss log
-DATE=$(date +"%Y-%m-%d %H:%M:%S")                  # Date
-NAME="Dotfiles installer Script"                       #
+###     Settings - Change if you need to
+DIR=~/dotfiles/oldfiles                             # Where to store old backuped files
+OLDFILES=oldfiles.txt                               # Filelist - not in use right now
+FILE="$HOSTNAME-`date +%Y-%m-%d-%H:%M`.zip"         # Filename
+ARCHIVE="$FILE"                                     # Arhchive name
+LOG=install_progress_log                            # Installation prograss log
+DATE=$(date +"%Y-%m-%d %H:%M:%S")                   # Date - for zipfile
+SOURCE="Dotfiles installer Script"                  # scriptname
 
 ###     Software array
 #
-APPARRAY=(curl htop ncdu pydf tree tmux vim mc)
-DOTARRAY=(.profile .bashrc)
-SUBMODULES=(https://github.com/denilsonsa/prettyping.git)
+APPARRAY=(curl htop ncdu pydf tree tmux vim mc)     # Apps to be installed - add if you like
+DOTARRAY=(.profile .bashrc)                         # old dotfiles
+SUBMODULES=(https://github.com/denilsonsa/prettyping.git)   #s submodules for git repos
 
 
 ### 	Debug on/off
 #
 debug=1
-trace_debug=1
+trace_debug=0
 
-# ~--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+# ~--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--++--+--+--+--+--++--+--+--+--+--+
 
 ###    Tracedebug
 #
@@ -63,7 +62,7 @@ function date_it(){
     #[[ -e ${LOG} ]] && rm -f ${LOG} || (touch ${LOG}; echo -e "\n\n$NAME - $DATE" > ${LOG})
     rm -f ${LOG}
     touch ${LOG} 
-    echo -e "\n\n$NAME - $DATE" > ${LOG}
+    echo -e "\n$SOURCE - $DATE" > ${LOG}
 }
 
 ###     Function for updating submodules
@@ -81,17 +80,28 @@ function app_installer(){
     #
     for APP in "${APPARRAY[@]}"
     do
-        echo $APP
-        #install $APP
-        if command -v 2> /dev/null; then
+        #echo $APP
+        if command -v $APP 2> /dev/null; then
             echo "$APP already installed!" >> $LOG
-        elif -x command -v  2>/dev/null ; then
-            echo installing $APP #install $APP
+        elif -x command -v $APP 2>/dev/null ; then
+           sudo apt install $APP
             echo "Installed $APP" >> $LOG
         else
             echo "$APP FAILED TO INSTALL!!!" >> $LOG
         fi
     done 
+}
+
+function archive_it() {
+     ### Archive the files if there are any
+     #
+     if [ -n "$(find ${DIR} -prune -empty 2>/dev/null)" ]; then
+        FILE_STATUS="File or directory empty. Nothing to archive!"
+    else
+        zip -r -q -u -m $DIR/$FILE $DIR -x "*.zip" && FILE_STATUS="Files compressed ok!" || FILE_STATUS="Files not compressed!"
+    fi
+    [[ $debug -eq 1 ]] && echo $FILE_STATUS ; sleep 1
+    echo $FILE_STATUS >> $LOG
 }
 
 ###     Check for old (sym)links
@@ -136,84 +146,48 @@ function sym_link_check(){
     done
 }
 
+# ~--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--++--+--+--+--+--++--+--+--+--+--+
+
 ###     On first run. This is a quick and dirty script, no backups or questions asked!
 #
 date_it
 [[ $debug -eq 1 ]] && echo "ran date_it" ; sleep 1  
 
-mkdir $DIR; echo "Created $DIR" >> $LOG
+mkdir $DIR 2> /dev/null; echo "Created $DIR" >> $LOG
 [[ $debug -eq 1 ]] && echo "ran mkdir" ; sleep 1
 
 app_installer
 [[ $debug -eq 1 ]] && echo "ran app_installer" ; sleep 1
 
-mv ~/.profile $DIR/.profile; mv ~/.bashrc $DIR/.bashrc; ln -s ~/dotfiles/.bashrc ~/.bashrc; ln -s ~/dotfiles/.profile ~/.profileo
+mv ~/.profile $DIR/; mv ~/.bashrc $DIR/; ln -s ~/dotfiles/.bashrc ~/.bashrc; ln -s ~/dotfiles/.profile ~/.profile
 echo "Moved old files to ${DIR} and symlinked the new ones!" >> $LOG
 [[ $debug -eq 1 ]] && echo "ran symlink" ; sleep 1
 
-submodules_init; echo "submodules added!" >> $LOG
+archive_it
+[[ $debug -eq 1 ]] && echo "ran archive_it" ; sleep 1
+
+###     If debug mode is on (=1) then dont fetch submodules, faster
+#
+[[ $debug -eq 1 ]] && echo "Not fetching submodules" || submodules_init; echo "submodules added!" >> $LOG
 [[ $debug -eq 1 ]] && echo "ran submodules_init" ; sleep 1
 
-submodules_update; echo "Sumodules updated!" >> $LOG
+[[ $debug -eq 1 ]] && echo "Not updating submodules" || submodules_update; echo "Submodules updated!" >> $LOG
 [[ $debug -eq 1 ]] && echo "ran submodules_update" ; sleep 1
 
-# if [ ! -d $DIR ]; then
-#     ###     Directory doesnt exist, do stuff here
-#     ###     Run logfile checker
-#     #
-#     date_it
-#     [[ $debug -eq 1 ]] && echo running date_it; sleep 1
-#     mkdir $DIR
-#     status="Couldn't find $DIR. Creating it!"
-#     [[ $debug -eq 1 ]] && echo $status; sleep 1
-#     ###     Install apps
-#     #
-#     app_installer
-#     [[ $debug -eq 1 ]] && echo running app_installer; sleep 1
-#     modules_update
-#     [[ $debug -eq 1 ]] && echo running modules_update; sleep 1
-# else
-#     status="Found $DIR!"
-#     #echo $DIR
-#     if ([ $(ls $DIR | wc -l  | grep -w "0") ])
-#     then
-#         ###     Directory empty, create files
-#         status='No files'
-#         sym_link_check 
-#         [[ $debug -eq 1 ]] && echo running sym_link_check; sleep 1
-#     else
-#         ###     Direcrory not empty (might be other files)
-#         status="~/dotfiles found!"; echo $status; sleep 1 #echo 'Found files';
-        
-#         ### Archive the files if there are any
-#         #
-#         if [ ! -n "$(find "$DIR" -maxdepth 0 -type d -empty 2>/dev/null)" ]; then
-#             #echo HOST: $HOSTNAME
-#             zip -r -q -u -m $DIR/$FILE -x "*.zip" && FILE_STATUS="Files compressed ok!" || FILE_STATUS="Files not compressed!"
-#             # echo $FILE_STATUS
-#         else
-#             FILE_STATUS="Empty directory, nothing to archive!"
-#             # echo $FILE_STATUS
-#         fi
-#         echo $FILE_STATUS >> $LOG
-#         #echo $FILE_STATUS
-#         sleep 2
-#     fi
-# fi
-
-# ~--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+# ~--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--++--+--+--+--+--++--+--+--+--+--+
 
 ###     Show summary of what was done
 #
-echo -e "\n====== Summary ======\n"
+echo -e "\n====== Summary ======\nResult of $SOURCE"
 cat $LOG
-sleep 5
+sleep 10
 
-# ~--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+## ~--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--++--+--+--+--+--++--+--+--+--+--+
 ###     Debuginfo - just printing  values to screen
 #
-clear
 if [ $debug -eq 1 ]; then
+    clear
+    echo -e "\n$SOURCE"
     echo -e "\nOutput from:${ORANGE} ${0##*/} ${NC} \n"
     echo -e "Hostname:          $HOSTNAME\n"
     echo -e "BackupDIR:         $DIR"
@@ -224,7 +198,7 @@ if [ $debug -eq 1 ]; then
     echo -e "Archive name:      $ARCHIVE"
     echo -e "Logfile:           $LOG"
     echo -e "Date:              $DATE"
-    echo -e "Name:              $NAME"
+
     echo -e ""
    # echo -e "Summary:\ncat < $LOG"
 fi

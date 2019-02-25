@@ -1,0 +1,15 @@
+
+Dotfiles installer Script - 2019-02-25 23:23:01
+Created /home/patrick/dotfiles/oldfiles
+curl already installed!
+htop FAILED TO INSTALL!!!
+ncdu already installed!
+pydf already installed!
+tree already installed!
+tmux already installed!
+vim already installed!
+mc FAILED TO INSTALL!!!
+Moved old files to /home/patrick/dotfiles/oldfiles and symlinked the new ones!
+Files compressed ok!
+submodules added!
+Submodules updated!

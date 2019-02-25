@@ -48,8 +48,8 @@ if [ -f /usr/bin/apt* ]
 then
 	alias apt_update="sudo aptitude update"
     alias update="sudo apt-get update && sudo apt-get upgrade"
-    alias install="sudo apt install $1"
-    alias uninstall="sudo apt remove $1"
+    alias install="sudo apt install" $1
+    alias uninstall="sudo apt remove" $1
     alias clean="sudp apt clean; sudo apt autoremove; sudo apt purge"
 fi
 
