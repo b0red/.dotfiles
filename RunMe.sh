@@ -6,6 +6,9 @@ export DISPLAY=:0.0
 
 ################################################################################################
 ##
+##                   W A R N I N G !  - You ar running this on your own risk½
+##
+##
 ##      Script for installing dotfiles. It will copy and backup old dotfiles to location under 
 ##          ~/dotfiles/oldfiles/$HOSTNAME
 ##          
@@ -13,6 +16,8 @@ export DISPLAY=:0.0
 ##
 ##          Requirements (Theese will be installed ):
 ##          zip, htop, tree, ncdu, pydf, bat (optional), prettyping (optional)
+##
+##          v2.0
 ##
 ################################################################################################
 clear
@@ -28,11 +33,11 @@ FILE="$HOSTNAME-`date +%Y-%m-%d-%H:%M`.zip"     # Filename
 ARCHIVE="$FILE"                                 #
 LOG=install_progress_log                        # Installation prograss log
 DATE=$(date +"%Y-%m-%d %H:%M:%S")                  # Date
-NAME="Dotfiles installer"                       #
+NAME="Dotfiles installer Script"                       #
 
 ###     Software array
 #
-APPARRAY=(curl htop ncdu pydf tree tmux vim)
+APPARRAY=(curl htop ncdu pydf tree tmux vim mc)
 DOTARRAY=(.profile .bashrc)
 SUBMODULES=(https://github.com/denilsonsa/prettyping.git)
 
@@ -63,11 +68,11 @@ function date_it(){
 
 ###     Function for updating submodules
 #
-function modules_init(){
+function submodules_init(){
     git submodule init && git submodule update
 }
 
-function modules_update(){
+function submodules_update(){
     git submodule foreach git pull origin master
 }
 
@@ -82,6 +87,7 @@ function app_installer(){
             echo "$APP already installed!" >> $LOG
         elif -x command -v  2>/dev/null ; then
             echo installing $APP #install $APP
+            echo "Installed $APP" >> $LOG
         else
             echo "$APP FAILED TO INSTALL!!!" >> $LOG
         fi
@@ -130,51 +136,70 @@ function sym_link_check(){
     done
 }
 
-###     On first run, check if folder alreay exists. If so, aks if update or create dotfiles
+###     On first run. This is a quick and dirty script, no backups or questions asked!
 #
-if [ ! -d $DIR ]; then
-    ###     Directory doesnt exist, do stuff here
-    ###     Run logfile checker
-    #
-    date_it
-    [[ $debug -eq 1 ]] && echo running date_it; sleep 1
-    mkdir $DIR
-    status="Couldn't find $DIR. Creating it!"
-    [[ $debug -eq 1 ]] && echo $status; sleep 1
-    ###     Install apps
-    #
-    app_installer
-    [[ $debug -eq 1 ]] && echo running app_installer; sleep 1
-    modules_update
-    [[ $debug -eq 1 ]] && echo running modules_update; sleep 1
-else
-    status="Found $DIR!"
-    #echo $DIR
-    if ([ $(ls $DIR | wc -l  | grep -w "0") ])
-    then
-        ###     Directory empty, create files
-        status='No files'
-        sym_link_check 
-        [[ $debug -eq 1 ]] && echo running sym_link_check; sleep 1
-    else
-        ###     Direcrory not empty (might be other files)
-        status="~/dotfiles found!"; echo $status; sleep 1 #echo 'Found files';
+date_it
+[[ $debug -eq 1 ]] && echo "ran date_it" ; sleep 1  
+
+mkdir $DIR; echo "Created $DIR" >> $LOG
+[[ $debug -eq 1 ]] && echo "ran mkdir" ; sleep 1
+
+app_installer
+[[ $debug -eq 1 ]] && echo "ran app_installer" ; sleep 1
+
+mv ~/.profile $DIR/.profile; mv ~/.bashrc $DIR/.bashrc; ln -s ~/dotfiles/.bashrc ~/.bashrc; ln -s ~/dotfiles/.profile ~/.profileo
+echo "Moved old files to ${DIR} and symlinked the new ones!" >> $LOG
+[[ $debug -eq 1 ]] && echo "ran symlink" ; sleep 1
+
+submodules_init; echo "submodules added!" >> $LOG
+[[ $debug -eq 1 ]] && echo "ran submodules_init" ; sleep 1
+
+submodules_update; echo "Sumodules updated!" >> $LOG
+[[ $debug -eq 1 ]] && echo "ran submodules_update" ; sleep 1
+
+# if [ ! -d $DIR ]; then
+#     ###     Directory doesnt exist, do stuff here
+#     ###     Run logfile checker
+#     #
+#     date_it
+#     [[ $debug -eq 1 ]] && echo running date_it; sleep 1
+#     mkdir $DIR
+#     status="Couldn't find $DIR. Creating it!"
+#     [[ $debug -eq 1 ]] && echo $status; sleep 1
+#     ###     Install apps
+#     #
+#     app_installer
+#     [[ $debug -eq 1 ]] && echo running app_installer; sleep 1
+#     modules_update
+#     [[ $debug -eq 1 ]] && echo running modules_update; sleep 1
+# else
+#     status="Found $DIR!"
+#     #echo $DIR
+#     if ([ $(ls $DIR | wc -l  | grep -w "0") ])
+#     then
+#         ###     Directory empty, create files
+#         status='No files'
+#         sym_link_check 
+#         [[ $debug -eq 1 ]] && echo running sym_link_check; sleep 1
+#     else
+#         ###     Direcrory not empty (might be other files)
+#         status="~/dotfiles found!"; echo $status; sleep 1 #echo 'Found files';
         
-        ### Archive the files if there are any
-        #
-        if [ ! -n "$(find "$DIR" -maxdepth 0 -type d -empty 2>/dev/null)" ]; then
-            #echo HOST: $HOSTNAME
-            zip -r -q -u -m $DIR/$FILE -x "*.zip" && FILE_STATUS="Files compressed ok!" || FILE_STATUS="Files not compressed!"
-            # echo $FILE_STATUS
-        else
-            FILE_STATUS="Empty directory, nothing to archive!"
-            # echo $FILE_STATUS
-        fi
-        echo $FILE_STATUS >> $LOG
-        #echo $FILE_STATUS
-        sleep 2
-    fi
-fi
+#         ### Archive the files if there are any
+#         #
+#         if [ ! -n "$(find "$DIR" -maxdepth 0 -type d -empty 2>/dev/null)" ]; then
+#             #echo HOST: $HOSTNAME
+#             zip -r -q -u -m $DIR/$FILE -x "*.zip" && FILE_STATUS="Files compressed ok!" || FILE_STATUS="Files not compressed!"
+#             # echo $FILE_STATUS
+#         else
+#             FILE_STATUS="Empty directory, nothing to archive!"
+#             # echo $FILE_STATUS
+#         fi
+#         echo $FILE_STATUS >> $LOG
+#         #echo $FILE_STATUS
+#         sleep 2
+#     fi
+# fi
 
 # ~--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
 
@@ -185,7 +210,7 @@ cat $LOG
 sleep 5
 
 # ~--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-###     Debuginfo
+###     Debuginfo - just printing  values to screen
 #
 clear
 if [ $debug -eq 1 ]; then
@@ -201,10 +226,6 @@ if [ $debug -eq 1 ]; then
     echo -e "Date:              $DATE"
     echo -e "Name:              $NAME"
     echo -e ""
-    echo -e "Summary:\ncat < $LOG"
+   # echo -e "Summary:\ncat < $LOG"
 fi
-
-### Send it by pushover
-#
-
 exit 0
