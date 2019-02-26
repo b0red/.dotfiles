@@ -1,8 +1,8 @@
 
-Dotfiles installer Script - 2019-02-25 23:23:01
-Created /home/patrick/dotfiles/oldfiles
+Dotfiles installer Script - 2019-02-26 12:37:06
+Created folder: /home/patrick/dotfiles/oldfiles
 curl already installed!
-htop FAILED TO INSTALL!!!
+htop already installed!
 ncdu already installed!
 pydf already installed!
 tree already installed!

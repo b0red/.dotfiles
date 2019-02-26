@@ -85,19 +85,19 @@ alias lf="ls -l | egrep -v '^d'"
 alias ldir="ls -l | egrep '^d'"
 alias clean="audo apt y"
 
-###     Enable colorsupport of ls and add hanndy aliases
-#
-if [ -x /usr/bin/dircolors ]; then
-    test -r ~/.dircolors && eval "$(dircolors -b ~/.dircolors)"||eval "$(dircolors -b)"
-    alias ls="ls --color=auto"
-    #alias grep="grep --color=auto"
-    #alias fgrep="fgrep --color=auto"
-    #alias egrep="egrep --color=auto"
-	###     Colorize the grep command output for ease of use (good for log files)
-	# 
-	alias {grep,egrep,fgrep}="grep --color=always --line-number --no-messages --binary-files=without-match"
-    unset GREP_OPTIONS
-fi
+# ###     Enable colorsupport of ls and add hanndy aliases
+# #
+# if [[ -x /usr/bin/dircolors ]]; then
+#     test -r ~/.dircolors && eval "$(dircolors -b ~/.dircolors)"||eval "$(dircolors -b)"
+#     alias ls="ls --color=auto"
+#     #alias grep="grep --color=auto"
+#     #alias fgrep="fgrep --color=auto"
+#     #alias egrep="egrep --color=auto"
+# 	###     Colorize the grep command output for ease of use (good for log files)
+# 	# 
+# 	alias {grep,egrep,fgrep}="grep --color=always --line-number --no-messages --binary-files=without-match"
+#     unset GREP_OPTIONS
+# fi
 
 
 ###		Dirlistings
@@ -133,21 +133,21 @@ alias {module-update,modup}="git submodule foreach git pull origin master"
 alias weather="curl wttr.in/stockholm"
 alias comstat="push \"Command ran! (uname -n)\" || push \"Command failed!\""
 
-###		MidnightCommande
-#
-if command_exists mc; then alias mc="sudo mc"; fi
+# ###		MidnightCommande
+# #
+# if command_exists mc; then alias mc="sudo mc"; fi
 
-###     Kill all zombieprocesses
-#
-alias zombiekill="ps axo state,ppid | awk '!/PPID/$1~"Z"{print $2}' | xargs -r kill -9"
+# ###     Kill all zombieprocesses
+# #
+# alias zombiekill="ps axo state,ppid | awk '!/PPID/$1~"Z"{print $2}' | xargs -r kill -9"
 
-###     Replace cat with bat, nicer output
-#   	https://github.com/sharkdp/bat/releases/download/v0.10.0/bat_0.10.0_amd64.deb; sudo dpkg -i bat_0.10.0_amd64.deb; rm -f bat*
-if command_exists bat; then alias cat="bat" ; fi
+# ###     Replace cat with bat, nicer output
+# #   	https://github.com/sharkdp/bat/releases/download/v0.10.0/bat_0.10.0_amd64.deb; sudo dpkg -i bat_0.10.0_amd64.deb; rm -f bat*
+# if command_exists bat; then alias cat="bat" ; fi
 
-###     Install prettyping
-#  		curl -O https://raw.githubusercontent.com/denilsonsa/prettyping/master/prettyping; chmod +x prettyping; mv prettyping ~/bin
-if command_exists prettyping; then alias ping="prettyping --nolegend"; fi
+# ###     Install prettyping
+# #  		curl -O https://raw.githubusercontent.com/denilsonsa/prettyping/master/prettyping; chmod +x prettyping; mv prettyping ~/bin
+# if command_exists prettyping; then alias ping="prettyping --nolegend"; fi
 
 ###     Services
 #

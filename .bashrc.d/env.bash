@@ -7,8 +7,9 @@
 ###     PATH
 ###     YUM (RedHat Linux)
 #
-if [ -f /usr/bin/yum ]
+if [[ -f /usr/bin/yum ]]
 then
+    echo "Yum!"
 	PATH=$PATH:$HOME/bin
     alias install="sudo yum install -y" $1
     alias uninstall="sudo yum remove" $1
@@ -18,8 +19,9 @@ fi
 
 ###     DNF Fedorah
 #
-if [ -f /usr/bin/dnf ]
+if [[ -f /usr/bin/dnf ]]
 then
+    echo "DNF!"
     alias upgrade="dnf upgrade"
     alias install="dnf install" $1
     alias uninstall="dnf remove" $1
@@ -30,8 +32,9 @@ fi
 
 ###	    Pacman (ArchLinux)
 #
-if [ -f /usr/bin/pacman ]
+if [[ -f /usr/bin/pacman ]]
 then
+    echo "Pacman"
 	alias update='pacman -Syu' $1
     alias install="pacman -S" $1
     alias force_install="pacman -S --force" $1
@@ -44,8 +47,9 @@ fi
 
 ###		APT (apt get...)
 #
-if [ -f /usr/bin/apt* ]
+if [[ -f /usr/bin/aptitude ]]
 then
+    echo "APT!";sleep 5
 	alias apt_update="sudo aptitude update"
     alias update="sudo apt-get update && sudo apt-get upgrade"
     alias install="sudo apt install" $1
@@ -55,7 +59,7 @@ fi
 
 ### 	Zypper (opensuse, fedora)
 #
-if [ -f /usr/bin/yum ]
+if [[ -f /usr/bin/yum ]]
 then
 	alias app_search="zypper search" $1
     alias install="zypper install" $1
@@ -68,7 +72,7 @@ fi
 
 ###     Freebsd)
 #
-if [ -f /usr/bin/yum ]
+if [[ -f /usr/bin/yum ]]
 then
     alias app_search="zypper search" $1
     alias install="zypper install" $1
@@ -142,7 +146,7 @@ esac
 
 ###	Make less more friendly for non-text input files, see lesspipe(1)
 #
-[ -x /usr/bin/lesspipe ] && eval "$(SHELL=/bin/sh lesspipe)"
+[[ -x /usr/bin/lesspipe ]] && eval "$(SHELL=/bin/sh lesspipe)"
 
 ###	Set variable identifying the chroot you work in (used in the prompt below)
 #

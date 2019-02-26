@@ -153,7 +153,7 @@ function sym_link_check(){
 date_it
 [[ $debug -eq 1 ]] && echo "ran date_it" ; sleep 1  
 
-mkdir $DIR 2> /dev/null; echo "Created $DIR" >> $LOG
+mkdir $DIR 2> /dev/null; echo "Created folder: $DIR" >> $LOG
 [[ $debug -eq 1 ]] && echo "ran mkdir" ; sleep 1
 
 app_installer
