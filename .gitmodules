@@ -4,3 +4,6 @@
 [submodule "extras/prettyping"]
 	path = extras/prettyping
 	url = git@github.com:denilsonsa/prettyping.git
+[submodule "extras/bash-spinner"]
+	path = extras/bash-spinner
+	url = git@github.com:tlatsas/bash-spinner.git

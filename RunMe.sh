@@ -38,7 +38,7 @@ SOURCE="Dotfiles installer Script"                  # scriptname
 #
 APPARRAY=(curl htop ncdu pydf tree tmux vim mc)     # Apps to be installed - add if you like
 DOTARRAY=(.profile .bashrc)                         # old dotfiles
-SUBMODULES=(https://github.com/denilsonsa/prettyping.git)   #s submodules for git repos
+SUBMODULES=(https://github.com/denilsonsa/prettyping.git https://github.com/tlatsas/bash-spinner.git)   #s submodules for git repos
 
 
 ### 	Debug on/off
@@ -178,7 +178,7 @@ archive_it
 
 ###     Show summary of what was done
 #
-echo -e "\n====== Summary ======\nResult of $SOURCE"
+clear; echo -e "\n====== Summary ======\nResult of $SOURCE"
 cat $LOG
 sleep 10
 [[ ! $debug -eq 1 ]] && exit 0
@@ -199,8 +199,5 @@ if [ $debug -eq 1 ]; then
     echo -e "Archive name:      $ARCHIVE"
     echo -e "Logfile:           $LOG"
     echo -e "Date:              $DATE"
-
-    echo -e ""
-   # echo -e "Summary:\ncat < $LOG"
 fi
 exit 0
