@@ -2,3 +2,4 @@
 .bashrc.d/messages.json
 oldfiles/*
 ~/dotfiles/install_progress_log
+install_progress_log

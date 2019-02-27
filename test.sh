@@ -1,4 +1,12 @@
 #!/bin/bash -p
+##########################################################################################
+##
+##
+##          This is just for testing
+##
+##
+##########################################################################################
+
 SHELL=/bin/bash
 PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 export TERM=${TERM:-dumb}
