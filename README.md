@@ -13,12 +13,7 @@ mv ~/.profile ~/.profile.old; mv ~/.bashrc ~/.bashrc.old; ln -s ~/dotfiles/.bash
 git submodule init && git submodule update
 ```
 ### Other stuff thats good to have
-* htop 
-* ncdu 
-* pydf
-* tree
-
-Install with 
+* htop ncdu pydf tree mc 
 ```
 sudo apt install htop ncdu pydf tree mc
 ```
