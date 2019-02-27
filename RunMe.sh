@@ -43,7 +43,7 @@ SUBMODULES=(https://github.com/denilsonsa/prettyping.git)   #s submodules for gi
 
 ### 	Debug on/off
 #
-debug=1
+debug=0
 trace_debug=0
 
 # ~--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--++--+--+--+--+--++--+--+--+--+--+
@@ -83,7 +83,7 @@ function app_installer(){
         #echo $APP
         if command -v $APP 2> /dev/null; then
             echo "$APP already installed!" >> $LOG
-        elif -x command -v $APP 2>/dev/null ; then
+        elif ! [ -x command -v $APP 2>/dev/null ]; then
            sudo apt install $APP
             echo "Installed $APP" >> $LOG
         else
@@ -181,6 +181,7 @@ archive_it
 echo -e "\n====== Summary ======\nResult of $SOURCE"
 cat $LOG
 sleep 10
+[[ ! $debug -eq 1 ]] && exit 0
 
 ## ~--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--++--+--+--+--+--++--+--+--+--+--+
 ###     Debuginfo - just printing  values to screen

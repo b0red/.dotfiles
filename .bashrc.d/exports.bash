@@ -23,12 +23,17 @@ export PATH="$HOME/bin:$HOME/binfiles:/usr/local/sbin:/usr/local/bin:$PATH"
 
 # Don't put duplicate lines or lines starting with space in the history.
 # See bash(1) for more options.
+#	(IGNORESPACE AND IGNOREDUPE)
+#
 export HISTCONTROL="ignoredups"
+HISTCONTROL=ignoreboth
+
+###	Ignore certain commands in histor
+#
+HISTIGNORE='ls:bg:fg:history:exit:clear:cls:q:pwd:* --help'
 
 # For setting history length see HISTSIZE and HISTFILESIZE in bash(1).
 export HISTSIZE=100000
-
-# Keep around 32K lines of history in file.
 export HISTFILESIZE=100000
 
 # Keep the times of the commands in history
@@ -46,6 +51,9 @@ export MANPAGER="less -X"
 
 ### Colorize manpages 
 export pager="most"
+
+# Highlight section titles in manual pages.
+export LESS_TERMCAP_md="${yellow}";
 
 BLOCKSIZE=M
 export BLOCKSIZE

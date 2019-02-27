@@ -9,7 +9,7 @@
 #
 if [[ -f /usr/bin/yum ]]
 then
-    echo "Yum!"
+    [[ $debug -eq 1 ]] && echo YUM 
 	PATH=$PATH:$HOME/bin
     alias install="sudo yum install -y" $1
     alias uninstall="sudo yum remove" $1
@@ -21,7 +21,7 @@ fi
 #
 if [[ -f /usr/bin/dnf ]]
 then
-    echo "DNF!"
+    [[ $debug -eq 1 ]] && echo DNF; sleep 1
     alias upgrade="dnf upgrade"
     alias install="dnf install" $1
     alias uninstall="dnf remove" $1
@@ -34,7 +34,7 @@ fi
 #
 if [[ -f /usr/bin/pacman ]]
 then
-    echo "Pacman"
+    [[ $debug -eq 1 ]] && echo PacMan; sleep 1
 	alias update='pacman -Syu' $1
     alias install="pacman -S" $1
     alias force_install="pacman -S --force" $1
@@ -49,11 +49,11 @@ fi
 #
 if [[ -f /usr/bin/aptitude ]]
 then
-    echo "APT!";sleep 5
+    [[ $debug -eq 1 ]] && echo Debian/Ubuntu; sleep 1
 	alias apt_update="sudo aptitude update"
     alias update="sudo apt-get update && sudo apt-get upgrade"
-    alias install="sudo apt install" $1
-    alias uninstall="sudo apt remove" $1
+    alias install="apt-get install " $1
+    alias uninstall="sudo apt remove"
     alias clean="sudp apt clean; sudo apt autoremove; sudo apt purge"
 fi
 
@@ -72,42 +72,25 @@ fi
 
 ###     Freebsd)
 #
-if [[ -f /usr/bin/yum ]]
-then
-    alias app_search="zypper search" $1
-    alias install="zypper install" $1
-    alias uninstall="zypper remove" $1
-    alias update="sudo zypper refresh; sudo zypper dup"
-    #    alias upgrade="sudo yum safe-upgrade"
-    #    alias install="sudo yum install"
-    #    alias uninstall="sudo yum remove"
-fi
+# if [[ -f /usr/bin/yum ]]
+# then
+#     alias app_search="zypper search" $1
+#     alias install="zypper install" $1
+#     alias uninstall="zypper remove" $1
+#     alias update="sudo zypper refresh; sudo zypper dup"
+#     #    alias upgrade="sudo yum safe-upgrade"
+#     #    alias install="sudo yum install"
+#     #    alias uninstall="sudo yum remove"
+# fi
 
 # check the window size after each command and, if necessary,
 # update the values of LINES and COLUMNS.
+#
 shopt -s checkwinsize
-
-###	Avoid duplicates in the bash command history. And ignore commands with leading space.
-#	(IGNORESPACE AND IGNOREDUPE)
-HISTCONTROL=ignoreboth
-
-###	Ignore certain commands in histor
-#
-HISTIGNORE='ls:bg:fg:history:exit:clear:cls:q:pwd:* --help'
-
-
-###	Record timestamps in history
-#
-HISTTIMEFORMAT='%F %T '
 
 ###	One command per line n history
 #
 shopt -s cmdhist
-
-# check the window size after each command and, if necessary,
-# update the values of LINES and COLUMNS.
-#
-shopt -s checkwinsize
 
 # If set, the pattern "**" used in a pathname expansion context will
 # match all files and zero or more directories and subdirectories.
@@ -116,19 +99,6 @@ shopt -s checkwinsize
 ###	Append to the history file, don't overwrite it
 #
 shopt -s histappend
-
-###	Make new shells get the history lines from all previous
-# 	shells instead of the default "last window closed" history.
-#
-export PROMPT_COMMAND="history -a; $PROMPT_COMMAND"
-
-###	Allow a larger history file
-#
-HISTFILESIZE=1000000
-HISTSIZE=1000000
-
-# Highlight section titles in manual pages.
-export LESS_TERMCAP_md="${yellow}";
 
 
 ################################################################################
@@ -147,12 +117,6 @@ esac
 ###	Make less more friendly for non-text input files, see lesspipe(1)
 #
 [[ -x /usr/bin/lesspipe ]] && eval "$(SHELL=/bin/sh lesspipe)"
-
-###	Set variable identifying the chroot you work in (used in the prompt below)
-#
-if [ -z "${debian_chroot:-}" ] && [ -r /etc/debian_chroot ]; then
-    debian_chroot=$(cat /etc/debian_chroot)
-fi
 
 ####	If not running interactively, don't do anything
 #

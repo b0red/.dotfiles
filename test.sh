@@ -15,7 +15,7 @@ function app_installer(){
         #echo $APP
         if command -v $APP 2> /dev/null; then
             echo "$APP already installed!" >> $LOG
-        elif -x command -v $APP 2>/dev/null ; then
+        elif ! [ -x command -v $APP 2>/dev/null ]; then
            sudo apt install $APP
             echo "Installed $APP" >> $LOG
         else
@@ -24,9 +24,18 @@ function app_installer(){
     done 
 }
 
-for APP in "${APPARRAY[@]}"
-    do
-    ## create oneliner?
-    [[ ! -x command -v $APP 2>/dev/null ]] && echo $APP already installed || echo will install $APP
-    sleep 1
-    done
+app_installer; sleep 1
+
+# for APP in "${APPARRAY[@]}"
+#     do
+#         echo  ny loop
+#     ## create oneliner?
+#     if (command -v $APP 2>/dev/null); then
+#           echo $APP already installed 
+#     else
+#         echo will install ${APP}
+#         install $APP
+
+#     sleep 1
+# fi
+#     done

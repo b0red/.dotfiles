@@ -6,8 +6,9 @@
 
 ###     Define  & source colors
 #
-source $HOME/bin/ColorCodes.inc             #For printing output i pretty colors
-source $HOME/bin/spinner.sh                 #Running a spinner for long commands
+# if [[ $TMUX ]]; then source ~/.tmux-git/tmux-git.sh; fi
+[[ -f $HOME/bin/ColorCodes.inc ]]  && source $HOME/bin/ColorCodes.inc        #For printing output i pretty colors
+[[ -f $HOME/bin/spinner.sh ]]  && source $HOME/bin/spinner.sh                #Running a spinner for long commands
 
 ###	    Create dir and enter it
 #
