@@ -46,7 +46,7 @@ Info
 5. (update submodules)
   * git submodule foreach git pull origin master
 
-### Automated install
-Running the 'RunMe.sh' script
-* sudo chmod +x RunMe.sh; ./RunMe.sh  __On Your own risk__
+### Automated install __On Your own risk__
+* Running the 'RunMe.sh' script
+* sudo chmod +x RunMe.sh; ./RunMe.sh  
 * the script wont break anything, but it might not work as intended :(
