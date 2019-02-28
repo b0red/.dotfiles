@@ -57,14 +57,17 @@ then
     alias clean="sudp apt clean; sudo apt autoremove; sudo apt purge"
 fi
 
-### 	Zypper (opensuse, fedora)
+### 	Zypper (opensuse)
 #
-if [[ -f /usr/bin/yum ]]
+if [[ -f /usr/bin/zypper ]]
 then
+    [[ $debug -eq 1 ]] && echo OpenSUSE; sleep 1
 	alias app_search="zypper search" $1
     alias install="zypper install" $1
     alias uninstall="zypper remove" $1
     alias update="sudo zypper refresh; sudo zypper dup"
+    alias clean="sudo zypper clean -a"
+    alias dist_upgrade="sudo zypper dist-upgrade"
     #    alias upgrade="sudo yum safe-upgrade"
 	#    alias install="sudo yum install"
 	#    alias uninstall="sudo yum remove"
