@@ -1,5 +1,5 @@
 
-Dotfiles installer Script - 2019-03-03 17:17:19
+Dotfiles installer Script - 2019-03-03 21:39:16
 Created folder: /home/patrick/dotfiles/oldfiles
 curl already installed!
 htop already installed!
@@ -9,5 +9,10 @@ tree already installed!
 tmux already installed!
 vim already installed!
 mc already installed!
-Moved old files to /home/patrick/dotfiles/oldfiles and symlinked the new ones!
+/home/patrick/dotfiles/.profile is not a symlink. Moving it
+/home/patrick/dotfiles/.bashrc is not a symlink. Moving it
 Files compressed ok!
+git@bitbucket.org:b0red/dotfiles.git pulled to /home/patrick/dotfiles
+submodules added!
+Submodules updated!
+git@bitbucket.org:b0red/tmux.git pulled to /home/patrick/.tmux
