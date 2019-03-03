@@ -37,9 +37,14 @@ SOURCE="Dotfiles installer Script"                  # scriptname
 ###     Software array
 #
 APPARRAY=(curl htop ncdu pydf tree tmux vim mc)     # Apps to be installed - add if you like
-DOTARRAY=(.profile .bashrc)                         # old dotfiles
-SUBMODULES=(https://github.com/denilsonsa/prettyping.git https://github.com/tlatsas/bash-spinner.git)   #s submodules for git repos
-
+DOTARRAY=(.profile .bashrc .bash_logout)            # old dotfiles
+#SUBMODULES=(https://github.com/denilsonsa/prettyping.git https://github.com/tlatsas/bash-spinner.git)   # submodules for git repos
+###     More repos added here
+#
+DOTFILES=("git@bitbucket.org:b0red/dotfiles.git" "~/dotfiles")
+TMUX=("git@bitbucket.org:b0red/tmux.git" "~/.tmux")
+VIM=("git@bitbucket.org:b0red/.vim.git" "~/.vim")
+TMUXGIT=("git://github.com/drmad/tmux-git.git" "~/.tmux-git")
 
 ### 	Debug on/off
 #
@@ -80,7 +85,7 @@ function app_installer(){
     #
     for APP in "${APPARRAY[@]}"
     do
-        #echo $APP
+        [[ $debug -eq 1 ]] && echo $APP; sleep 1
         if command -v $APP 2> /dev/null; then
             echo "$APP already installed!" >> $LOG
         elif ! [ -x command -v $APP 2>/dev/null ]; then
@@ -149,6 +154,10 @@ function sym_link_check(){
 # ~--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--++--+--+--+--+--++--+--+--+--+--+
 
 ###     On first run. This is a quick and dirty script, no backups or questions asked!
+
+###     Feth any updates to the dotfiles
+#
+#git pull origin master
 #
 date_it
 [[ $debug -eq 1 ]] && echo "ran date_it" ; sleep 1  
@@ -166,13 +175,46 @@ echo "Moved old files to ${DIR} and symlinked the new ones!" >> $LOG
 archive_it
 [[ $debug -eq 1 ]] && echo "ran archive_it" ; sleep 1
 
-###     If debug mode is on (=1) then dont fetch submodules, faster
-#
-[[ $debug -eq 1 ]] && echo "Not fetching submodules" || submodules_init; echo "submodules added!" >> $LOG
-[[ $debug -eq 1 ]] && echo "ran submodules_init" ; sleep 1
+# ###     If debug mode is on (=1) then dont fetch submodules, faster
+# #
+# [[ $debug -eq 1 ]] && echo "Not fetching submodules" || submodules_init; echo "submodules added!" >> $LOG
+# [[ $debug -eq 1 ]] && echo "ran submodules_init" ; sleep 1
 
-[[ $debug -eq 1 ]] && echo "Not updating submodules" || submodules_update; echo "Submodules updated!" >> $LOG
-[[ $debug -eq 1 ]] && echo "ran submodules_update" ; sleep 1
+# [[ $debug -eq 1 ]] && echo "Not updating submodules" || submodules_update; echo "Submodules updated!" >> $LOG
+# [[ $debug -eq 1 ]] && echo "ran submodules_update" ; sleep 1
+
+###     This is really ugly, Want do it nicer sometime, easier to edit and read.
+###     Add extra repos (vim & tmux)
+#
+MAIN_ARRAY=(
+  TMUX[@]
+  VIM[@]
+)
+COUNT=${#MAIN_ARRAY[@]}
+for ((i=0; i<$COUNT; i++))
+    do
+         NAME=${!MAIN_ARRAY[i]:0:1} 
+         VALUE=${!MAIN_ARRAY[i]:1:1}
+        git clone ${NAME} ${VALUE}
+        cd ${VALUE}
+        echo "${NAME} pulled to ${VALUE}" >>  $LOG
+        echo "${NAME} pulled to ${VALUE}" #>>  $LOG
+        [[ $debug -eq 1 ]] && echo "Not fetching submodules" || submodules_init; echo "submodules added!" >> $LOG
+        [[ $debug -eq 1 ]] && echo "ran submodules_init" ; sleep 1
+        [[ $debug -eq 1 ]] && echo "Not updating submodules" || submodules_update; echo "Submodules updated!" >> $LOG
+        [[ $debug -eq 1 ]] && echo "ran submodules_update" ; sleep 1
+    done 
+
+###     Ugly hack - fix a nicer way for this
+#    
+ln -s ~/.tmux/.tmux.conf ~/.tmux.conf
+ln -s ~/.vim/vimrc ~/vimrc; #ln -s ~/.vim/gvimrc ~/gvimrc
+
+###     Check for tmux git, insert if not found
+#
+if grep -L-q "tmux-git" ~/bashrc; then
+    echo "if [[ \$TMUX ]]; then source ~/.tmux-git/tmux-git.sh; fi" >> ~/.bashrc
+fi
 
 # ~--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--++--+--+--+--+--++--+--+--+--+--+
 

@@ -7,6 +7,13 @@
 ##
 ##########################################################################################
 
+
+if grep -q *tmux-git.sh ~/.bashrc
+then
+    echo ok
+fi
+
+exit 0
 SHELL=/bin/bash
 lowercase(){
     echo "$1" | sed "y/ABCDEFGHIJKLMNOPQRSTUVWXYZ/abcdefghijklmnopqrstuvwxyz/"
@@ -69,5 +76,5 @@ echo -e "\nDIST: $DIST"
 echo "DistroBasedOn: $DistroBasedOn"
 echo "PSUEDONAME: $PSUEDONAME"
 echo "REV: $REV"
-echo "KERNEL: $KERNEL"
-echo "MACH: $MACH"
+echo "KERNEL: $KERNEecho "MACH: $MACH"
+

@@ -88,7 +88,7 @@ export PAGER='less'
 #ssh-add ~/.ssh/id_dsa &>/dev/null        # Load key 2
 #}
 
-###     Load tmux as soon as we login to shell, logout when exit tmux
+###     Load tmux as soon as we login to shell, logout when exit tmux       
 #
 if command -v tmux &> /dev/null && [ -n "$PS1" ] && [[ ! "$TERM" =~ screen ]] && [[ ! "$TERM" =~ tmux ]] && [ -z "$TMUX" ]; then
  # exec tmux

@@ -1,5 +1,5 @@
 
-Dotfiles installer Script - 2019-02-27 22:40:53
+Dotfiles installer Script - 2019-03-03 17:17:19
 Created folder: /home/patrick/dotfiles/oldfiles
 curl already installed!
 htop already installed!
@@ -11,5 +11,3 @@ vim already installed!
 mc already installed!
 Moved old files to /home/patrick/dotfiles/oldfiles and symlinked the new ones!
 Files compressed ok!
-submodules added!
-Submodules updated!

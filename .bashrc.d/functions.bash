@@ -290,7 +290,7 @@ fi
 #
 function getnic() { 
     Active_Nic=$(ip route | grep default | sed -e "s/^.*dev.//" -e "s/.proto.*//")
-    echo $Active_Nic
+    #echo $Active_Nic
 }
 
 ###     Function for simple search and replace in current folder
