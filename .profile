@@ -10,28 +10,28 @@
 
 # if running bash
 if [ -n "$BASH_VERSION" ]; then
-	    # include .bashrc if it exists
-	        if [ -f "$HOME/.bashrc" ]; then
-				. "$HOME/.bashrc"
-				    fi
-			    fi
+	# include .bashrc if it exists
+	if [ -f "$HOME/.bashrc" ]; then
+	. "$HOME/.bashrc"
+	fi
+fi
 
-			    # set PATH so it includes user's private bin dir if it exists
-			    if [ -d "$HOME/bin" ]; then 
-				        PATH="$HOME/bin:$PATH"
-				fi
+# set PATH so it includes user's private bin dir if it exists
+if [ -d "$HOME/bin" ]; then 
+	PATH="$HOME/bin:$PATH"
+fi
 
-				###     Load any supplementary scripts in $HOME/.profile.d directory
-				if [ -d $HOME/dotfiles/.profile.d ]; then
-					    for config in "$HOME"/dotfiles/.profile.d/*.sh ; do
-						            . "$config"
-							            # echo $config loaded.
-								         done
-									      unset -v config
-								      fi
+###     Load any supplementary scripts in $HOME/.profile.d directory
+if [ -d $HOME/dotfiles/.profile.d ]; then
+	for config in "$HOME"/dotfiles/.profile.d/*.sh ; do
+	. "$config"
+	# echo $config loaded.
+	done
+	unset -v config
+fi
 
-								      # echo HOME: $HOME
-								      # Check if .cargo exists, then add to path
-								      if [ -d "$HOME"/.cargo ]; then
-									          export PATH="$HOME/.cargo/bin:$PATH"
-									  fi
+# echo HOME: $HOME
+# Check if .cargo exists, then add to path
+if [ -d "$HOME"/.cargo ]; then
+	export PATH="$HOME/.cargo/bin:$PATH"
+fi

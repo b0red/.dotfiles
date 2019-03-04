@@ -38,7 +38,7 @@ SOURCE="Dotfiles installer Script"                  # scriptname
 #
 APPARRAY=(curl htop ncdu pydf tree tmux vim mc)     # Apps to be installed - add if you like
 DOTARRAY=(.profile .bashrc)                         # old dotfiles
-SUBMODULES=(https://github.com/denilsonsa/prettyping.git https://github.com/tlatsas/bash-spinner.git)   #s submodules for git repos
+#SUBMODULES=(https://github.com/denilsonsa/prettyping.git https://github.com/tlatsas/bash-spinner.git)   #s submodules for git repos
 
 
 ### 	Debug on/off
@@ -68,7 +68,7 @@ function date_it(){
 ###     Function for updating submodules
 #
 function submodules_init(){
-    git submodule init && git submodule update
+    git submodule init #&& git submodule update
 }
 
 function submodules_update(){
@@ -83,11 +83,14 @@ function app_installer(){
         #echo $APP
         if command -v $APP 2> /dev/null; then
             echo "$APP already installed!" >> $LOG
+            [[ $debug -eq 1 ]] && echo "${APP} already installed"; sleep 1
         elif ! [ -x command -v $APP 2>/dev/null ]; then
            sudo apt install $APP
-            echo "Installed $APP" >> $LOG
+            echo "Installed $APP" >> $LOGLOG
+            [[ $debug -eq 1 ]] && echo "installing ${APP}"; sleep 1
         else
             echo "$APP FAILED TO INSTALL!!!" >> $LOG
+            [[ $debug -eq 1 ]] && echo "${APP} failed to install!"; sleep 1
         fi
     done 
 }
@@ -135,13 +138,9 @@ function sym_link_check(){
         else
             ### Missing link
             LINK_STATUS="Missing: $LINK. Symlinking it!"
-            status="linking: ~/dotfiles/$LINK ~/"
             [[ $debug -eq 1 ]] && echo $LINK_STATUS; sleep 1
             ln -s ~/dotfiles/$LINK ~/
-            modules_update
             [[ $debug -eq 1 ]] && echo updating submodules; sleep 1
-            #ln -s ~/dotfiles/.bashrc ~/.bashrc
-           #ln -s ~/dotfiles/.profile ~/.profile
         fi
     done
 }
@@ -163,7 +162,8 @@ mkdir $DIR 2> /dev/null; echo "Created folder: $DIR" >> $LOG
 app_installer
 [[ $debug -eq 1 ]] && echo "ran app_installer" ; sleep 1
 
-mv ~/.profile $DIR/; mv ~/.bashrc $DIR/; ln -s ~/dotfiles/.bashrc ~/.bashrc; ln -s ~/dotfiles/.profile ~/.profile
+mv ~/.profile $DIR/; mv ~/.bashrc $DIR/; 
+ln -s ~/dotfiles/.bashrc ~/.bashrc; ln -s ~/dotfiles/.profile ~/.profile
 echo "Moved old files to ${DIR} and symlinked the new ones!" >> $LOG
 [[ $debug -eq 1 ]] && echo "ran symlink" ; sleep 1
 
@@ -178,6 +178,19 @@ archive_it
 [[ $debug -eq 1 ]] && echo "Not updating submodules" || submodules_update; echo "Submodules updated!" >> $LOG
 [[ $debug -eq 1 ]] && echo "ran submodules_update" ; sleep 1
 
+###     Get the other repos
+#
+git clone git@bitbucket.org:b0red/tmux.git ~/.tmux
+cd ~/.tmux; 
+submodules_update
+git clone git://github.com/drmad/tmux-git.git ~/.tmux-git
+ln -s ~/.tmux/.tmux.conf ~/.tmux.conf
+echo "if [[ \$TMUX ]]; then source ~/.tmux-git/tmux-git.sh; fi" >> ~/.bashrc
+
+git clone git@bitbucket.org:b0red/.vim.git ~/.vim
+cd ~/.vim; ln -s ~/.vim/vimrc ~/vimrc; ln -s ~/.vim/gvimrc ~/gvimrc
+submodules_update
+
 # ~--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--++--+--+--+--+--++--+--+--+--+--+
 
 ###     Show summary of what was done
@@ -186,7 +199,7 @@ clear; echo -e "\n====== Summary ======\nResult of $SOURCE"
 cat $LOG
 sleep 10
 [[ ! $debug -eq 1 ]] && exit 0
-
+    
 ## ~--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--++--+--+--+--+--++--+--+--+--+--+
 ###     Debuginfo - just printing  values to screen
 #
