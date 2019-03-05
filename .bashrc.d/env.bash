@@ -2,10 +2,11 @@
 #
 #	.bash_environment settings
 #
+#       Pacman: https://wiki.manjaro.org/index.php?title=Pacman_Tips
+#
 #  -----------------------------------------------------------------------
 
-###     PATH
-###     YUM (RedHat Linux)
+###     YUM (RedHat Linux, centos)
 #
 if [[ -f /usr/bin/yum ]]
 then
@@ -15,6 +16,9 @@ then
     alias uninstall="sudo yum remove" $1
     alias update="sudo yum update -y"
     alias upgrade="sudo yum upgrade -y"
+    alias swap="sudo yum swap" $1 $2
+    alias autoremove="sudo yum autoremove" $1
+    alias reinstall="sudo yum reinstall" $1
 fi
 
 ###     DNF Fedorah
@@ -34,11 +38,14 @@ fi
 #
 if [[ -f /usr/bin/pacman ]]
 then
-    [[ $debug -eq 1 ]] && echo PacMan; sleep 1
-	alias update='pacman -Syu' $1
-    alias install="pacman -S" $1
+    #[[ $debug -eq 1 ]] && echo PacMan; sleep 1
+	alias update="pacman -Syu"
+    alias install="pacman -Syu" $1
     alias force_install="pacman -S --force" $1
-    alias uninstall="pacman -Rs" $1
+    alias {uninstall,remove}="pacman -Rsc" $1
+    alias clean="pacman -Sc"
+    alias reinstall="pacman -Syu $(pacman -Qqen)"
+    alias package_list="pacman -Q"
     #    alias upgrade='sudo pacman -Syu'
 	#    alias install='sudo pacman -Sy'
 	#    alias uninstall='sudo pacman -Rs'

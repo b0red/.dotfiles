@@ -7,11 +7,11 @@
 ##
 ###############################################################################################
 
-debug=1
+debug=0
 
-lowercase(){
-    echo "$1" | sed "y/ABCDEFGHIJKLMNOPQRSTUVWXYZ/abcdefghijklmnopqrstuvwxyz/"
-}
+# lowercase(){
+#     echo "$1" | sed "y/ABCDEFGHIJKLMNOPQRSTUVWXYZ/abcdefghijklmnopqrstuvwxyz/"
+# }
 
 OS=$(uname); OS="${OS,,}"
 KERNEL=$(uname -r)
@@ -65,13 +65,13 @@ else
 
 fi
 
-if [ $debug -eq 1 ]; then
-    echo "=============================="
-        echo OS:        ${OS^}
-        echo Distribution:      ${DIST^}
-        echo Distro based on:       ${DistroBasedOn^}
-        echo Pseudoname:        ${PSEUDONAME^}
-        echo Revision:       ${REV^}
-        echo Kernel:      ${KERNEL^}
-        echo Machine:      $MACH
-fi
+# if [ $debug -eq 1 ]; then
+#     echo "=============================="
+#     echo "OS:        ${OS^}"
+#     echo "Distribution:      ${DIST^}"
+#     echo "Distro based on:       ${DistroBasedOn^}"
+#     echo "Pseudoname:        ${PSEUDONAME^}"
+#     echo "Revision:       ${REV^}"
+#     echo "Kernel:      ${KERNEL^}"
+#     echo "Machine:      $MACH"
+# fi

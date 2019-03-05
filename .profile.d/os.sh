@@ -1,5 +1,4 @@
 # Store the operating system in an environment variable
-# Might be useful for AlTernator.sh and or DeTerminator scripts.
 # 
 OS=$(uname); OS="${OS,,}"
 KERNEL=$(uname -r)
@@ -50,21 +49,23 @@ else
         readonly KERNEL
         readonly MACH
         ###		export variables
-        export OS
-        export DIST
-        export DistroBasedOn
-        export PSEUDONAME
-        export REV
-        export KERNEL
-        export MACH
+        # export OS
+        # export DIST
+        # export DistroBasedOn
+        # export PSEUDONAME
+        # export REV
+        # export KERNEL
+        # export MACH
     fi
-
 fi
-    echo "=============================="
-        echo OS:        ${OS^}
-        echo Distribution:      ${DIST^}
-        echo Distro based on:       ${DistroBasedOn^}
-        echo Pseudoname:        ${PSEUDONAME^}
-        echo Revision:       ${REV^}
-        echo Kernel:      ${KERNEL^}
-        echo Machine:      $MACH
+
+# if [ $debug -eq 1 ]; then
+#     echo "=============================="
+#     echo "OS:        ${OS^}"
+#     echo "Distribution:      ${DIST^}"
+#     echo "Distro based on:       ${DistroBasedOn^}"
+#     echo "Pseudoname:        ${PSEUDONAME^}"
+#     echo "Revision:       ${REV^}"
+#     echo "Kernel:      ${KERNEL^}"
+#     echo "Machine:      $MACH"
+# fi
