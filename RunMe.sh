@@ -5,7 +5,7 @@ export TERM=${TERM:-dumb}
 export DISPLAY=:0.0
 ################################################################################################################################
 ##
-##                   W A R N I N G !  - You ar running this on your own risk½
+##                   W A R N I N G !  - You ar running this at your own risk½
 ##
 ##
 ##      Script for installing dotfiles. It will copy and backup old dotfiles to location under 
@@ -42,7 +42,6 @@ SOURCE="Dotfiles installer Script"                  # scriptname
 APPARRAY=(curl htop ncdu pydf tree tmux vim mc)     # Apps to be installed - add if you like
 DOTARRAY=(.profile .bashrc)                         # old dotfiles
 #SUBMODULES=(https://github.com/denilsonsa/prettyping.git https://github.com/tlatsas/bash-spinner.git)   #s submodules for git repos
-
 
 ### 	Debug on/off
 #
@@ -89,7 +88,7 @@ function app_installer(){
             [[ $debug -eq 1 ]] && echo "${APP} already installed"; sleep 1
         elif ! [ -x command -v $APP 2>/dev/null ]; then
            sudo apt install $APP
-            echo "Installed $APP" >> $LOGLOG
+            echo "Installed $APP" >> $LOG
             [[ $debug -eq 1 ]] && echo "installing ${APP}"; sleep 1
         else
             echo "$APP FAILED TO INSTALL!!!" >> $LOG
