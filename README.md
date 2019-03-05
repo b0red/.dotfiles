@@ -47,6 +47,11 @@ git submodule foreach git pull origin master
 * [https://github.com/sharkdp/bat/](https://github.com/sharkdp/bat/)
 * [https://raw.githubusercontent.com/denilsonsa/prettyping/master/prettyping](https://raw.githubusercontent.com/denilsonsa/prettyping/master/prettyping)
 
+### tested on:
+* Debian (Ubuntu)
+* CentOS
+
+***
 Info
 * [https://www.reddit.com/r/pushover/comments/1ezepb/howto_using_wget_instead_of_curl_to_send_pushover](https://www.reddit.com/r/pushover/comments/1ezepb/howto_using_wget_instead_of_curl_to_send_pushover)
 ...
