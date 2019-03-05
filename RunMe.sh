@@ -16,7 +16,10 @@ export DISPLAY=:0.0
 ##          Requirements (Theese will be installed ):
 ##          zip, htop, tree, ncdu, pydf, bat (optional), prettyping (optional)
 ##
-##          v2.0
+##          v2.5
+##
+##          ref:
+##          https://stackoverflow.com/questions/3557037/appending-a-line-to-a-file-only-if-it-does-not-already-exist
 ##
 ################################################################################################################################
 clear
@@ -178,18 +181,31 @@ archive_it
 [[ $debug -eq 1 ]] && echo "Not updating submodules" || submodules_update; echo "Submodules updated!" >> $LOG
 [[ $debug -eq 1 ]] && echo "ran submodules_update" ; sleep 1
 
-###     Get the other repos
+###     Clone tmux repo
 #
 git clone git@bitbucket.org:b0red/tmux.git ~/.tmux
 cd ~/.tmux; 
 submodules_update
-git clone git://github.com/drmad/tmux-git.git ~/.tmux-git
 ln -s ~/.tmux/.tmux.conf ~/.tmux.conf
-echo "if [[ \$TMUX ]]; then source ~/.tmux-git/tmux-git.sh; fi" >> ~/.bashrc
 
+git clone git://github.com/drmad/tmux-git.git ~/.tmux-git
+
+###     Check if line exists is file
+#
+grep -qxF "if [[ \$TMUX ]]; then source ~/.tmux-git/tmux-git.sh; fi" ~/.bashrc
+if [ $? -ne 0 ]; then
+    echo "if [[ \$TMUX ]]; then source ~/.tmux-git/tmux-git.sh; fi" >> ~/.bashrc
+    echo "Line added to .tmux-git to .bashrc" >> $LOG
+else
+    status="Line not added!"
+fi
+
+###     Clone vim repo
+#
 git clone git@bitbucket.org:b0red/.vim.git ~/.vim
-cd ~/.vim; ln -s ~/.vim/vimrc ~/vimrc; ln -s ~/.vim/gvimrc ~/gvimrc
+cd ~/.vim; 
 submodules_update
+ln -s ~/.vim/vimrc ~/vimrc; ln -s ~/.vim/gvimrc ~/gvimrc
 
 # ~--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--++--+--+--+--+--++--+--+--+--+--+
 
