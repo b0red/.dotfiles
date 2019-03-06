@@ -13,10 +13,10 @@ export DISPLAY=:0.0
 ##          
 ##          Dependencies: Not really
 ##
-##          Requirements (Theese will be installed ):
+##          Requirements (These will be installed ):
 ##          zip, htop, tree, ncdu, pydf, bat (optional), prettyping (optional)
 ##
-##          v2.5
+##          v2.6
 ##
 ##          ref:
 ##          https://stackoverflow.com/questions/3557037/appending-a-line-to-a-file-only-if-it-does-not-already-exist
@@ -41,7 +41,7 @@ SOURCE="Dotfiles installer Script"                  # scriptname
 #
 APPARRAY=(curl htop ncdu pydf tree tmux vim mc)     # Apps to be installed - add if you like
 DOTARRAY=(.profile .bashrc)                         # old dotfiles
-#SUBMODULES=(https://github.com/denilsonsa/prettyping.git https://github.com/tlatsas/bash-spinner.git)   #s submodules for git repos
+#SUBMODULES=(https://github.com/denilsonsa/prettyping.git https://github.com/tlatsas/bash-spinner.git) #s submodules for git repos
 
 ### 	Debug on/off
 #
@@ -60,8 +60,6 @@ fi
 ###     Check for logfile else create it
 #
 function date_it(){
-    #[[ -e $LOG ]] && rm -f $LOG || touch $LOG; echo -e "\n\n$NAME - $DATE" > $LOG
-    #[[ -e ${LOG} ]] && rm -f ${LOG} || (touch ${LOG}; echo -e "\n\n$NAME - $DATE" > ${LOG})
     rm -f ${LOG}
     touch ${LOG} 
     echo -e "\n$SOURCE - $DATE" > ${LOG}
@@ -258,6 +256,7 @@ then
     alias install="apt-get install " $1
     alias uninstall="sudo apt remove"
     alias clean="sudp apt clean; sudo apt autoremove; sudo apt purge"
+    alias search="apt search" $1
 fi
 ###     Zypper (opensuse)
 #
@@ -274,20 +273,20 @@ then
     #    alias install="sudo yum install"
     #    alias uninstall="sudo yum remove"
 fi
-###     Freebsd)
+###     Freebsd)                                    <--------------------- This might not work
 #
-# if [[ -f /usr/bin/yum ]]
-# then
-#     [[ $debug -eq 1 ]] && echo OpenSUSE; sleep 1
-#     alias app_search="zypper search" $1
-#     alias app_info="zypper install" $1
-#     alias install="pkg install" $1
-#     alias uninstall="pkg delete" $1
-#     #alias update="sudo zypper refresh; sudo zypper dup"
-#     alias upgrade="pkg upgrade"
-#     alias autoclean="pkg autoremove"
-#     alias clean="pkg clean -c"
-# fi
+if [[ -f /usr/sbin/pkg ]]
+then
+    [[ $debug -eq 1 ]] && echo FreeBSD; sleep 1
+    alias app_search="zypper search" $1
+    alias app_info="zypper install" $1
+    alias install="pkg install" $1
+    alias uninstall="pkg delete" $1
+    #alias update="sudo zypper refresh; sudo zypper dup"
+    alias upgrade="pkg upgrade"
+    alias autoclean="pkg autoremove"
+    alias clean="pkg clean -c"
+fi
 }
 # ~--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--++--+--+--+--+--++--+--+--+--+--+
 
