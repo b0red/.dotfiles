@@ -45,8 +45,8 @@ DOTARRAY=(.profile .bashrc)                         # old dotfiles
 
 ### 	Debug on/off
 #
-debug=0
-trace_debug=0
+debug=1
+trace_debug=1
 
 # ~--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--++--+--+--+--+--++--+--+--+--+--+
 
@@ -208,9 +208,95 @@ else
 fi
 }
 
+function setting_standard_commands(){
+###     YUM (RedHat Linux, centos)
+#
+if [[ -f /usr/bin/yum ]]
+then
+    [[ $debug -eq 1 ]] && echo YUM; sleep 1
+    PATH=$PATH:$HOME/bin
+    alias install="sudo yum install -y" $1
+    alias uninstall="sudo yum remove" $1
+    alias update="sudo yum update -y"
+    alias upgrade="sudo yum upgrade -y"
+    alias swap="sudo yum swap" $1 $2
+    alias autoremove="sudo yum autoremove" $1
+    alias reinstall="sudo yum reinstall" $1
+fi
+###     DNF Fedorah
+#
+if [[ -f /usr/bin/dnf ]]
+then
+    [[ $debug -eq 1 ]] && echo DNF; sleep 1
+    alias upgrade="dnf upgrade"
+    alias install="dnf install" $1
+    alias uninstall="dnf remove" $1
+    alias search="dnf search" $1
+    alias autoremove="dnf remove" $1
+    alias clean="dnf clean all"
+fi
+###     Pacman (ArchLinux)
+#
+if [[ -f /usr/bin/pacman ]]
+then
+    [[ $debug -eq 1 ]] && echo PacMan; sleep 1
+    alias update="pacman -Syu"
+    alias install="pacman -Syu" $1
+    alias force_install="pacman -S --force" $1
+    alias {uninstall,remove}="pacman -Rsc" $1
+    alias clean="pacman -Sc"
+    alias reinstall="pacman -Syu $(pacman -Qqen)"
+    alias package_list="pacman -Q"
+fi
+###     APT (apt get...)
+#
+if [[ -f /usr/bin/aptitude ]]
+then
+    [[ $debug -eq 1 ]] && echo Debian/Ubuntu; sleep 1
+    alias apt_update="sudo aptitude update"
+    alias update="sudo apt-get update && sudo apt-get upgrade"
+    alias install="apt-get install " $1
+    alias uninstall="sudo apt remove"
+    alias clean="sudp apt clean; sudo apt autoremove; sudo apt purge"
+fi
+###     Zypper (opensuse)
+#
+if [[ -f /usr/bin/zypper ]]
+then
+    [[ $debug -eq 1 ]] && echo OpenSUSE; sleep 1
+    alias app_search="zypper search" $1
+    alias install="zypper install" $1
+    alias uninstall="zypper remove" $1
+    alias update="sudo zypper refresh; sudo zypper dup"
+    alias clean="sudo zypper clean -a"
+    alias dist_upgrade="sudo zypper dist-upgrade"
+    #    alias upgrade="sudo yum safe-upgrade"
+    #    alias install="sudo yum install"
+    #    alias uninstall="sudo yum remove"
+fi
+###     Freebsd)
+#
+# if [[ -f /usr/bin/yum ]]
+# then
+#     [[ $debug -eq 1 ]] && echo OpenSUSE; sleep 1
+#     alias app_search="zypper search" $1
+#     alias app_info="zypper install" $1
+#     alias install="pkg install" $1
+#     alias uninstall="pkg delete" $1
+#     #alias update="sudo zypper refresh; sudo zypper dup"
+#     alias upgrade="pkg upgrade"
+#     alias autoclean="pkg autoremove"
+#     alias clean="pkg clean -c"
+# fi
+}
 # ~--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--++--+--+--+--+--++--+--+--+--+--+
 
 ###     On first run. This is a quick and dirty script, no backups or questions asked!
+
+###     Run get_os and set standards
+#
+get_os
+setting_standard_commands
 
 ###     Feth any updates to the dotfiles
 #

@@ -30,7 +30,7 @@ git submodule init && git submodule update
 ### Other stuff thats good to have
 * htop ncdu pydf tree mc 
 ```
-sudo apt install htop ncdu pydf tree mc
+sudo apt install htop ncdu pydf tree mc #On debianbased systems
 ```
 ### Updating submodules
 ```

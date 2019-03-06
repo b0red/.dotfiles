@@ -1,0 +1,50 @@
+Host dellubuntu
+    HostName 192.168.1.110
+    Port 22
+    User patrick
+    IdentityFile ~/.ssh/config/id_rsa
+Host syno
+    HostName 192.168.1.120
+    Port 22
+    User Patrick
+Host freebsd
+	HostName 192.168.1.230
+	Port 22
+	User Patrick
+Host fedora
+	HostName 192.168.1.232 (152)
+	Port 22
+	User Patrick
+Host opensuse
+	HostName 192.168.1.236
+	Port 22
+	User Patrick
+Host solaris
+	HostName 192.168.1.140
+	Port 22
+	User Patrick
+Host mandriva
+	HostName 192.168.1.246
+	Port 22
+	User Patrick
+Host
+	HostName 192.168.1.
+	
+UbuntuSrv
+Fedora28
+FreeBSD12 (graphic)
+CentOS
+DSL4.11
+FreeBSD_64 cli
+Kali
+OpenSUSE
+OS x
+Sabayon 3.x
+Solaris 10
+Ubuntu18.10
+LinuxMint19.1
+OpenMandriva
+
+
+Host github.com
+    IdentityFile ~/.ssh/github.key
