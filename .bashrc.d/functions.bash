@@ -243,6 +243,12 @@ function myip() {
     echo ${MY_IP:-"Not connected"}
 }
 
+###     Get active Network Interface
+#
+function getnic() { 
+    nic=$(sudo ip route | grep default | sed -e "s/^.*dev.//" -e "s/.proto.*//")
+}
+
 ###	Send pushover messages
 #   https://www.reddit.com/r/pushover/comments/1ezepb/howto_using_wget_instead_of_curl_to_send_pushover/
 #   Not working right now
@@ -285,13 +291,6 @@ fi
 #function command_exists() {
 #    command -v "$1" &> /dev/null 
 #}
-
-###     Get active Network Interface
-#
-function getnic() { 
-    Active_Nic=$(ip route | grep default | sed -e "s/^.*dev.//" -e "s/.proto.*//")
-    #echo $Active_Nic
-}
 
 ###     Function for simple search and replace in current folder
 #

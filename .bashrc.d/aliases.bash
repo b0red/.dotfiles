@@ -3,7 +3,7 @@
 #		.bash_aliases
 # 
 #-------------------------------------------------------------------------
-###     Reload aliases
+###     Reload aliases, functions and all
 #
 alias reload='source ~/.bashrc'
 
@@ -13,8 +13,17 @@ alias wget="wget -c $1"
 ###     Check if command exists             # Needs to be here first
 #
 function command_exists() {
-        command -v "$1" >/dev/null 2>&1
+     if command -v "$1" >/dev/null 2>&1; then
+        echo $1 is installed!
+    else
+        echo $1 is not installed!!
+    fi
 }
+
+function command_check() {
+     command -v "$1" >/dev/null 2>&1
+}
+
 
 ###	Getting colored results when using a pipe from grep to less.
 # 
@@ -40,10 +49,6 @@ alias rm='rm -i'
 alias p='pwd'
 alias x='exit'
 
-###	tmux to connect to existing session or create a new
-# 
-#alias tmux="tmux new-session -A -d -s main"
-
 ###	Nicer directory listings
 # 
 alias clr="clear;pwd;ls"
@@ -65,11 +70,9 @@ alias df="df -h"
 #
 alias ssh='if [ "$(ssh-add -l)" = "The agent has no identities." ]; then ssh-add; fi; /usr/bin/ssh "$@"'
 
-
 ###	Get weeknumber
 #
 alias week="(/bin/date +%V)"
-
 
 ###	Tree
 #
@@ -135,7 +138,7 @@ alias comstat="push \"Command ran! (uname -n)\" || push \"Command failed!\""
 
 ###		MidnightCommande
 #
-if command_exists mc; then alias mc="sudo mc"; fi
+if command_check mc; then alias mc="sudo mc"; fi
 
 ###     Kill all zombieprocesses
 #
@@ -143,11 +146,11 @@ alias zombiekill="ps axo state,ppid | awk '!/PPID/$1~"Z"{print $2}' | xargs -r k
 
 ###     Replace cat with bat, nicer output
 #   	https://github.com/sharkdp/bat/releases/download/v0.10.0/bat_0.10.0_amd64.deb; sudo dpkg -i bat_0.10.0_amd64.deb; rm -f bat*
-if command_exists bat; then alias cat="bat" ; fi
+if command_check bat; then alias cat="bat" ; fi
 
 ###     Install prettyping
 #  		curl -O https://raw.githubusercontent.com/denilsonsa/prettyping/master/prettyping; chmod +x prettyping; mv prettyping ~/bin
-if command_exists prettyping; then alias ping="prettyping --nolegend"; fi
+if command_check prettyping; then alias ping="prettyping --nolegend"; fi
 
 ###     Services
 #

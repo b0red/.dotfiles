@@ -49,13 +49,13 @@ else
         readonly KERNEL
         readonly MACH
         ###		export variables
-        # export OS
-        # export DIST
-        # export DistroBasedOn
-        # export PSEUDONAME
-        # export REV
-        # export KERNEL
-        # export MACH
+        export ${OS^}
+        export DIST
+        export DistroBasedOn
+        export PSEUDONAME
+        export REV
+        export KERNEL
+        export MACH
     fi
 fi
 
