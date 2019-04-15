@@ -8,7 +8,8 @@
 # for ssh logins, install and configure the libpam-umask package.
 #umask 022
 
-# if running bash
+###     if running bash
+#
 if [ -n "$BASH_VERSION" ]; then
 	# include .bashrc if it exists
 	if [ -f "$HOME/.bashrc" ]; then
@@ -16,12 +17,14 @@ if [ -n "$BASH_VERSION" ]; then
 	fi
 fi
 
-# set PATH so it includes user's private bin dir if it exists
+###     set PATH so it includes user's private bin dir if it exists
+#
 if [ -d "$HOME/bin" ]; then 
 	PATH="$HOME/bin:$PATH"
 fi
 
 ###     Load any supplementary scripts in $HOME/.profile.d directory
+#
 if [ -d $HOME/dotfiles/.profile.d ]; then
 	for config in "$HOME"/dotfiles/.profile.d/*.sh ; do
 	. "$config"
@@ -31,7 +34,8 @@ if [ -d $HOME/dotfiles/.profile.d ]; then
 fi
 
 # echo HOME: $HOME
-# Check if .cargo exists, then add to path
+###     Check if .cargo exists, then add to path
+#
 if [ -d "$HOME"/.cargo ]; then
 	export PATH="$HOME/.cargo/bin:$PATH"
 fi
