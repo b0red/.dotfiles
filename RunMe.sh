@@ -33,7 +33,7 @@ DIR=~/dotfiles/oldfiles                             # Where to store old backupe
 OLDFILES=oldfiles.txt                               # Filelist - not in use right now
 FILE="$HOSTNAME-`date +%Y-%m-%d-%H:%M`.zip"         # Filename
 ARCHIVE="$FILE"                                     # Arhchive name
-LOG=install_progress_log                            # Installation prograss log
+LOG=~/dotfiles/install_progress_log                 # Installation prograss log
 DATE=$(date +"%Y-%m-%d %H:%M:%S")                   # Date - for zipfile
 SOURCE="Dotfiles installer Script"                  # scriptname
 
@@ -231,7 +231,7 @@ then
     alias uninstall="dnf remove" $1
     alias search="dnf search" $1
     alias autoremove="dnf remove" $1
-    alias clean="dnf clean all"
+    alias sysclean="dnf clean all"
 fi
 ###     Pacman (ArchLinux)
 #
@@ -242,7 +242,7 @@ then
     alias install="pacman -Syu" $1
     alias force_install="pacman -S --force" $1
     alias {uninstall,remove}="pacman -Rsc" $1
-    alias clean="pacman -Sc"
+    alias sysclean="pacman -Sc"
     alias reinstall="pacman -Syu $(pacman -Qqen)"
     alias package_list="pacman -Q"
 fi
@@ -252,10 +252,10 @@ if [[ -f /usr/bin/aptitude ]]
 then
     [[ $debug -eq 1 ]] && echo Debian/Ubuntu; sleep 1
     alias apt_update="sudo aptitude update"
-    alias update="sudo apt-get update && sudo apt-get upgrade"
-    alias install="apt-get install " $1
+    alias {sys_update,sysup,sysupdate}="sudo apt-get update && sudo apt-get upgrade"
+    alias install="apt-get install" $1
     alias uninstall="sudo apt remove"
-    alias clean="sudp apt clean; sudo apt autoremove; sudo apt purge"
+    alias sysclean="sudp apt clean; sudo apt autoremove; sudo apt purge"
     alias search="apt search" $1
 fi
 ###     Zypper (opensuse)
@@ -267,7 +267,7 @@ then
     alias install="zypper install" $1
     alias uninstall="zypper remove" $1
     alias update="sudo zypper refresh; sudo zypper dup"
-    alias clean="sudo zypper clean -a"
+    alias sysclean="sudo zypper clean -a"
     alias dist_upgrade="sudo zypper dist-upgrade"
     #    alias upgrade="sudo yum safe-upgrade"
     #    alias install="sudo yum install"
@@ -295,7 +295,11 @@ fi
 ###     Run get_os and set standards
 #
 get_os
+[[ $debug -eq 1 ]] && echo Getting OS; sleep 1
+[[ $debug -eq 1 ]] && echo OS=$OS; echo DIST=$DIST; echo DistroBasedOn=$DistroBasedOn; sleep 1
 setting_standard_commands
+[[ $debug -eq 1 ]] && echo Settings standard aliases; sleep 1
+
 
 ###     Feth any updates to the dotfiles
 #
@@ -334,6 +338,7 @@ submodules_update
 ln -s ~/.tmux/.tmux.conf ~/.tmux.conf
 
 git clone git://github.com/drmad/tmux-git.git ~/.tmux-git
+git clone git://github.com/arl/tmux-gitbar ~/.tmux-gitbar
 
 ###     Check if line exists is file
 #
@@ -350,8 +355,14 @@ fi
 git clone git@bitbucket.org:b0red/.vim.git ~/.vim
 cd ~/.vim; 
 submodules_update
-ln -s ~/.vim/vimrc ~/vimrc; ln -s ~/.vim/gvimrc ~/gvimrc
+ln -s ~/.vim/vimrc ~/vimrc; 
+###     If gvim is installed
+ if command_check gvimrc; then ln -s ~/.vim/gvimrc ~/gvimrc; fi
+    
 
+###     Source .bashrc
+#
+source  ~/.bashrc    
 # ~--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--++--+--+--+--+--++--+--+--+--+--+
 
 ###     Show summary of what was done

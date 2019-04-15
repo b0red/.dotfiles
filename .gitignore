@@ -2,3 +2,4 @@
 .bashrc.d/messages.json
 oldfiles/*
 install_progress_log
+*.swp
