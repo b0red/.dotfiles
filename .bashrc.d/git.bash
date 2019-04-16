@@ -41,7 +41,7 @@ alias gfrb="git fetch && git rebase"
 ###     git functions
 #
 function gacp() {
-          git add . && commit -am "$1" && git push origin master
+          git add . && git commit -am "$1" && git push origin master
       }
 
 ###     Just checking

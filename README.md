@@ -1,6 +1,6 @@
 # Trying to do the dotfiles again, and keeping them in sync..
 
-### To install, clone this repo and symlink 2 files (for now, there might be a script to automate this
+### To install, clone this repo and symlink 2 files (for now, there might be a script to automate this)
 
 ```
 git clone git@bitbucket.org:b0red/dotfiles.git ~/dotfiles
@@ -22,7 +22,8 @@ git submodule init && git submodule update
 5. (update submodules)
   * git submodule foreach git pull origin master
 
-### Automated install __On Your own risk__
+### Automated install __On Your own risk_!!!
+* Download the repo as usual git clone ...
 * Running the 'RunMe.sh' script
 * sudo chmod +x RunMe.sh; ./RunMe.sh  
 * the script wont break anything, but it might not work as intended :(
@@ -30,7 +31,7 @@ git submodule init && git submodule update
 ### Other stuff thats good to have
 * htop ncdu pydf tree mc 
 ```
-sudo apt install htop ncdu pydf tree mc #On debianbased systems
+sudo apt install htop ncdu pydf tree mc #On debianbased systems (The RunMe script install these)
 ```
 ### Updating submodules
 ```

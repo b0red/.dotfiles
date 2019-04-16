@@ -196,3 +196,7 @@ alias srestart="sudo systemctl restart"
 ###		List extensions
 #
 alias list_extensions="find . -type f | perl -ne 'print $1 if m/\.([^.\/]+)$/' | sort -u"
+
+###     Quick linux info
+#
+alias version="cat /etc/*release"
