@@ -1,0 +1,689 @@
+{
+	"auto_complete":
+	{
+		"selected_items":
+		[
+			[
+				"OSS",
+				"OSSYS"
+			],
+			[
+				"app",
+				"app_search"
+			],
+			[
+				"LO",
+				"LOG"
+			],
+			[
+				"s",
+				"submodules"
+			],
+			[
+				"LOG",
+				"LOG_MESS_06"
+			],
+			[
+				"LOG_",
+				"LOG_MESS_03"
+			],
+			[
+				"de",
+				"debug_1\t[[ $debug -eq 1]]"
+			],
+			[
+				"deb",
+				"debug_1\t[[ $debug -eq 1]]"
+			],
+			[
+				"el",
+				"else"
+			],
+			[
+				"T",
+				"TMP"
+			],
+			[
+				"tmux",
+				"tmux-gitbar"
+			],
+			[
+				"TMU",
+				"TMUX-NIC"
+			],
+			[
+				"PS",
+				"PSUEDONAME"
+			],
+			[
+				"A",
+				"APP"
+			],
+			[
+				"syn",
+				"sym_link_check"
+			],
+			[
+				"DO",
+				"DOTARRAY"
+			],
+			[
+				"sym",
+				"sym_link_check"
+			],
+			[
+				"sta",
+				"static_ip_read"
+			],
+			[
+				"ar",
+				"archive"
+			],
+			[
+				"su",
+				"submodules_init"
+			],
+			[
+				"sub",
+				"submodules_update"
+			],
+			[
+				"submodules",
+				"submodules_init"
+			],
+			[
+				"sud",
+				"submodule"
+			],
+			[
+				"HOS",
+				"HOSTNAME_"
+			],
+			[
+				"LIN",
+				"LINK_STATUS"
+			],
+			[
+				"LINK",
+				"link"
+			],
+			[
+				"FI",
+				"FILE_STATUS"
+			],
+			[
+				"L",
+				"LINK"
+			],
+			[
+				"d",
+				"dotfiles"
+			],
+			[
+				"link",
+				"LINK"
+			],
+			[
+				"inst",
+				"install"
+			],
+			[
+				"fu",
+				"found"
+			],
+			[
+				"yu",
+				"yum"
+			],
+			[
+				"Dir",
+				"directory"
+			]
+		]
+	},
+	"buffers":
+	[
+		{
+			"contents": "#!/bin/bash -p\nSHELL=/bin/bash\nPATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin\nexport TERM=${TERM:-dumb}\nexport DISPLAY=:0.0\n################################################################################################################################\n##\n##                   W A R N I N G !  - You ar running this at your own risk½\n##\n##\n##      Script for installing dotfiles. It will copy and backup old dotfiles to location under \n##          ~/dotfiles/oldfiles/$HOSTNAME\n##          \n##          Dependencies: Not really\n##\n##          Requirements (These will be installed ):\n##          zip, htop, tree, ncdu, pydf, bat (optional), prettyping (optional)\n##\n##          v2.6\n##\n##          ref:\n##          https://stackoverflow.com/questions/394230/how-to-detect-the-os-from-a-bash-script\n##          https://stackoverflow.com/questions/3557037/appending-a-line-to-a-file-only-if-it-does-not-already-exist\n##          https://cromwell-intl.com/open-source/package-management.html\n##          https://www.oracle.com/technetwork/articles/servers-storage-admin/o11-083-ips-basics-523756.html\n##\n################################################################################################################################\nclear\n\n#\n# ~--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--++--+--+--+--+--++--+--+--+--+--+\n#\n\n###     Debug on/off  - hange for debugging purposes\n#\ndebug=1\ntrace_debug=0\n\n###     Settings - Change if you need to\n#\nDIR=~/dotfiles/oldfiles                             # Where to store old backuped files\nOLDFILES=oldfiles.txt                               # Filelist - not in use right now\nFILE=\"$HOSTNAME-`date +%Y-%m-%d-%H:%M`.zip\"         # Filename\nARCHIVE=\"$FILE\"                                     # Arhchive name\nLOG=~/dotfiles/install_progress_log                 # Installation prograss log\nDATE=$(date +\"%Y-%m-%d %H:%M:%S\")                   # Date - for zipfile\nTITLE=\"Dotfiles Installer Script\"                   # scriptname\n\n###     Software array\n#\nAPPARRAY=(curl htop ncdu pydf tree tmux vim mc)     # Apps to be installed - add if you like\nDOTARRAY=(.profile .bashrc)                         # old dotfiles\n#SUBMODULES=(https://github.com/denilsonsa/prettyping.git https://github.com/tlatsas/bash-spinner.git) #s submodules for git repos\n\n###     LogMessages\n#\nLOG_MESS_01=\"Queried for OS and other info!\"\nLOG_MESS_02=\"Setting specific aliases for this OS\" \nLOG_MESS_03=\"Created backup dir\"\nLOG_MESS_04=\"Ran function 'app_installer'\"\nLOG_MESS_05=\"Moved old files to ${DIR} and symlinked the new ones!\"\nLOG_MESS_06=\"Ran function 'archive_it'\"\nLOG_MESS_07=\"Cloning TMUX and submodules\"\nLOG_MESS_07_1=\"Cloning additional TMUX stuff\"\nLOG_MESS_08=\"Cloning VÍM and submodules\"\n\n# ~--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--++--+--+--+--+--++--+--+--+--+--+\n###     ^NO Editing below this line ^\n###    Tracedebug\n#\nif [ $trace_debug -eq 1 ]; then\n    set -x\n    trap read debug\nfi\n\n###     Check for logfile else create it\n#\nfunction date_it(){\n    rm -f ${LOG}\n    touch ${LOG}\n    #[[ $debug -eq 1 ]] && echo -e \"\\n$TITLE - $DATE\\n\"; sleep 1\n    [[ $debug -eq 1 ]] && echo -e \"\\n$TITLE - $DATE\\n\" || echo -e \"\\n$TITLE - $DATE\\n\" > ${LOG}; sleep 1\n    \n}\n\n###     Function for updating submodules\n#\nfunction submodules_init(){\n    git submodule init #&& git submodule update\n}\n\nfunction submodules_update(){\n    git submodule foreach git pull origin master\n}\n\nfunction app_installer(){\n    ###     Install software (yes/no)\n    #\n    for APP in \"${APPARRAY[@]}\"\n    do\n        #echo $APP\n        if command -v $APP 2> /dev/null; then\n            [[ $debug -eq 1 ]] && echo \"${APP} already installed\" || echo -e \"$APP already installed!\" >> $LOG; sleep 1\n        elif ! [ -x command -v $APP 2>/dev/null ]; then\n           sudo apt install $APP\n            [[ $debug -eq 1 ]] && echo \"installing ${APP}\" || echo -e \"Installed $APP\" >> $LOG; sleep 1\n        else\n            [[ $debug -eq 1 ]] && echo \"${APP} failed to install!\" || echo \"$APP FAILED TO INSTALL!!!\" >> $LOG; sleep 1\n        fi\n    done \n}\n\nfunction archive_it() {\n     ### Archive the files if there are any\n     #\n     if [ -n \"$(find ${DIR} -prune -empty 2>/dev/null)\" ]; then\n        FILE_STATUS=\"File or directory empty. Nothing to archive!\"\n    else\n        zip -r -q -u -m $DIR/$FILE $DIR -x \"*.zip\" && FILE_STATUS=\"Files compressed ok!\" || FILE_STATUS=\"Files not compressed!\"\n    fi\n    [[ $debug -eq 1 ]] && echo $FILE_STATUS || echo $FILE_STATUS >> $LOG ; sleep 1\n}\n\n###     Check for old (sym)links\n#\nfunction sym_link_check(){\n    for LINK in \"${DOTARRAY[@]}\"\n    do\n    ###     Test if files are symlimked or not\n        if [ -L ${LINK} ] ; then\n           if [ -e ${LINK} ] ; then\n                ### Found link\n                LINK_STATUS=\"removing $LINK\" \n                [[ $debug -eq 1 ]] && echo $LINK_STATUS || echo $LINK_STATUS >> $LOG; sleep 1\n                rm -f $LINK \n            else\n                ### Broken link\n                echo \"Broken link: $LINK\"\n                LINK_STATUS=\"Broken link: $LINK, removing it!\"\n                [[ $debug -eq 1 ]] && echo $LINK_STATUS || echo $LINK_STATUS >> $LOG ; sleep 1\n                rm -f $LINK\n             fi\n        elif [ -e ${LINK} ] ; then\n            ### Broken link\n            #echo \"Not a link: $LINK\"\n            LINK_STATUS=\"$LINK is not a symlink. Moving it\" \n            [[ $debug -eq 1 ]] && echo $LINK_STATUS || echo $LINK_STATUS >> $LOG ; sleep 1\n            mv $LINK $DIR\n        else\n            ### Missing link\n            LINK_STATUS=\"Missing: $LINK. Symlinking it!\"\n            [[ $debug -eq 1 ]] && echo $LINK_STATUS || echo $LINK_STATUS >> $LOG ; sleep 1\n            ln -s ~/dotfiles/$LINK ~/\n            [[ $debug -eq 1 ]] && echo \"updating submodules\" || echo \"updating submodules\"; sleep 1\n        fi\n    done\n}\n\nfunction get_os(){\n    OS=$(uname); OS=\"${OS,,}\"\n    KERNEL=$(uname -r)\n    MACH=$(uname -m)\n\n    if [ \"${OS}\" == \"windowsnt\" ]; then\n        OS=windows; OSSYS=\"windows\"\n    elif [ \"${OS}\" == \"darwin\" ]; then\n        OS=mac; OSSYS=\"mac\"\n    else\n        OS=\"linux\"\n        if [ \"${OS}\" = \"SunOS\" ] ; then\n            OS=Solaris; OSSYS=\"solaris\"\n            ARCH=$(uname -p)\n            OSSTR=\"${OS} ${REV}(${ARCH} \"uname -v\")\"\n        elif [ \"${OS}\" = \"AIX\" ] ; then\n            OSSTR=\"${OS} \"oslevel\" (\"oslevel -r\")\"\n        elif [ \"${OS}\" = \"linux\" ] ; then\n            if [ -f /etc/redhat-release ] ; then\n                DistroBasedOn='RedHat'; OSSYS=\"redhat\"\n                DIST=$(cat /etc/redhat-release |sed s/\\ release.*//)\n                PSEUDONAME=$(cat /etc/redhat-release | sed s/.*\\(// | sed s/\\)//)\n                REV=$(cat /etc/redhat-release | sed s/.*release\\ // | sed s/\\ .*//)\n            elif [ -f /etc/SuSE-release ] ; then\n                DistroBasedOn='SuSe'; OSSYS=\"suse\"\n                PSEUDONAME=$(cat /etc/SuSE-release | tr \"\\n\" ' '| sed s/VERSION.*//)\n                REV=$(cat /etc/SuSE-release | tr \"\\n\" ' ' | sed s/.*=\\ //)\n            elif [ -f /etc/mandrake-release ] ; then\n                DistroBasedOn='Mandrake'; OSSYS=\"mandrake\"\n                PSEUDONAME=$(cat /etc/mandrake-release | sed s/.*\\(// | sed s/\\)//)\n                REV=$(cat /etc/mandrake-release | sed s/.*release\\ // | sed s/\\ .*//)\n            elif [ -f /etc/debian_version ] ; then\n                DistroBasedOn='Debian'; OSSYS=\"debian\"\n                DIST=$(cat /etc/lsb-release | grep '^DISTRIB_ID' | awk -F=  '{ print $2 }')\n                PSEUDONAME=$(cat /etc/lsb-release | grep '^DISTRIB_CODENAME' | awk -F=  '{ print $2 }')\n                REV=$(cat /etc/lsb-release | grep '^DISTRIB_RELEASE' | awk -F=  '{ print $2 }')\n            fi\n            if [ -f /etc/UnitedLinux-release ] ; then\n                DIST=$(${DIST}[\"cat /etc/UnitedLinux-release | tr \"\\n\" ' ' | sed s/VERSION.*//\"])\n                OSSYS=\"unitedlinux\"\n            fi\n            OS=\"${OS,,}\"\n            DistroBasedOn=\"${DistroBasedOn,,}\"\n            readonly OS\n            readonly DIST\n            readonly DistroBasedOn\n            readonly PSEUDONAME\n            readonly REV\n            readonly KERNEL\n            readonly MACH\n            ###     export variables\n            # export OS\n            # export DIST\n            # export DistroBasedOn\n            # export PSEUDONAME\n            # export REV\n            # export KERNEL\n            # export MACH\n        fi\n    fi\n}\n\nfunction setting_standard_commands(){\n    case $OSSYS in\n        solaris*) \n            echo \"OS är: SOLARIS\"\n            [[ $debug -eq 1 ]] && echo FreeBSD; sleep 1\n            alias install=\"pkg install \" $1\n            alias uninstall=\"pkg uninstall \" $1\n            alias app_search=\"pkg search \" $1\n            alias update=\"pkg update --accept\" \n            ;;\n        darwin*)  \n            echo \"OS är: OSX\" \n            ;; \n        debian*)   \n            echo \"OS är: LINUX(Debian)\" \n            [[ $debug -eq 1 ]] && echo Debian/Ubuntu; sleep 1\n            alias apt_update=\"sudo aptitude update\"\n            alias {sys_update,sysup,sysupdate}=\"sudo apt-get update && sudo apt-get upgrade\"\n            alias install=\"apt-get install\" $1\n            alias uninstall=\"sudo apt remove\"\n            alias sysclean=\"sudp apt clean; sudo apt autoremove; sudo apt purge\"\n            ;;\n        bsd*) \n            echo \"OS är: *BSD\"\n            [[ $debug -eq 1 ]] && echo FreeBSD; sleep 1\n            #alias app_search=\"zypper search\" $1\n            #alias app_info=\"zypper install\" $1\n            alias install=\"pkg install\" $1\n            alias uninstall=\"pkg delete\" $1\n            alias {sys_update,sysup,sysupdate}=\"freebsd-update fetch && freebsd-update install\"\n            alias upgrade=\"pkg update && pkg upgrade\"\n            alias autoclean=\"pkg autoremove\"\n            alias clean=\"pkg clean -c\"\n            ;;\n        redhat*)                                                            #     YUM (RedHat Linux, centos)\n            [[ $debug -eq 1 ]] && echo YUM; sleep 1\n            #PATH=$PATH:$HOME/bin\n            alias install=\"sudo yum install -y\" $1\n            alias {uninstall,remove}=\"sudo yum remove\" $1\n            alias update=\"sudo yum update -y\"\n            alias upgrade=\"sudo yum upgrade -y\"\n            alias swap=\"sudo yum swap\" $1 $2\n            alias autoremove=\"sudo yum autoremove\" $1\n            alias reinstall=\"sudo yum reinstall\" $1\n            ;;\n        suse*)                                                            #     OpenSuSe)\n            [[ $debug -eq 1 ]] && echo OpenSUSE; sleep 1\n            alias install=\"zypper install\" $1\n            alias uninstall=\"zypper remove\" $1\n            alias app_search=\"zypper search\" $1\n            alias update=\"sudo zypper refresh; sudo zypper dup\"\n            alias sysclean=\"sudo zypper clean -a\"\n            alias dist_upgrade=\"sudo zypper dist-upgrade\"\n            ;;\n        fedora*)                                                           #        Fedora\n            [[ $debug -eq 1 ]] && echo DNF; sleep 1\n            alias install=\"dnf install\" $1\n            alias {uninstall,remove}l=\"dnf remove\" $1\n            alias upgrade=\"dnf upgrade\"\n            alias search=\"dnf search\" $1\n            alias autoremove=\"dnf remove\" $1\n            alias sysclean=\"dnf clean all\"\n            ;;\n        pacman*)                                                           #        ArchLinux\n            [[ $debug -eq 1 ]] && echo PacMan; sleep 1\n            alias install=\"pacman -Syu\" $1\n            alias {uninstall,remove}=\"pacman -Rsc\" $1\n            alias force_install=\"pacman -S --force\" $1\n            alias reinstall=\"pacman -Syu $(pacman -Qqen)\"\n            alias update=\"pacman -Syu\"\n            alias sysclean=\"pacman -Sc\"\n            alias package_list=\"pacman -Q\"\n            ;;\n        msys*)    \n            echo \"OS är: WINDOWS\" \n            ;;\n        *)        \n            echo \"OS är: unknown: $OSTYPE\" \n            ;;\n    esac\n}\n# ~--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--++--+--+--+--+--++--+--+--+--+--+\n\n###     On first run. This is a quick and dirty script, no backups or questions asked!\n\ndate_it\n[[ $debug -eq 1 ]] && echo \"Ran function date_it\" ; sleep 1\n\n###     Run get_os and set aliases for different os'\n#\nget_os\n[[ $debug -eq 1 ]] && echo Getting OS; sleep 1\n[[ $debug -eq 1 ]] && echo OS=$OS; echo DIST=$DIST; echo DistroBasedOn=$DistroBasedOn; sleep 1\necho $LOG_MESS_01 >> $LOG\n\nsetting_standard_commands\n[[ $debug -eq 1 ]] && echo Settings standard aliases; sleep 1\necho $LOG_MESS_02 >> $LOG\n\n###     Feth any updates to the dotfiles\n#\ngit pull origin master\n\nmkdir $DIR 2> /dev/null; echo $LOG_MESS_03 $DIR >> $LOG\n[[ $debug -eq 1 ]] && echo $LOG_MESS_03; sleep 1\necho $LOG_MESS_03 >> $LOG\n\napp_installer\n[[ $debug -eq 1 ]] && echo $LOG_MESS_04; sleep 1\necho $LOG_MESS_04 >> $LOG\n\nmv ~/.profile $DIR/; mv ~/.bashrc $DIR/; \nln -s ~/dotfiles/.bashrc ~/.bashrc; ln -s ~/dotfiles/.profile ~/.profile\n[[ $debug -eq 1 ]] && echo $LOG_MESS_05; sleep 1\necho $LOG_MESS_05 >> $LOG\n\narchive_it\n[[ $debug -eq 1 ]] && echo $LOG_MESS_06; sleep 1\necho $LOG_MESS_06 >> $LOG\n\n\n###     If debug mode is on (=1) then don't fetch submodules, faster\n#\n[[ $debug -eq 1 ]] && echo \"Not fetching submodules\" || submodules_init; echo \"Submodules added!\" >> $LOG\n[[ $debug -eq 1 ]] && echo \"ran submodules_init\" ; sleep 1\n\n[[ $debug -eq 1 ]] && echo \"Not updating submodules\" || submodules_update; echo \"Submodules updated!\" >> $LOG\n[[ $debug -eq 1 ]] && echo \"ran submodules_update\" ; sleep 1\n\n###     Clone tmux repo\n#\n[[ $debug -eq 1 ]] && echo $LOG_MESS_07; sleep 1\ngit clone git@bitbucket.org:b0red/tmux.git ~/.tmux; cd ~/.tmux\nsubmodules_update\nln -s ~/.tmux/.tmux.conf ~/.tmux.conf\necho $LOG_MESS_07 >> $LOG\n\n###     Clone additional tmux stuff\n#\n[[ $debug -eq 1 ]] && echo $LOG_MESS_07_1; sleep 1\ngit clone git://github.com/drmad/tmux-git.git ~/.tmux-git\ngit clone git://github.com/arl/tmux-gitbar ~/.tmux-gitbar\necho $LOG_MESS_07_1 >> $LOG\n\n\n###     Check if line exists is file\n#\ngrep -qxF \"if [[ \\$TMUX ]]; then source ~/.tmux-git/tmux-git.sh; fi\" ~/.bashrc\nif [ $? -ne 0 ]; then\n    echo \"if [[ \\$TMUX ]]; then source ~/.tmux-git/tmux-git.sh; fi\" >> ~/.bashrc\n    echo \"Added line for .tmux-git to .bashrc\" >> $LOG\nelse\n    status=\"Line not added!\"\nfi\n\n###     Clone vim repo\n#\n[[ $debug -eq 1 ]] && echo $LOG_MESS_08; sleep 1\ngit clone git@bitbucket.org:b0red/.vim.git ~/.vim; cd ~/.vim\nsubmodules_update\nln -s ~/.vim/vimrc ~/vimrc; \n###     If gvim is installed\n# if command_check gvimrc; then ln -s ~/.vim/gvimrc ~/gvimrc; fi\necho $LOG_MESS_08 >> $LOG\n\n###     Source .bashrc\n#\nsource  ~/.bashrc    \n# ~--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--++--+--+--+--+--++--+--+--+--+--+\n\n###     Show summary of what was done\n#\nsleep 5\nclear; echo -e \"\\n====== Summary ======\\nResult of $TITLE\"\ncat $LOG\nsleep 10\n[[ ! $debug -eq 1 ]] && exit 0\n    \n## ~--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--++--+--+--+--+--++--+--+--+--+--+\n###     Debuginfo - just printing  values to screen\n#\nif [ $debug -eq 1 ]; then\n    clear\n    echo -e \"\\n$TITLE\"\n    echo -e \"\\nOutput from:${ORANGE} ${0##*/} ${NC} \\n\"\n    echo -e \"Hostname:          $HOSTNAME\\n\"\n    echo -e \"BackupDIR:         $DIR\"\n    echo -e \"Oldfiles:          $OLDFILES\"\n    echo -e \"File:              $FILE\"\n    echo -e \"Folderpath:        $DIR/$HOSTNAME\\n\"\n    echo -e \"Archive status:    $FILE_STATUS\"\n    echo -e \"Archive name:      $ARCHIVE\"\n    echo -e \"Logfile:           $LOG\"\n    echo -e \"Date:              $DATE\"\nfi\nexit 0\n",
+			"file": "RunMe.sh",
+			"file_size": 17180,
+			"file_write_time": 131999266097827384,
+			"settings":
+			{
+				"buffer_size": 15770,
+				"encoding": "UTF-8",
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"contents": "# ~/.bashrc: executed by bash(1) for non-login shells.\n# see /usr/share/doc/bash/examples/startup-files (in the package bash-doc)\n# for examples\n\n###     Determine within a startup script whether Bash is running interactively or not.\n#\nif [ ! -z \"$PS1\" ]; then\n    :\n    # echo \" .bashrc loaded, running interactively.\"\nelse\n    # If not running interactively, don't do anything\n    [ -z \"$PS1\" ] && return\n    :\n    #echo \".bashrc loaded, not running interactively\"\nfi\n\n# Clear away all aliases; we do this here rather than in the $ENV file shared\n# between POSIX shells, because ksh relies on aliases to implement certain\n# POSIX utilities, like fc(1) and type(1)\n[[ $debug -eq 1 ]] && echo Unaliasing here!; sleep 1\nunalias -a\n\n# If ENV is set, source it to get all the POSIX-compatible interactive stuff;\n# we should be able to do this even if we're running a truly ancient Bash\n[ -n \"$ENV\" ] && . \"$ENV\"\n\n###     Clear away command_not_found_handle if a system bashrc file set it up\n#\nunset -f command_not_found_handle\n\nif [ -x /usr/bin/dircolors ]; then\n    test -r ~/.dircolors && eval \"$(dircolors -b ~/.dircolors)\" || eval \"$(dircolors -b)\"\nfi\n\n#   If not running interactively, don't do anything\ncase $- in\n    *i*) ;;\n    *) return;;\nesac\n\n\n###     Set a fancy prompt (non-color, unless we know we \"want\" color)\n#\ncase \"$TERM\" in\n    xterm-color|*-256color) color_prompt=yes;;\nesac\n\n\n# enable programmable completion features (you don't need to enable\n# this, if it's already enabled in /etc/bash.bashrc and /etc/profile\n# sources /etc/bash.bashrc).\nif ! shopt -oq posix; then\n  if [ -f /usr/share/bash-completion/bash_completion ]; then\n    . /usr/share/bash-completion/bash_completion\n  elif [ -f /etc/bash_completion ]; then\n    . /etc/bash_completion\n  fi\nfi\n\n\n###\tIf id command returns zero, you have root access.\n#\nif [ $(id -u) -eq 0 ];\n    then # you are root, set red colour prompt\n        PS1='\\[\\e[1;31m\\]\\u\\[\\e[m\\]\\[\\e[0;32m\\]@\\h: \\[\\e[m\\]\\[\\e[1;34m\\]\\w\\[\\e[m\\] \\[\\e[1;32m\\]\\$\\[\\e[m\\] \\[\\e[1;37m\\]'\n    else # normal\n\t# PS1=\"[\\\\u@\\\\h:\\\\w] $ \"\n        # PROMPT='\\[\\e[1;32m\\]\\u \\[\\e[m\\]\\[\\e[0;32m\\]@\\[\\e[m\\]\\[\\e[1;32m\\]\\h: \\w \\$\\[\\e[m\\] '\n\tPS1='\\[\\e[1;32m\\]\\u\\[\\e[m\\]\\[\\e[0;32m\\]@\\h: \\[\\e[m\\]\\[\\e[1;34m\\]\\w\\[\\e[m\\] \\[\\e[1;32m\\]\\$\\[\\e[m\\] \\[\\e[1;37m\\]'\nfi\n\n###     Color manpages for 'less'\n#\nexport LESS_TERMCAP_mb=$'\\E[1;31m'     # begin bold\nexport LESS_TERMCAP_md=$'\\E[1;36m'     # begin blink\nexport LESS_TERMCAP_me=$'\\E[0m'        # reset bold/blink\nexport LESS_TERMCAP_so=$'\\E[01;44;33m' # begin reverse video\nexport LESS_TERMCAP_se=$'\\E[0m'        # reset reverse video\nexport LESS_TERMCAP_us=$'\\E[1;32m'     # begin underline\nexport LESS_TERMCAP_ue=$'\\E[0m'        # reset underline\nexport GROFF_NO_SGR=1                  # for konsole and gnome-terminal\nexport PAGER='less'\n\n###     ssh-agent\n#\n#ssh-add &>/dev/null || eval `ssh-agent` &>/dev/null  # start ssh-agent if not present\n#[ $? -eq 0 ] && {                                     # ssh-agent has started\n#ssh-add ~/.ssh/id_rsa &>/dev/null        # Load key 1\n#ssh-add ~/.ssh/id_dsa &>/dev/null        # Load key 2\n#}\n\n###     Load tmux as soon as we login to shell, logout when exit tmux       \n#\nif command -v tmux &> /dev/null && [ -n \"$PS1\" ] && [[ ! \"$TERM\" =~ screen ]] && [[ ! \"$TERM\" =~ tmux ]] && [ -z \"$TMUX\" ]; then\n # exec tmux\n { tmux a -t 0 || exec tmux new-session && exit; }\nfi\n\n###     Load any supplementary scripts\n#       Stolen from (https://bit.ly/2slDBSV)\n#\nif [ -d \"$HOME\"/dotfiles/.bashrc.d ]; then\n    for config in $HOME/dotfiles/.bashrc.d/*.bash ;\n        do\n            source \"$config\"\n            #echo \"file $config loaded\"; sleep 1\n        done\n    unset -v config\nfi\n\n# if [ -d \"$HOME\"/dotfiles/.profile.d ]; then\n#     for config in $HOME/dotfiles/.profile.d/*.sh;\n#     do\n#         source \"$config\"\n#         # echo \"file $config loaded\"; sleep 1\n#     done\n#     unset -v config\n# fi\n\n###     For getting gitstatus in tmux\n#       stolen from https://github.com/drmad/tmux-git\nif [[ $TMUX ]]; then source ~/.tmux-git/tmux-git.sh; fi\n",
+			"file": ".bashrc",
+			"file_size": 4056,
+			"file_write_time": 131998356739837933,
+			"settings":
+			{
+				"buffer_size": 4057,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"contents": "Att göra:\n\nta bor check för symlink, den skapar troligtvis bara fel.\ngör en check om filen som skall länkas finns eller inte, om den finns, symlänka, annars inte\n\nfixa casesatsen för de olika aliasen\n\nfixa så logfilen skrivs snyggt\n\nev fixa så att RunMe.sh kollar om det är kört tidigare eller om det är nytt?\n\n\n\n\n---------------------------\nhttps://cromwell-intl.com/open-source/package-management.html\n    ",
+			"settings":
+			{
+				"buffer_size": 408,
+				"line_ending": "Unix",
+				"name": "Att göra:"
+			}
+		},
+		{
+			"contents": "#-------------------------------------------------------------------------\n#\n#\t\t.bash_aliases\n# \n#-------------------------------------------------------------------------\n###     Reload aliases, functions and all\n#\nalias reload='source ~/.bashrc'\n\nalias nano=\"nano -c\"\nalias wget=\"wget -c $1\"\n\n###     Check if command exists             # Needs to be here first\n#\nfunction command_exists() {\n     if command -v \"$1\" >/dev/null 2>&1; then\n        echo $1 is installed!\n    else\n        echo $1 is not installed!!\n    fi\n}\n\nfunction command_check() {\n     command -v \"$1\" >/dev/null 2>&1\n}\n\n\n###\tGetting colored results when using a pipe from grep to less.\n# \nalias less='less -R'\n\n###\tJump back n directories at a time\n# \nalias ..='cd ..'\nalias ...='cd ../../'\nalias ....='cd ../../../'\nalias .....='cd ../../../../'\nalias ......='cd ../../../../../'\n\n###\tVarious\n# \nalias h='history | grep '\nalias hr=\"history | sort -rn\"\nalias mv='mv -v' \nalias rm='rm -i'\n\n###\tOne letter quickies:\n# \nalias p='pwd'\nalias x='exit'\n\n###\tNicer directory listings\n# \nalias clr=\"clear;pwd;ls\"\nalias cls=\"clear\"\nalias lsd\"=ls -alF |grep /$\" \t## Might be wrong\nalias back=\"cd $OLDPWD\"\n\n###\tRootstuf\n# \nalias root=\"sudo su\"\nalias su=\"sudo -i\"\nalias f=\"find . | grep \"\n\n###\tDirsize in human readable form\n# \nalias df=\"df -h\"\n\n###     ssh\n#\nalias ssh='if [ \"$(ssh-add -l)\" = \"The agent has no identities.\" ]; then ssh-add; fi; /usr/bin/ssh \"$@\"'\n\n###\tGet weeknumber\n#\nalias week=\"(/bin/date +%V)\"\n\n###\tTree\n#\nalias ltree=\"ls -R | grep \":$\" | sed -e 's/:$//' -e 's/[^-][^\\/]*\\//--/g' -e 's/^/   /' -e 's/-/|/'\"\nalias tree1=\"tree -L 1\"\nalias tree2=\"tree -L 2\"\nalias tree3=\"tree -L 3\"\nalias tree4=\"tree -L 4\"\n\n###\tFile related\n#\nalias lf=\"ls -l | egrep -v '^d'\"\nalias ldir=\"ls -l | egrep '^d'\"\nalias clean=\"audo apt y\"\n\n###     Enable colorsupport of ls and add hanndy aliases\n#\nif [[ -x /usr/bin/dircolors ]]; then\n    test -r ~/.dircolors && eval \"$(dircolors -b ~/.dircolors)\"||eval \"$(dircolors -b)\"\n    alias ls=\"ls --color=auto\"\n    #alias grep=\"grep --color=auto\"\n    #alias fgrep=\"fgrep --color=auto\"\n    #alias egrep=\"egrep --color=auto\"\n\t###     Colorize the grep command output for ease of use (good for log files)\n\t# \n\talias {grep,egrep,fgrep}=\"grep --color=always --line-number --no-messages --binary-files=without-match\"\n    unset GREP_OPTIONS\nfi\n\n\n###\t\tDirlistings\n#\nalias {kk,ll,öö}=\"ls -alF --group-directories-first\"\nalias la=\"ls -A\"\nalias l=\"ls -CF\"\nalias lll=\"ls -alFGH --color | less -R\"\n\n###     Replace top, du, df\n#\nalias top=\"htop\"\nalias du=\"ncdu\"\nalias df=\"pydf\"\nalias psg=\"ps aux | grep -v grep | grep -i -e VSZ -e\"\n\n###     TMUX\n#\nalias tm=\"tmux new -s main \\; split-window -h \\; split-window -v -p 30 \\;\"\nalias tmkill=\"tmux ls | grep : | cut -d. -f1 | awk '{print substr($1, 0, length($1)-1)}' | xargs kill\"\nalias tmx=\"tmux a -t 0\"\n\n### WIP\n#   Trying to make so it's not nesting session and always starting one with a name\n# session=$(uname -n); session=${session,,}; tmux new -s $session\n\n###     Misc\n#\nalias latest='grep \" install \" /var/log/dpkg.log.1 /var/dpkg.log'\nalias sshrestart='service ssh restart'\nalias no_extensions='find . -type f ! -name \"*.*\"'\nalias {module-update,modup}=\"git submodule foreach git pull origin master\"\nalias weather=\"curl wttr.in/stockholm\"\nalias comstat=\"push \\\"Command ran! (uname -n)\\\" || push \\\"Command failed!\\\"\"\n\n###\t\tMidnightCommande\n#\nif command_check mc; then alias mc=\"sudo mc\"; fi\n\n###     Kill all zombieprocesses\n#\nalias zombiekill=\"ps axo state,ppid | awk '!/PPID/$1~\"Z\"{print $2}' | xargs -r kill -9\"\n\n###     Replace cat with bat, nicer output\n#   \thttps://github.com/sharkdp/bat/releases/download/v0.10.0/bat_0.10.0_amd64.deb; sudo dpkg -i bat_0.10.0_amd64.deb; rm -f bat*\nif command_check bat; then alias cat=\"bat\" ; fi\n\n###     Install prettyping\n#  \t\tcurl -O https://raw.githubusercontent.com/denilsonsa/prettyping/master/prettyping; chmod +x prettyping; mv prettyping ~/bin\nif command_check prettyping; then alias ping=\"prettyping --nolegend\"; fi\n\n###     Services\n#\nalias services=\"service --status-all\"\nalias services_run=\"service --status-all | grep running\"\n\n###     Docker commands\n#\nalias dcp='docker-compose -f ~/docker/compose/docker-compose-basic.yml '\nalias dcpull='docker-compose -f ~/docker/compose/docker-compose-basic.yml pull --parallel'\nalias dclogs='docker-compose -f ~/docker/compose/docker-compose-basic.yml logs -tf --tail=\"50\" '\nalias dtail='docker logs -tf --tail=\"50\" \"$@\"'\nalias dclean=\"docker run --rm -v /var/run/docker.sock:/var/run/docker.sock zzrot/docker-clean\"\n\n###     Replace ifconfig                <----- Kanske inte funkar på LinuxMINT\n#\nalias ifconfig=\"ip -c a\"\n\n###\t\t(https://github.com/kenorb/dotfiles/blob/master/.bash_aliases)\n#\t\tmost frequent commands\t\nalias freq='cut -f1 -d\" \" ~/.bash_history | sort | uniq -c | sort -nr | head -n 30'\n#\t\tWhat's gobbling the memory?\nalias psmem='ps -o time,ppid,pid,nice,pcpu,pmem,user,comm -A | sort -n -k 6 | tail -15'\n# \t\tAllow to find the biggest file or directory in the current directory.\nalias ds='du -ks *|sort -n'\n# \t\tList top ten largest files/directories in current directory\nalias big='du -ah . | sort -rh | head -40'\n# \t\tList top ten largest files in current directory\nalias big-files='ls -1Rhs | sed -e \"s/^ *//\" | grep \"^[0-9]\" | sort -hr | head -n40'\n\n###\t\tip\n#\nalias ip=\"ip -br -c a\"\n\n###\t\tcheck the status of any system service:\n#\nalias sstatus=\"sudo systemctl status\"\n\n###\t\trestart any system service:\n#\nalias srestart=\"sudo systemctl restart\"\n\n###\t\tList extensions\n#\nalias list_extensions=\"find . -type f | perl -ne 'print $1 if m/\\.([^.\\/]+)$/' | sort -u\"\n\n###     Quick linux info\n#\nalias version=\"cat /etc/*release\"\n",
+			"file": ".bashrc.d/aliases.bash",
+			"file_size": 5624,
+			"file_write_time": 131998404611131520,
+			"settings":
+			{
+				"buffer_size": 5675,
+				"encoding": "UTF-8",
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": ".bashrc.d/functions.bash",
+			"settings":
+			{
+				"buffer_size": 12270,
+				"encoding": "UTF-8",
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": ".bashrc.d/git.bash",
+			"settings":
+			{
+				"buffer_size": 1554,
+				"encoding": "UTF-8",
+				"line_ending": "Unix"
+			}
+		}
+	],
+	"build_system": "",
+	"build_system_choices":
+	[
+	],
+	"build_varint": "",
+	"command_palette":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+			[
+				"Snippet: ",
+				"Snippet: if … fi"
+			],
+			[
+				"insta",
+				"Package Control: Install Package"
+			],
+			[
+				"instal",
+				"Package Control: Install Package"
+			],
+			[
+				"git pus",
+				"Git: Push"
+			],
+			[
+				"git com",
+				"Git: Commit"
+			],
+			[
+				"gitad\t\t",
+				"Git: Add All"
+			],
+			[
+				"Snippet: de",
+				"Snippet: [[ $debug -eq 1]]"
+			],
+			[
+				"Snippet: deb",
+				"Snippet: [[ $debug -eq 1]]"
+			],
+			[
+				"install",
+				"Package Control: Install Package"
+			],
+			[
+				"git:sta",
+				"Git: Status"
+			],
+			[
+				"git:branch",
+				"Git: New Branch"
+			],
+			[
+				"git",
+				"Git: Status"
+			],
+			[
+				"ins",
+				"Install Package Control"
+			],
+			[
+				"reind",
+				"Indentation: Reindent Lines"
+			]
+		],
+		"width": 0.0
+	},
+	"console":
+	{
+		"height": 150.0,
+		"history":
+		[
+		]
+	},
+	"distraction_free":
+	{
+		"menu_visible": true,
+		"show_minimap": false,
+		"show_open_files": false,
+		"show_tabs": false,
+		"side_bar_visible": false,
+		"status_bar_visible": false
+	},
+	"expanded_folders":
+	[
+		"/home/patrick/dotfiles",
+		"/home/patrick/dotfiles/.bashrc.d"
+	],
+	"file_history":
+	[
+		"/home/patrick/dotfiles/.gitignore",
+		"/home/patrick/dotfiles/README.md",
+		"/home/patrick/dotfiles/RunMe.sh",
+		"/home/patrick/dotfiles/.bashrc.d/aliases.bash",
+		"/home/patrick/dotfiles/.bashrc.d/env.bash",
+		"/home/patrick/dotfiles/.bashrc",
+		"/home/patrick/dotfiles/.bashrc.d/functions.bash",
+		"/home/patrick/.tmux.conf",
+		"/home/patrick/dotfiles/.bashrc.d/variables.bash",
+		"/home/patrick/dotfiles/.bashrc.d/exports.bash",
+		"/home/patrick/dotfiles/.bashrc.d/profile.bash",
+		"/home/patrick/.tmux-gitbar.conf",
+		"/home/patrick/.tmux-gitbar/tmux-gitbar.tmux",
+		"/home/patrick/.tmux-git.conf'",
+		"/home/patrick/.tmux-git.conf",
+		"/home/patrick/bin/FortuneTweet.sh",
+		"/home/patrick/dotfiles/test.sh",
+		"/home/patrick/dotfiles/.profile",
+		"/home/patrick/dotfiles/.profile.d/browser.sh",
+		"/home/patrick/dotfiles/.profile.d/os.sh",
+		"/home/patrick/dotfiles/junk",
+		"/home/patrick/dotfiles/config",
+		"/home/patrick/.ssh/config",
+		"/home/patrick/dotfiles/.bashrc.d/git.bash",
+		"/home/patrick/.config/sublime-text-3/Packages/User/debug_if_then.sublime-snippet",
+		"/home/patrick/bin/config",
+		"/home/patrick/dotfiles/.bashrc.d/messages.json",
+		"/home/patrick/dotfiles/.bashrc.d/colorcodes.bash",
+		"/home/patrick/dotfiles/.bashrc.d/logout.bash",
+		"/home/patrick/dotfiles/.bashrc.d/env.old",
+		"/home/patrick/dotfiles/oldfiles/files.zip",
+		"/home/patrick/dotfiles/t.sh",
+		"/home/patrick/dotfiles/extras/not_in_use",
+		"/home/patrick/dotfiles/DotfilesInstaller.sh",
+		"/home/patrick/.config/sublime-text-3/Packages/User/debug_1_1liner.sublime-snippet",
+		"/home/patrick/dotfiles/.gitmodules",
+		"/home/patrick/.config/sublime-text-3/Packages/User/trace_debug.sublime-snippet",
+		"/home/patrick/.config/sublime-text-3/Packages/User/Usage.sublime-snippet",
+		"/home/patrick/.config/sublime-text-3/Packages/User/c_exist.sublime-snippet",
+		"/home/patrick/dotfiles/oldfiles.txt",
+		"/home/patrick/.config/sublime-text-3/Packages/User/untitled.sublime-snippet",
+		"/home/patrick/dotfiles/.profile.d/pager.sh",
+		"/home/patrick/dotfiles/.profile.d/timezone.sh",
+		"/home/patrick/dotfiles/.profile.d/welcome.sh",
+		"/home/patrick/bin/current_ip.sh",
+		"/home/patrick/bin/SystemClean.sh",
+		"/home/patrick/.config/sublime-text-3/Packages/User/rootcheck.sublime-snippet",
+		"/home/patrick/.config/sublime-text-3/Packages/User/checkfolder.sublime-snippet",
+		"/home/patrick/bin/CurrentTvList.sh",
+		"/home/patrick/bin/OsTest.sh",
+		"/home/patrick/bin/mail_on_ipchange.sh",
+		"/home/patrick/bin/net_scan.sh",
+		"/home/patrick/bin/old_TvListing.sh",
+		"/home/patrick/bin/SoftwareChecker.sh",
+		"/home/patrick/bin/Template.sh",
+		"/home/patrick/bin/UserBackup.sh",
+		"/home/patrick/.config/sublime-text-3/Packages/Git/Git.sublime-settings",
+		"/home/patrick/bin/wip_less_than.sh",
+		"/home/patrick/.config/sublime-text-3/Packages/User/Git.sublime-settings",
+		"/home/patrick/bin/SettingsBackup.sh",
+		"/home/patrick/bin/ScriptTemplate.sh",
+		"/home/patrick/bin/Menu.sh",
+		"/home/patrick/bin/menutest.sh",
+		"/home/patrick/bin/list_installed_packages_by_size.sh",
+		"/home/patrick/bin/delete_files.inc",
+		"/home/patrick/bin/ip_scan.sh",
+		"/home/patrick/bin/addtracker.sh"
+	],
+	"find":
+	{
+		"height": 40.0
+	},
+	"find_in_files":
+	{
+		"height": 104.0,
+		"where_history":
+		[
+			"/home/patrick/dotfiles",
+			""
+		]
+	},
+	"find_state":
+	{
+		"case_sensitive": false,
+		"find_history":
+		[
+			"SOURCE",
+			"setting_standard",
+			"get_os",
+			"command_check",
+			"gvim",
+			"unalias"
+		],
+		"highlight": true,
+		"in_selection": false,
+		"preserve_case": false,
+		"regex": false,
+		"replace_history":
+		[
+			"TITLE"
+		],
+		"reverse": false,
+		"show_context": true,
+		"use_buffer2": true,
+		"whole_word": false,
+		"wrap": true
+	},
+	"groups":
+	[
+		{
+			"selected": 5,
+			"sheets":
+			[
+				{
+					"buffer": 0,
+					"file": "RunMe.sh",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 15770,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								2952,
+								2952
+							]
+						],
+						"settings":
+						{
+							"git_savvy.repo_path": "/home/patrick/dotfiles",
+							"syntax": "Packages/ShellScript/Bash.sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 4.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 5,
+					"type": "text"
+				},
+				{
+					"buffer": 1,
+					"file": ".bashrc",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 4057,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								3375,
+								3375
+							]
+						],
+						"settings":
+						{
+							"git_savvy.repo_path": "/home/patrick/dotfiles",
+							"syntax": "Packages/ShellScript/Bash.sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 1173.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 4,
+					"type": "text"
+				},
+				{
+					"buffer": 2,
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 408,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								403,
+								403
+							]
+						],
+						"settings":
+						{
+							"auto_name": "Att göra:",
+							"syntax": "Packages/Text/Plain text.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 3,
+					"type": "text"
+				},
+				{
+					"buffer": 3,
+					"file": ".bashrc.d/aliases.bash",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 5675,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								5134,
+								5134
+							]
+						],
+						"settings":
+						{
+							"git_savvy.repo_path": "/home/patrick/dotfiles",
+							"syntax": "Packages/ShellScript/Bash.sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 1561.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 2,
+					"type": "text"
+				},
+				{
+					"buffer": 4,
+					"file": ".bashrc.d/functions.bash",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 12270,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								2435,
+								2435
+							]
+						],
+						"settings":
+						{
+							"git_savvy.repo_path": "/home/patrick/dotfiles",
+							"syntax": "Packages/ShellScript/Bash.sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 4152.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 1,
+					"type": "text"
+				},
+				{
+					"buffer": 5,
+					"file": ".bashrc.d/git.bash",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 1554,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								1460,
+								1460
+							]
+						],
+						"settings":
+						{
+							"git_savvy.repo_path": "/home/patrick/dotfiles",
+							"syntax": "Packages/ShellScript/Bash.sublime-syntax"
+						},
+						"translation.x": 0.0,
+						"translation.y": 102.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 0,
+					"type": "text"
+				}
+			]
+		}
+	],
+	"incremental_find":
+	{
+		"height": 28.0
+	},
+	"input":
+	{
+		"height": 43.0
+	},
+	"layout":
+	{
+		"cells":
+		[
+			[
+				0,
+				0,
+				1,
+				1
+			]
+		],
+		"cols":
+		[
+			0.0,
+			1.0
+		],
+		"rows":
+		[
+			0.0,
+			1.0
+		]
+	},
+	"menu_visible": true,
+	"output.exec":
+	{
+		"height": 120.0
+	},
+	"output.find_results":
+	{
+		"height": 0.0
+	},
+	"output.git":
+	{
+		"height": 126.0
+	},
+	"pinned_build_system": "",
+	"project": "dotfiles.sublime-project",
+	"replace":
+	{
+		"height": 72.0
+	},
+	"save_all_on_build": true,
+	"select_file":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"select_project":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"select_symbol":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"selected_group": 0,
+	"settings":
+	{
+	},
+	"show_minimap": true,
+	"show_open_files": false,
+	"show_tabs": true,
+	"side_bar_visible": true,
+	"side_bar_width": 222.0,
+	"status_bar_visible": true,
+	"template_settings":
+	{
+	}
+}
