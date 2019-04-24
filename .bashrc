@@ -17,8 +17,8 @@ fi
 # Clear away all aliases; we do this here rather than in the $ENV file shared
 # between POSIX shells, because ksh relies on aliases to implement certain
 # POSIX utilities, like fc(1) and type(1)
-[[ $debug -eq 1 ]] && echo Unaliasing here!; sleep 1
-unalias -a
+#[[ $debug -eq 1 ]] && echo Unaliasing here!; sleep 1
+#unalias -a
 
 # If ENV is set, source it to get all the POSIX-compatible interactive stuff;
 # we should be able to do this even if we're running a truly ancient Bash
@@ -93,7 +93,7 @@ export PAGER='less'
 #
 if command -v tmux &> /dev/null && [ -n "$PS1" ] && [[ ! "$TERM" =~ screen ]] && [[ ! "$TERM" =~ tmux ]] && [ -z "$TMUX" ]; then
  # exec tmux
- { tmux a -t 0 || exec tmux new-session && exit;}
+ { tmux a -t 0 || exec tmux new-session && exit; }
 fi
 
 ###     Load any supplementary scripts
@@ -120,3 +120,5 @@ fi
 ###     For getting gitstatus in tmux
 #       stolen from https://github.com/drmad/tmux-git
 if [[ $TMUX ]]; then source ~/.tmux-git/tmux-git.sh; fi
+
+echo OSSYS: $OSSYS

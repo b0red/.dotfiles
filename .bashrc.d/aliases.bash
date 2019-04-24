@@ -119,7 +119,7 @@ alias psg="ps aux | grep -v grep | grep -i -e VSZ -e"
 
 ###     TMUX
 #
-alias tm=":tmux new -s main \; split-window -h \; split-window -v -p 30 \;"
+alias tm="tmux new -s main \; split-window -h \; split-window -v -p 30 \;"
 alias tmkill="tmux ls | grep : | cut -d. -f1 | awk '{print substr($1, 0, length($1)-1)}' | xargs kill"
 alias tmx="tmux a -t 0"
 
@@ -165,7 +165,7 @@ alias dclogs='docker-compose -f ~/docker/compose/docker-compose-basic.yml logs -
 alias dtail='docker logs -tf --tail="50" "$@"'
 alias dclean="docker run --rm -v /var/run/docker.sock:/var/run/docker.sock zzrot/docker-clean"
 
-###     Replace ifconfig
+###     Replace ifconfig                <----- Kanske inte funkar på LinuxMINT
 #
 alias ifconfig="ip -c a"
 
@@ -199,4 +199,4 @@ alias list_extensions="find . -type f | perl -ne 'print $1 if m/\.([^.\/]+)$/' |
 
 ###     Quick linux info
 #
-alias version="cat /etc/*release"
+alias version="cat /etc/*release"    

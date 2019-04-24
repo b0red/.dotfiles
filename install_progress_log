@@ -1,23 +1,6 @@
-
-Dotfiles installer Script - 2019-04-16 01:23:22
-Queried for OS and other info!
-Setting specific aliases for this OS
-Created backup dir /home/patrick/dotfiles/oldfiles
-Created backup dir
-curl already installed!
-htop already installed!
-ncdu already installed!
-pydf already installed!
-tree already installed!
-tmux already installed!
-vim already installed!
-mc already installed!
-Ran function 'app_installer'
-Moved old files to /home/patrick/dotfiles/oldfiles and symlinked the new ones!
-Files compressed ok!
-Ran function 'archive_it'
 Submodules added!
 Submodules updated!
-Cloning TMUX and submodules
-Cloning additional TMUX stuff
-Cloning VÍM and submodules
+Created backup dir
+Submodules updated! (TMUX)
+Submodules updated!
+gvimrc doesn't exist

@@ -3,13 +3,15 @@
 ### To install, clone this repo and symlink 2 files (for now, there might be a script to automate this)
 
 ```
-git clone git@bitbucket.org:b0red/dotfiles.git ~/dotfiles
+git clone --recurse-submodules git@bitbucket.org:b0red/dotfiles.git ~/dotfiles; cd ~/dotfiles
 ```
 
 & then (backup the 2 old files, .bashrc & .profile) and symlink the two files.
 
 ```
 mv ~/.profile ~/.profile.old; mv ~/.bashrc ~/.bashrc.old; ln -s ~/dotfiles/.bashrc ~/.bashrc; ln -s ~/dotfiles/.profile ~/.profile 
+
+(Not necessary if using ' --recurse-submodules ')
 git submodule init && git submodule update
 ```
 ## 2 ways to install the dotfiles
