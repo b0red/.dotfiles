@@ -28,7 +28,7 @@ fi
 if [ -d $HOME/dotfiles/.profile.d ]; then
 	for config in "$HOME"/dotfiles/.profile.d/*.sh ; do
 	. "$config"
-	# echo $config loaded.
+	#echo $config loaded.
 	done
 	unset -v config
 fi

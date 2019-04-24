@@ -112,7 +112,7 @@ fi
 #     for config in $HOME/dotfiles/.profile.d/*.sh;
 #     do
 #         source "$config"
-#         # echo "file $config loaded"; sleep 1
+#         #echo "file $config loaded"; sleep 1
 #     done
 #     unset -v config
 # fi
@@ -120,5 +120,4 @@ fi
 ###     For getting gitstatus in tmux
 #       stolen from https://github.com/drmad/tmux-git
 if [[ $TMUX ]]; then source ~/.tmux-git/tmux-git.sh; fi
-
-echo OSSYS: $OSSYS
+echo "Done!"; sleep 2; clear

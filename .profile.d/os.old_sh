@@ -58,7 +58,7 @@ else
         export MACH
     fi
 fi
-
+echo $DistroBasedOn
 # if [ $debug -eq 1 ]; then
 #     echo "=============================="
 #     echo "OS:        ${OS^}"

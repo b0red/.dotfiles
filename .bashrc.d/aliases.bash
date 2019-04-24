@@ -13,7 +13,7 @@ alias wget="wget -c $1"
 ###     Check if command exists             # Needs to be here first
 #
 function command_exists() {
-     if command -v "$1" >/dev/null 2>&1; then
+    if command -v "$1" >/dev/null 2>&1; then
         echo $1 is installed!
     else
         echo $1 is not installed!!
