@@ -39,7 +39,7 @@ clear
 
 ###     Debug on/off  - Change for debugging purposes
 #
-debug=1
+debug=0
 trace_debug=0
 SLEEP=0
 
@@ -62,12 +62,12 @@ OLDFILEARRAY=(.bashrc .profile .bash_profile .inputrc)
 
 ###     LogMessages
 #
-LOG_MESS_01="Ran function date_it"
-LOG_MESS_01_1="Quering for OS and other info!"
-LOG_MESS_02="Setting specific aliases for this system.\n" 
-LOG_MESS_03="Created backup dir"
+LOG_MESS_01="Ran function date_it."
+LOG_MESS_01_1="\nChecking for OS specifics:"
+LOG_MESS_02="Setting appropriate aliases for this system." 
+LOG_MESS_03="Created backup dir: "
 LOG_MESS_04="Ran function 'app_installer'"
-LOG_MESS_05="Moved old files to ${DIR} and symlinked the new ones!"
+LOG_MESS_05="Symlinked the new dotfiles!"
 LOG_MESS_06="Ran function 'archive_it'"
 LOG_MESS_07="Cloning TMUX and submodules"
 LOG_MESS_07_1="Cloning additional TMUX stuff"
@@ -89,14 +89,15 @@ fi
 
 unalias -a
 
-###     Check for logfile else create it
+###     Delete old log and create new
 #
 function date_it() {
     rm -f ${LOG}
     touch ${LOG}
-    #[[ $debug -eq 1 ]] && echo -e "\n$TITLE - $DATE\n"; sleep ${SLEEP}
-    [[ $debug -eq 1 ]] && echo -e "\n$TITLE - $DATE\n" || echo -e "\n$TITLE - $DATE\n" > ${LOG}; sleep ${SLEEP}
+    #[[ $debug -eq 1 ]] && printf "\n$TITLE - $DATE\n"; sleep ${SLEEP}
+    [[ $debug -eq 1 ]] && printf "\n$TITLE - $DATE\n" || printf "\n$TITLE - $DATE\n" >> $LOG; sleep ${SLEEP}
 }
+
 
 ###     Function for updating submodules
 #
@@ -114,14 +115,15 @@ function app_installer() {
     for APP in "${APPARRAY[@]}"
     do
         #echo $APP
-        if command -v $APP 2> /dev/null; then
-            [[ $debug -eq 1 ]] && echo "${APP} already installed" || echo -e "$APP already installed!" >> ${LOG}; sleep ${SLEEP}
-        elif ! [ -x command -v $APP 2>/dev/null ]; then
+        if command -v $APP >/dev/null 2>&1 ; then
+            STATUS="$APP already installed!"
+        elif ! [ -x command -v $APP >/dev/null 2>&1 ]; then
            sudo apt install $APP
-            [[ $debug -eq 1 ]] && echo "installing ${APP}" || echo -e "Installed $APP" >> ${LOG}; sleep ${SLEEP}
+            STATUS="Installing $APP"
         else
-            [[ $debug -eq 1 ]] && echo "${APP} failed to install!" || echo "$APP FAILED TO INSTALL!!!" >> ${LOG}; sleep ${SLEEP}
+            STATUS="$APP failed to install!"
         fi
+        [[ $debug -eq 1 ]] && echo "$STATUS"  || echo "$STATUS" >> $LOG; sleep ${SLEEP}
     done 
 }
 
@@ -142,6 +144,7 @@ function archive_it() {
     else
         zip -r -q -u -m $DIR/"$FILE" $DIR -x "*.zip" && FILE_STATUS="Files compressed ok!" || FILE_STATUS="Files not compressed!"
     fi
+    [[ $debug -eq 1 ]] && echo "$LOG_MESS_06" || echo "$LOG_MESS_06" >> ${LOG}; sleep ${SLEEP}
     [[ $debug -eq 1 ]] && echo "$FILE_STATUS" || echo "$FILE_STATUS" >> ${LOG} ; sleep ${SLEEP}
 }
 
@@ -154,26 +157,23 @@ function sym_link_check() {
            if [ -e "${LINK}" ] ; then
                 ### Found link
                 LINK_STATUS="removing $LINK" 
-                [[ $debug -eq 1 ]] && echo "$LINK_STATUS" || echo "$LINK_STATUS" >> ${LOG}; sleep ${SLEEP}
                 rm -f "$LINK" 
             else
                 ### Broken link
                 LINK_STATUS="Broken link: $LINK, removing it!"
-                [[ $debug -eq 1 ]] && echo "$LINK_STATUS" || echo "$LINK_STATUS" >> ${LOG} ; sleep ${SLEEP}
                 rm -f "$LINK"
              fi
         elif [ -e "${LINK}" ] ; then
             ### Broken link
             LINK_STATUS="$LINK is not a symlink. Moving it" 
-            [[ $debug -eq 1 ]] && echo "$LINK_STATUS" || echo "$LINK_STATUS" >> ${LOG} ; sleep ${SLEEP}
             mv "$LINK" $DIR
         else
             ### Missing link
             LINK_STATUS="Missing: $LINK. Symlinking it!"
-            [[ $debug -eq 1 ]] && echo "$LINK_STATUS" || echo "$LINK_STATUS" >> ${LOG} ; sleep ${SLEEP}
             ln -s ~/dotfiles/"$LINK" ~/
             #[[ $debug -eq 1 ]] && echo "updating submodules" || echo "updating submodules"; sleep ${SLEEP}
         fi
+        [[ $debug -eq 1 ]] && echo "$LINK_STATUS" || echo "$LINK_STATUS" >> ${LOG} ; sleep ${SLEEP}
     done
 }
 
@@ -243,26 +243,26 @@ function get_os() {
 function setting_standard_commands() {
     case $OSSYS in
         solaris*) 
-            [[ $debug -eq 1 ]] && echo "OS är: SOLARIS"; sleep ${SLEEP}
+            [[ $debug -eq 1 ]] && echo "Setting alias' for: Solaris" || echo "Setting alias' for: Ssolaris" >> $LOG; sleep ${SLEEP}
             alias install="pkg install" $1
             alias uninstall="pkg uninstall" $1
             alias app_search="pkg search" $1
             alias update="pkg update --accept" 
             ;;
         darwin*)  
-            [[ $debug -eq 1 ]] && echo "OS är: OSX"; sleep ${SLEEP}
+            [[ $debug -eq 1 ]] && echo "Setting alias' for: OSX" || echo "Setting alias' for: OSX" >> $LOG; sleep ${SLEEP}
             ;; 
         debian*)   
-            [[ $debug -eq 1 ]] && echo "OS är: LINUX (Debian)"; sleep ${SLEEP}
+            [[ $debug -eq 1 ]] && echo "Setting alias' for: LINUX (Debian)" || echo "Setting alias' for: LINUX (Debian)" >> $LOG; sleep ${SLEEP}
             #alias rm='rm -i' 
             alias apt_update="sudo aptitude update"
-            alias {sys_update,sysup,sysupdate}="sudo apt-get update && sudo apt-get upgrade"
+            alias {sys_update,update,sysupdate}="sudo apt-get update && sudo apt-get upgrade"
             alias install="apt-get install" $1
             alias uninstall="sudo apt remove"
-            alias sysclean="sudp apt clean; sudo apt autoremove; sudo apt purge"
+            alias sysclean="sudo apt clean; sudo apt autoremove; sudo apt purge"
             ;;
         bsd*) 
-            [[ $debug -eq 1 ]] && echo "OS är: *BSD"; sleep ${SLEEP}
+            [[ $debug -eq 1 ]] && echo "Setting alias' for: *BSD" || echo "Setting alias' for: *BSD" >> $LOG; sleep ${SLEEP}
             alias install="pkg install" $1
             alias uninstall="pkg delete" $1
             alias {sys_update,sysup,sysupdate}="freebsd-update fetch && freebsd-update install"
@@ -271,7 +271,7 @@ function setting_standard_commands() {
             alias clean="pkg clean -c"
             ;;
         redhat*)                                                           #     YUM (RedHat Linux, centos)
-            [[ $debug -eq 1 ]] && echo "OS är: RedHat"; sleep ${SLEEP}
+            [[ $debug -eq 1 ]] && echo "Setting alias' for: RedHat" || echo "Setting alias' for: RedHat" >> $LOG; sleep ${SLEEP}
             #PATH=$PATH:$HOME/bin
             alias install="sudo yum install -y" $1
             alias {uninstall,remove}="sudo yum remove" $1
@@ -282,7 +282,7 @@ function setting_standard_commands() {
             alias reinstall="sudo yum reinstall" $1
             ;;
         suse*)                                                            #     OpenSuSe)
-            [[ $debug -eq 1 ]] && echo "OS är: OpenSUSE"; sleep ${SLEEP}
+            [[ $debug -eq 1 ]] && echo "Setting alias' for: OpenSuSe" || echo "Setting alias' for: OpenSuSe" >> $LOG; sleep ${SLEEP}
             alias install="zypper install" $1
             alias uninstall="zypper remove" $1
             alias app_search="zypper search" $1
@@ -291,7 +291,7 @@ function setting_standard_commands() {
             alias dist_upgrade="sudo zypper dist-upgrade"
             ;;
         fedora*)                                                           #        Fedora
-            [[ $debug -eq 1 ]] && echo "OS är: Fedora"; sleep ${SLEEP}
+            [[ $debug -eq 1 ]] && echo "Setting alias' for: Fedora" || echo "Setting alias' for: Fedora" >> $LOG; sleep ${SLEEP}
             alias install="dnf install" $1
             alias {uninstall,remove}l="dnf remove" $1
             alias upgrade="dnf upgrade"
@@ -300,7 +300,7 @@ function setting_standard_commands() {
             alias sysclean="dnf clean all"
             ;;
         pacman*)                                                           #        ArchLinux
-            [[ $debug -eq 1 ]] && echo "OS är: PacMan"; sleep ${SLEEP}
+            [[ $debug -eq 1 ]] && echo "Setting alias' for: ArchLinux" || echo "Setting alias' for: ArchLinux" >> $LOG; sleep ${SLEEP}
             alias install="pacman -Syu" $1
             alias {uninstall,remove}="pacman -Rsc" $1
             alias force_install="pacman -S --force" $1
@@ -310,10 +310,10 @@ function setting_standard_commands() {
             alias package_list="pacman -Q"
             ;;
         msys*)    
-            [[ $debug -eq 1 ]] && echo "OS är: WINDOWS" ; sleep ${SLEEP}
+            [[ $debug -eq 1 ]] && echo "Setting alias' for: CygWIN" || echo "Setting alias' for: CygWIN" >> $LOG; sleep ${SLEEP}
             ;;
         *)        
-            [[ $debug -eq 1 ]] && echo "OS är: unknown: $OSTYPE"; sleep ${SLEEP} 
+            [[ $debug -eq 1 ]] && echo "Unknown OS!" || echo "Unknown OS!" >> $LOG; sleep ${SLEEP} 
             ;;
     esac
 }
@@ -321,57 +321,65 @@ function setting_standard_commands() {
 # ~--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--++--+--+--+--+--++--+--+--+--+--+
 
 ###     On first run. This is a quick and dirty script, no backups or questions asked!
+unalias -a
 
 date_it
-[[ $debug -eq 1 ]] && echo "${LOG}_MESS_01" || echo "${LOG_MESS_01}" >> ${LOG}; sleep ${SLEEP}
+[[ $debug -eq 1 ]] && echo "$LOG_MESS_01" || echo "$LOG_MESS_01" >> ${LOG}; sleep ${SLEEP}
+
+###     Check for apps, install if not found
+#
+app_installer
 
 ###     Run get_os and set same aliases for different os' commands
 #
 get_os
-[[ $debug -eq 1 ]] && echo -e "${LOG}_MESS_01_1" || echo -e ${LOG}_MESS_01_1 >> ${LOG}; sleep ${SLEEP}
-[[ $debug -eq 1 ]] && echo -e "OS=$OS\nDIST=$DIST\nDistroBasedOn=$DistroBasedOn" || echo -e \
-OS=$OS\nDIST=$DIST\nDistroBasedOn=$DistroBasedOn >> ${LOG}; sleep ${SLEEP}
+[[ $debug -eq 1 ]] && printf "$LOG_MESS_01_1\n" || printf "$LOG_MESS_01_1\n" >> ${LOG}; sleep ${SLEEP}
+[[ $debug -eq 1 ]] && printf "OS=$OS\nDIST=$DIST\nDistroBasedOn=$DistroBasedOn\n" || printf \
+"OS=$OS\nDIST=$DIST\nDistroBasedOn=$DistroBasedOn\n\n" >> ${LOG}; sleep ${SLEEP}
 
 setting_standard_commands
-[[ $debug -eq 1 ]] && echo -e "${LOG}_MESS_02" || echo -e "${LOG_MESS_02}" >> ${LOG};  sleep ${SLEEP}
-[[ $debug -eq 1 ]] && echo "Added aliases for $OSSYS!"; sleep ${SLEEP}
+[[ $debug -eq 1 ]] && printf "$LOG_MESS_02" || printf "${LOG_MESS_02}" >> ${LOG};  sleep ${SLEEP}
+[[ $debug -eq 1 ]] && printf "Added aliases for $OSSYS-based system!\n" || printf "Added aliases for $OSSYS-based system!\n" >> ${LOG}; sleep ${SLEEP}
 
 ###     Feth any updates to the dotfiles
 #
 git pull origin master
 
-###     If debug mode is on (=1) then don't fetch submodules, faster
+###     Ask confirmation for github
+#
+read -p "Update all repos (y/n)?" 
+if [ "$x" = "yes" ]
+then
+  # do the dangerous stuff
+  ###     If debug mode is on (=1) then don't fetch submodules, faster
 #
 [[ $debug -eq 1 ]] && echo "Not fetching submodules" || submodules_init; echo "Submodules added!" >> ${LOG}
 #[[ $debug -eq 1 ]] && echo "ran submodules_init" ; sleep ${SLEEP}
 [[ $debug -eq 1 ]] && echo "Not updating submodules" || submodules_update; echo "Submodules updated!" >> ${LOG}
+fi
 
 ###     Create backup dir
 #
 mkdir $DIR 2> /dev/null
-[[ $debug -eq 1 ]] && echo "${LOG}_MESS_03" || echo "${LOG}_MESS_03 $DIR" >> ${LOG} ; sleep ${SLEEP}
-echo ${LOG}_MESS_03 >> ${LOG}
-
-###     install various apps from array
-#
-app_installer
-[[ $debug -eq 1 ]] && echo "${LOG}_MESS_04" || echo "${LOG}_MESS_04" >> ${LOG}; sleep ${SLEEP}
+[[ $debug -eq 1 ]] && echo "$LOG_MESS_03 $DIR" || echo "$LOG_MESS_03 $DIR" >> ${LOG} ; sleep ${SLEEP}
 
 ###     Moving/Copying old files
-# mv ~/.profile $DIR/; mv ~/.bashrc $DIR/; 
+#
 copy_old_files
 ln -s ~/dotfiles/.bashrc ~/.bashrc; ln -s ~/dotfiles/.profile ~/.profile
-[[ $debug -eq 1 ]] && echo "${LOG}_MESS_05" || echo "${LOG}_MESS_05" >> ${LOG}; sleep ${SLEEP}
+[[ $debug -eq 1 ]] && echo "$LOG_MESS_05" || echo "$LOG_MESS_05" >> ${LOG}; sleep ${SLEEP}
 
+###     Archive old files (Not necessary?)
+#
 archive_it
-[[ $debug -eq 1 ]] && echo "${LOG}_MESS_06" || echo "${LOG}_MESS_06" >> ${LOG}; sleep ${SLEEP}
 
 ###     Clone tmux repo
 #
 git clone --recurse-submodules git@bitbucket.org:b0red/tmux.git ~/.tmux; cd ~/.tmux
+[[ $debug -eq 1 ]] && echo "$LOG_MESS_07" || echo "$LOG_MESS_07" >> ${LOG}; sleep ${SLEEP}
 [[ $debug -eq 1 ]] && echo "Not updating submodules! (TMUX)" || submodules_update; echo "Submodules updated! (TMUX)" >> ${LOG}
 ln -s ~/.tmux/.tmux.conf ~/.tmux.conf
-[[ $debug -eq 1 ]] && echo "${LOG}_MESS_07" || echo "${LOG}_MESS_07" >> ${LOG}; sleep ${SLEEP}
+
 
 ###     Clone additional tmux stuff
 #
@@ -379,7 +387,7 @@ ln -s ~/.tmux/.tmux.conf ~/.tmux.conf
 #git clone git://github.com/arl/tmux-gitbar ~/.tmux-gitbar
 ln -s extras/tmux-git.git ~/.tmux-git
 ln -s extras/tmux-gitbar ~/.tmux-gitbar
-[[ $debug -eq 1 ]] && echo "${LOG}_MESS_07_1" || echo "${LOG}_MESS_07_1" >> ${LOG}; sleep ${SLEEP}
+[[ $debug -eq 1 ]] && echo "$LOG_MESS_07_1" || echo "$LOG_MESS_07_1" >> ${LOG}; sleep ${SLEEP}
 
 
 ###     Check if line exists in file .bashrc, if not copy it
@@ -387,26 +395,26 @@ ln -s extras/tmux-gitbar ~/.tmux-gitbar
 grep -qxF "if [[ \$TMUX ]]; then source ~/.tmux-git/tmux-git.sh; fi" ~/.bashrc
 if [ $? -ne 0 ]; then
     echo "if [[ \$TMUX ]]; then source ~/.tmux-git/tmux-git.sh; fi" >> ~/.bashrc
-    [[ $debug -eq 1 ]] && echo "${LOG}_MESS_07_3" || echo "${LOG}_MESS_07_3" >> ${LOG}; sleep ${SLEEP}
+    [[ $debug -eq 1 ]] && echo "$LOG_MESS_07_3" || echo "$LOG_MESS_07_3" >> ${LOG}; sleep ${SLEEP}
 else
-    status="Line not added!";  echo $status
+    STATUS="Line not added!";  echo $STATUS
 fi
 
 ###     Clone vim repo & submodules & symlink files
 #
 git clone --recurse-submodules git@bitbucket.org:b0red/.vim.git ~/.vim; cd ~/.vim
-[[ $debug -eq 1 ]] && echo "${LOG}_MESS_07_1_a" || submodules_update; echo "${LOG}_MESS_07_1_b" >> ${LOG}
+[[ $debug -eq 1 ]] && echo "$LOG_MESS_07_1_a" || submodules_update; echo "$LOG_MESS_07_1_b" >> ${LOG}
 ln -s ~/.vim/vimrc ~/vimrc; 
-[[ -f ~/.vim/gvimrc ]] && ln -s ~/.vim/gvimrc ~/gvimrc; echo "Symlinked gvimrc" || echo "${LOG}_MESS_07_2"; \
-echo "${LOG}_MESS_07_2" >> ${LOG}
-[[ $debug -eq 1 ]] && echo "${LOG}_MESS_08" || echo "${LOG}_MESS_08" >> ${LOG}; sleep ${SLEEP}
+[[ -f ~/.vim/gvimrc ]] && ln -s ~/.vim/gvimrc ~/gvimrc; echo "Symlinked gvimrc" || echo "$LOG_MESS_07_2"; \
+echo "$LOG_MESS_07_2" >> ${LOG}
+[[ $debug -eq 1 ]] && echo "$LOG_MESS_08" || echo "$LOG_MESS_08" >> ${LOG}; sleep ${SLEEP}
 
  
 ###     Source .bashrc
 #
 source  ~/.bashrc
 
-echo "${LOG}_MESS_09"
+echo "$LOG_MESS_09"
 
 # ~--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--++--+--+--+--+--++--+--+--+--+--+
 
@@ -414,7 +422,7 @@ echo "${LOG}_MESS_09"
 #
 sleep 5
 #clear; 
-echo -e "\n====== Summary ======\nResult of $TITLE"
+printf "\n====== Summary ======\nResult of $TITLE"
 cat ${LOG}
 sleep ${SLEEP}
 [[ ! $debug -eq 1 ]] && exit 0
@@ -424,17 +432,17 @@ sleep ${SLEEP}
 #
 if [ $debug -eq 1 ]; then
     clear
-    echo -e "\n$TITLE"
-    echo -e "\nOutput from:${ORANGE} ${0##*/} ${NC} \n"
-    echo -e "Hostname:          $HOSTNAME\n"
-    echo -e "BackupDIR:         $DIR"
-    echo -e "Oldfiles:          $OLDFILES"
-    echo -e "File:              $FILE"
-    echo -e "Folderpath:        $DIR/$HOSTNAME\n"
-    echo -e "Archive status:    $FILE_STATUS"
-    echo -e "Archive name:      $ARCHIVE"
-    echo -e "Logfile:           ${LOG}"
-    echo -e "Date:              $DATE\n"
-    echo -e "DistroBasedOn:     $DistroBasedOn"
+    printf "\n$TITLE"
+    printf "\nOutput from:${ORANGE} ${0##*/} ${NC} \n"
+    printf "Hostname:          $HOSTNAME\n"
+    printf "BackupDIR:         $DIR"
+    printf "Oldfiles:          $OLDFILES"
+    printf "File:              $FILE"
+    printf "Folderpath:        $DIR/$HOSTNAME\n"
+    printf "Archive status:    $FILE_STATUS"
+    printf "Archive name:      $ARCHIVE"
+    printf "Logfile:           ${LOG}"
+    printf "Date:              $DATE\n"
+    printf "DistroBasedOn:     $DistroBasedOn"
 fi
 exit 0

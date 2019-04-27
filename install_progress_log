@@ -1,6 +1,33 @@
-Submodules added!
-Submodules updated!
-/home/patrick/dotfiles/install_progress_log_MESS_03
+
+Dotfiles Installer Script - 2019-04-26 02:30:05
+Ran function date_it.
+curl already installed!
+htop already installed!
+ncdu already installed!
+pydf already installed!
+tree already installed!
+tmux already installed!
+vim already installed!
+mc already installed!
+
+Checking for OS specifics:
+OS=linux
+DIST=LinuxMint
+DistroBasedOn=debian
+
+Setting alias' for: LINUX (Debian)
+Setting appropriate aliases for this system.Added aliases for debian-based system!
+Created backup dir:  /home/patrick/dotfiles/oldfiles
+.bashrc moved to /home/patrick/dotfiles/oldfiles
+.profile moved to /home/patrick/dotfiles/oldfiles
+.bash_profile moved to /home/patrick/dotfiles/oldfiles
+.inputrc moved to /home/patrick/dotfiles/oldfiles
+Symlinked the new dotfiles!
+Ran function 'archive_it'
+Files compressed ok!
+Cloning TMUX and submodules
 Submodules updated! (TMUX)
-/home/patrick/dotfiles/install_progress_log_MESS_07_1_b
-/home/patrick/dotfiles/install_progress_log_MESS_07_2
+Cloning additional TMUX stuff
+Submodules updated!
+gvimrc doesn't exist
+Cloning VÍM and submodules

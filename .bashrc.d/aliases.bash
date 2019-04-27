@@ -5,7 +5,7 @@
 #-------------------------------------------------------------------------
 ###     Reload aliases, functions and all
 #
-alias reload='source ~/.bashrc'
+alias reload="source ~/.bashrc"
 
 alias nano="nano -c"
 alias wget="wget -c $1"
@@ -27,27 +27,27 @@ function command_check() {
 
 ###	Getting colored results when using a pipe from grep to less.
 # 
-alias less='less -R'
+alias less="less -R"
 
 ###	Jump back n directories at a time
 # 
-alias ..='cd ..'
-alias ...='cd ../../'
-alias ....='cd ../../../'
-alias .....='cd ../../../../'
-alias ......='cd ../../../../../'
+alias ..="cd .."
+alias ...="cd ../../"
+alias ....="cd ../../../"
+alias .....="cd ../../../../"
+alias ......="cd ../../../../../"
 
 ###	Various
 # 
-alias h='history | grep '
+alias h="history | grep "
 alias hr="history | sort -rn"
-alias mv='mv -v' 
-alias rm='rm -i'
+alias mv="mv -v" 
+alias rm="rm -i"
 
-###	One letter quickies:
+### One letter quickies:
 # 
-alias p='pwd'
-alias x='exit'
+alias p="pwd"
+alias x="exit"
 
 ###	Nicer directory listings
 # 
@@ -130,7 +130,7 @@ alias tmx="tmux a -t 0"
 ###     Misc
 #
 alias latest='grep " install " /var/log/dpkg.log.1 /var/dpkg.log'
-alias sshrestart='service ssh restart'
+alias sshrestart="service ssh restart"
 alias no_extensions='find . -type f ! -name "*.*"'
 alias {module-update,modup}="git submodule foreach git pull origin master"
 alias weather="curl wttr.in/stockholm"
@@ -159,8 +159,8 @@ alias services_run="service --status-all | grep running"
 
 ###     Docker commands
 #
-alias dcp='docker-compose -f ~/docker/compose/docker-compose-basic.yml '
-alias dcpull='docker-compose -f ~/docker/compose/docker-compose-basic.yml pull --parallel'
+alias dcp="docker-compose -f ~/docker/compose/docker-compose-basic.yml "
+alias dcpull="docker-compose -f ~/docker/compose/docker-compose-basic.yml pull --parallel"
 alias dclogs='docker-compose -f ~/docker/compose/docker-compose-basic.yml logs -tf --tail="50" '
 alias dtail='docker logs -tf --tail="50" "$@"'
 alias dclean="docker run --rm -v /var/run/docker.sock:/var/run/docker.sock zzrot/docker-clean"
