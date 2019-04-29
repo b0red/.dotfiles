@@ -7,5 +7,20 @@
 ##
 ###############################################################################################
 
-name="${1:?"A name is required."}"
-echo "Hello, $name!"
+###		Check for 'firstrun'
+if [ -f ~/dotfiles/firstrun ]; then
+	# File has ran before
+	###		Check value
+	read -r line < firstrun
+	#echo $line
+	if [ $line = 0 ]; then 
+	 	####	Do first ttime stuff here
+	 	echo "it's 0"
+
+	 else
+	 	###		Do update stuff here
+	 	echo "It's 1"
+	fi
+	else
+	# This is the first time, file doesn't exist
+fi
