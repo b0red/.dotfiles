@@ -67,16 +67,16 @@ LOG_MESS_01_1="\nChecking for OS specifics:"
 LOG_MESS_02="Setting appropriate aliases for this system." 
 LOG_MESS_03="Created backup dir: "
 LOG_MESS_04="Ran function 'app_installer'"
-LOG_MESS_05="Symlinked the new dotfiles!"
-LOG_MESS_06="Ran function 'archive_it'"
-LOG_MESS_07="Cloning TMUX and submodules"
+LOG_MESS_05="\nSymlinked the new dotfiles!"
+LOG_MESS_06="\nRan function 'archive_it'"
+LOG_MESS_07="\nCloning TMUX and submodules"
 LOG_MESS_07_1="Cloning additional TMUX stuff"
 LOG_MESS_07_1_a="Not updating submodules"
 LOG_MESS_07_1_b="Submodules updated!"
 LOG_MESS_07_2="gvimrc doesn't exist"
 LOG_MESS_07_3="Added line for .tmux-git to .bashrc"
 LOG_MESS_08="Cloning VÍM and submodules"
-LOG_MESS_09="Done setting up ~/dotfiles"
+LOG_MESS_09="\nDone setting up ~/dotfiles"
 
 # ~--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--++--+--+--+--+--++--+--+--+--+--+
 ###     ^NO Editing below this line ^
@@ -338,7 +338,6 @@ get_os
 "OS=$OS\nDIST=$DIST\nDistroBasedOn=$DistroBasedOn\n\n" >> ${LOG}; sleep ${SLEEP}
 
 setting_standard_commands
-[[ $debug -eq 1 ]] && printf "$LOG_MESS_02" || printf "${LOG_MESS_02}" >> ${LOG};  sleep ${SLEEP}
 [[ $debug -eq 1 ]] && printf "Added aliases for $OSSYS-based system!\n" || printf "Added aliases for $OSSYS-based system!\n" >> ${LOG}; sleep ${SLEEP}
 
 ###     Feth any updates to the dotfiles
@@ -387,7 +386,7 @@ ln -s ~/.tmux/.tmux.conf ~/.tmux.conf
 #git clone git://github.com/arl/tmux-gitbar ~/.tmux-gitbar
 ln -s extras/tmux-git.git ~/.tmux-git
 ln -s extras/tmux-gitbar ~/.tmux-gitbar
-[[ $debug -eq 1 ]] && echo "$LOG_MESS_07_1" || echo "$LOG_MESS_07_1" >> ${LOG}; sleep ${SLEEP}
+#[[ $debug -eq 1 ]] && echo "$LOG_MESS_07_1" || echo "$LOG_MESS_07_1" >> ${LOG}; sleep ${SLEEP}
 
 
 ###     Check if line exists in file .bashrc, if not copy it

@@ -1,0 +1,30 @@
+Att göra:
+
+ ☐ ta bor check för symlink, den skapar troligtvis bara fel.
+   gör en check om filen som skall länkas finns eller inte, om den finns, symlänka, annars inte
+
+ ✔ fixa casesatsen för de olika aliasen @done (19-04-27 22:44)
+ ✔ fixa så logfilen skrivs snyggt @done (19-04-27 22:44)
+ ☐ ev fixa så att RunMe.sh kollar om det är kört tidigare eller om det är nytt?
+ ☐ Skapa en "firstrun"-check. Om inte körd tidigare, gör en sak, annars en annan.
+   fil som heter firstrun, innehåller 1 eller 0
+
+ ☐ kanske fixa status i function'en, 
+	  början sstatus = uppdaterar ngt
+	  klar = satus & done?
+
+ ☐ Flytta in (i extras, enklare att hantera och hålla uppdaterade! SUBMODULES!):
+ ☐ git clone git://github.com/drmad/tmux-git.git ~/.tmux-git
+ ☐ git clone git://github.com/arl/tmux-gitbar ~/.tmux-gitbar
+
+
+Länkar:
+---------------------------------------------------------------------------------
+https://cromwell-intl.com/open-source/package-management.html
+https://packagecontrol.io/packages/PlainTasks
+
+Används inte:
+
+#[[ -e $LOG ]] && rm -f $LOG || touch $LOG; echo -e "\n\n$NAME - $DATE" > $LOG
+#[[ -e ${LOG} ]] && rm -f ${LOG} || (touch ${LOG}; echo -e "\n\n$NAME - $DATE" > ${LOG})
+    
