@@ -1,9 +1,15 @@
 [submodule "extras/bat"]
 	path = extras/bat
-	url = git@github.com:sharkdp/bat.git
+	url = https://github.com/sharkdp/bat.git
 [submodule "extras/.tmux-git"]
 	path = extras/.tmux-git
 	url = git://github.com/drmad/tmux-git.git
 [submodule "extras/.tmux-gitbar"]
 	path = extras/.tmux-gitbar
 	url = git://github.com/arl/tmux-gitbar
+[submodule "extras/prettyping"]
+	path = extras/prettyping
+	url = git@github.com:denilsonsa/prettyping
+[submodule "extras/bash-spinner"]
+	path = extras/bash-spinner
+	url = git@github.com:tlatsas/bash-spinner
