@@ -98,7 +98,6 @@ function date_it() {
     [[ $debug -eq 1 ]] && printf "\n$TITLE - $DATE\n" || printf "\n$TITLE - $DATE\n" >> $LOG; sleep ${SLEEP}
 }
 
-
 ###     Function for updating submodules
 #
 function submodules_init() {
@@ -261,7 +260,7 @@ function setting_standard_commands() {
             alias uninstall="sudo apt remove"
             alias sysclean="sudo apt clean; sudo apt autoremove; sudo apt purge"
             ;;
-        bsd*) 
+        *bsd) 
             [[ $debug -eq 1 ]] && echo "Setting alias' for: *BSD" || echo "Setting alias' for: *BSD" >> $LOG; sleep ${SLEEP}
             alias install="pkg install" $1
             alias uninstall="pkg delete" $1
@@ -321,26 +320,33 @@ function setting_standard_commands() {
 # ~--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--++--+--+--+--+--++--+--+--+--+--+
 
 ###     On first run. This is a quick and dirty script, no backups or questions asked!
-unalias -a
 
+###     Create  logfile
+#
 date_it
 [[ $debug -eq 1 ]] && echo "$LOG_MESS_01" || echo "$LOG_MESS_01" >> ${LOG}; sleep ${SLEEP}
 
+###     Removing all old aliases
+#
+unalias -a
+[[ $debug -eq 1 ]] && echo "Done unalias'" || echo "Done unalias'" >> ${LOG}; sleep ${SLEEP}
 ###     Check for apps, install if not found
 #
 app_installer
 
-###     Run get_os and set same aliases for different os' commands
+###     Check what os this is running on
 #
 get_os
 [[ $debug -eq 1 ]] && printf "$LOG_MESS_01_1\n" || printf "$LOG_MESS_01_1\n" >> ${LOG}; sleep ${SLEEP}
 [[ $debug -eq 1 ]] && printf "OS=$OS\nDIST=$DIST\nDistroBasedOn=$DistroBasedOn\n" || printf \
 "OS=$OS\nDIST=$DIST\nDistroBasedOn=$DistroBasedOn\n\n" >> ${LOG}; sleep ${SLEEP}
 
+###     Setting up aliases for specific os'
+#
 setting_standard_commands
 [[ $debug -eq 1 ]] && printf "Added aliases for $OSSYS-based system!\n" || printf "Added aliases for $OSSYS-based system!\n" >> ${LOG}; sleep ${SLEEP}
 
-###     Feth any updates to the dotfiles
+###     Feth any updates to the dotfiles repo
 #
 git pull origin master
 
@@ -349,8 +355,7 @@ git pull origin master
 read -p "Update all repos (y/n)?" 
 if [ "$x" = "yes" ]
 then
-  # do the dangerous stuff
-  ###     If debug mode is on (=1) then don't fetch submodules, faster
+ ###     If debug mode is on (=1) then don't fetch submodules, faster
 #
 [[ $debug -eq 1 ]] && echo "Not fetching submodules" || submodules_init; echo "Submodules added!" >> ${LOG}
 #[[ $debug -eq 1 ]] && echo "ran submodules_init" ; sleep ${SLEEP}
