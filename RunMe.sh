@@ -244,7 +244,7 @@ function setting_standard_commands() {
         solaris*) 
             [[ $debug -eq 1 ]] && echo "Setting alias' for: Solaris" || echo "Setting alias' for: Ssolaris" >> $LOG; sleep ${SLEEP}
             alias install="pkg install" $1
-            alias uninstall="pkg uninstall" $1
+            alias {uninstall,remove}="pkg uninstall" $1
             alias app_search="pkg search" $1
             alias update="pkg update --accept" 
             ;;
@@ -254,21 +254,21 @@ function setting_standard_commands() {
         debian*)   
             [[ $debug -eq 1 ]] && echo "Setting alias' for: LINUX (Debian)" || echo "Setting alias' for: LINUX (Debian)" >> $LOG; sleep ${SLEEP}
             #alias rm='rm -i' 
+            alias install="apt-get install" $1
+            alias {uninstall,remove}="sudo apt remove"
             alias apt_update="sudo aptitude update"
             alias {sys_update,update,sysupdate}="sudo apt-get update && sudo apt-get upgrade"
-            alias install="apt-get install" $1
-            alias uninstall="sudo apt remove"
             alias sysclean="sudo apt clean; sudo apt autoremove; sudo apt purge"
             ;;
         *bsd) 
             [[ $debug -eq 1 ]] && echo "Setting alias' for: *BSD" || echo "Setting alias' for: *BSD" >> $LOG; sleep ${SLEEP}
             alias install="pkg install" $1
-            alias uninstall="pkg delete" $1
+            alias {uninstall,remove}="pkg delete" $1
             alias {sys_update,sysup,sysupdate}="freebsd-update fetch && freebsd-update install"
             alias upgrade="pkg update && pkg upgrade"
             alias autoclean="pkg autoremove"
             alias clean="pkg clean -c"
-            ;;
+            unalias ll; alias ll="";;
         redhat*)                                                           #     YUM (RedHat Linux, centos)
             [[ $debug -eq 1 ]] && echo "Setting alias' for: RedHat" || echo "Setting alias' for: RedHat" >> $LOG; sleep ${SLEEP}
             #PATH=$PATH:$HOME/bin
@@ -283,7 +283,7 @@ function setting_standard_commands() {
         suse*)                                                            #     OpenSuSe)
             [[ $debug -eq 1 ]] && echo "Setting alias' for: OpenSuSe" || echo "Setting alias' for: OpenSuSe" >> $LOG; sleep ${SLEEP}
             alias install="zypper install" $1
-            alias uninstall="zypper remove" $1
+            alias {uninstall,remove}="zypper remove" $1
             alias app_search="zypper search" $1
             alias update="sudo zypper refresh; sudo zypper dup"
             alias sysclean="sudo zypper clean -a"
@@ -292,7 +292,7 @@ function setting_standard_commands() {
         fedora*)                                                           #        Fedora
             [[ $debug -eq 1 ]] && echo "Setting alias' for: Fedora" || echo "Setting alias' for: Fedora" >> $LOG; sleep ${SLEEP}
             alias install="dnf install" $1
-            alias {uninstall,remove}l="dnf remove" $1
+            alias {uninstall,remove}="dnf remove" $1
             alias upgrade="dnf upgrade"
             alias search="dnf search" $1
             alias autoremove="dnf remove" $1

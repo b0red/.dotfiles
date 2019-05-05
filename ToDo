@@ -1,7 +1,10 @@
 Att göra:
 
- ☐ ta bor check för symlink, den skapar troligtvis bara fel.
+ ☐ ta bort check för symlink, den skapar troligtvis bara fel.
    gör en check om filen som skall länkas finns eller inte, om den finns, symlänka, annars inte
+ 
+ ☐ bygga om så att den först kolla vilket system det är, sen skriver in det så att bash-script funkar
+  
 
  ✔ fixa casesatsen för de olika aliasen @done (19-04-27 22:44)
  ✔ fixa så logfilen skrivs snyggt @done (19-04-27 22:44)
