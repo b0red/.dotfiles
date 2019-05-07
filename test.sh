@@ -29,7 +29,8 @@ if [ -f ~/dotfiles/firstrun ]; then
 	# This is the first time, file doesn't exist
 fi
 
-function get_os() {
+function get_os() 
+{
     #checks for os tyoe, this to alias right things
     OS=$(uname); OS="${OS,,}"
     KERNEL=$(uname -r)
@@ -92,7 +93,8 @@ function get_os() {
     fi
 }
 
-function setting_standard_commands() {
+function setting_standard_commands() 
+{
     case $OSSYS in
         solaris*) 
             [[ $debug -eq 1 ]] && echo "Setting alias' for: Solaris" || echo "Setting alias' for: Ssolaris" >> $LOG; sleep ${SLEEP}

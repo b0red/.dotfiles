@@ -163,6 +163,31 @@
 	},
 	"buffers":
 	[
+		{
+			"file": "test.sh",
+			"settings":
+			{
+				"buffer_size": 7670,
+				"encoding": "UTF-8",
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"contents": "\t",
+			"settings":
+			{
+				"buffer_size": 1,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": ".profile.d/os.old_sh",
+			"settings":
+			{
+				"buffer_size": 2604,
+				"line_ending": "Unix"
+			}
+		}
 	],
 	"build_system": "",
 	"build_system_choices":
@@ -265,26 +290,32 @@
 	"expanded_folders":
 	[
 		"/home/patrick/dotfiles",
-		"/home/patrick/dotfiles/.bashrc.d"
+		"/home/patrick/dotfiles/.bashrc.d",
+		"/home/patrick/dotfiles/.cygwin.d",
+		"/home/patrick/dotfiles/.profile.d",
+		"/home/patrick/dotfiles/extras",
+		"/home/patrick/dotfiles/linux"
 	],
 	"file_history":
 	[
-		"/home/patrick/dotfiles/.bashrc",
+		"/home/patrick/dotfiles/.gitattributes",
 		"/home/patrick/dotfiles/.gitignore",
-		"/home/patrick/dotfiles/.gitmodules",
-		"/home/patrick/dotfiles/test.sh",
+		"/home/patrick/dotfiles/dotfiles.sublime-project",
+		"/home/patrick/dotfiles/.bashrc.d/git.bash",
+		"/home/patrick/dotfiles/ToDo",
 		"/home/patrick/dotfiles/RunMe.sh",
+		"/home/patrick/dotfiles/test.sh",
+		"/home/patrick/dotfiles/.gitmodules",
+		"/home/patrick/.ssh/config",
+		"/home/patrick/dotfiles/.bashrc",
 		"/home/patrick/dotfiles/.bashrc.d/variables.bash",
 		"/home/patrick/dotfiles/.profile",
 		"/home/patrick/dotfiles/install_progress_log",
 		"/home/patrick/dotfiles/.bashrc.d/aliases.bash",
-		"/home/patrick/dotfiles/ToDo",
 		"/home/patrick/dotfiles/.profile.d/browser.sh",
 		"/home/patrick/dotfiles/.profile.d/os.sh",
 		"/home/patrick/dotfiles/README.md",
 		"/home/patrick/dotfiles/.bashrc.d/functions.bash",
-		"/home/patrick/dotfiles/.bashrc.d/git.bash",
-		"/home/patrick/dotfiles/dotfiles.sublime-project",
 		"/home/patrick/dotfiles/.bashrc.d/env.bash",
 		"/home/patrick/.tmux.conf",
 		"/home/patrick/dotfiles/.bashrc.d/exports.bash",
@@ -296,7 +327,6 @@
 		"/home/patrick/bin/FortuneTweet.sh",
 		"/home/patrick/dotfiles/junk",
 		"/home/patrick/dotfiles/config",
-		"/home/patrick/.ssh/config",
 		"/home/patrick/.config/sublime-text-3/Packages/User/debug_if_then.sublime-snippet",
 		"/home/patrick/bin/config",
 		"/home/patrick/dotfiles/.bashrc.d/messages.json",
@@ -342,7 +372,7 @@
 	],
 	"find":
 	{
-		"height": 40.0
+		"height": 28.0
 	},
 	"find_in_files":
 	{
@@ -358,6 +388,7 @@
 		"case_sensitive": false,
 		"find_history":
 		[
+			"uninstall",
 			".tmux",
 			"07_1",
 			"03",
@@ -389,6 +420,7 @@
 		"regex": false,
 		"replace_history":
 		[
+			"{uninstall,remove}",
 			"printf",
 			"$LOG_",
 			"\"",
@@ -406,8 +438,99 @@
 	"groups":
 	[
 		{
+			"selected": 2,
 			"sheets":
 			[
+				{
+					"buffer": 0,
+					"file": "test.sh",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 7670,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								735,
+								735
+							]
+						],
+						"settings":
+						{
+							"git_savvy.repo_path": "/home/patrick/dotfiles",
+							"syntax": "Packages/ShellScript/Bash.sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 184.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 2,
+					"type": "text"
+				},
+				{
+					"buffer": 1,
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 1,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								1,
+								1
+							]
+						],
+						"settings":
+						{
+							"auto_name": "",
+							"syntax": "Packages/Text/Plain text.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 1,
+					"type": "text"
+				},
+				{
+					"buffer": 2,
+					"file": ".profile.d/os.old_sh",
+					"semi_transient": true,
+					"settings":
+					{
+						"buffer_size": 2604,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"git_savvy.repo_path": "/home/patrick/dotfiles",
+							"syntax": "Packages/Text/Plain text.tmLanguage",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 4.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 0,
+					"type": "text"
+				}
 			]
 		}
 	],
@@ -454,19 +577,23 @@
 	{
 		"height": 126.0
 	},
-	"pinned_build_system": "",
+	"pinned_build_system": "Packages/ShellScript/ShellScript.sublime-build",
 	"project": "dotfiles.sublime-project",
 	"replace":
 	{
-		"height": 72.0
+		"height": 52.0
 	},
-	"save_all_on_build": true,
+	"save_all_on_build": false,
 	"select_file":
 	{
 		"height": 0.0,
 		"last_filter": "",
 		"selected_items":
 		[
+			[
+				"git",
+				".bashrc.d/git.bash"
+			]
 		],
 		"width": 0.0
 	},
