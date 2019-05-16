@@ -109,11 +109,28 @@ function setting_standard_commands()
         debian*)   
             [[ $debug -eq 1 ]] && echo "Setting alias' for: LINUX (Debian)" || echo "Setting alias' for: LINUX (Debian)" >> $LOG; sleep ${SLEEP}
             #alias rm='rm -i' 
-            alias install="apt-get install" $1
-            alias {uninstall,remove}="sudo apt remove"
+            # Upgrade
             alias apt_update="sudo aptitude update"
             alias {sys_update,update,sysupdate}="sudo apt-get update && sudo apt-get upgrade"
+            # install
+            alias install="apt-get install" $1
+            alias {uninstall,remove}="sudo apt remove"
+            alias {sys_update,update,sysupdate}="sudo apt-get update && sudo apt-get upgrade"
+            alias {sys_update,update,sysupdate}="sudo apt-get update && sudo apt-get upgrade"
             alias sysclean="sudo apt clean; sudo apt autoremove; sudo apt purge"
+            alias installf="sudo apt -f install" #force install
+            alias {reinnstall,installfr}="sudo apt -f install --rreinstall" # Force reinstall
+            # Cleaning
+            alias clean="sudo apt clean && sudo apt autoclean"
+            alias remove="sudo apt remove && sudo apt autoremove"
+            alias purge="sudo apt purge"
+            alias deborphan="sudo deborphan | xaargs sudo apt -y remove --purge"
+            alias apt_update="sudo aptitude update"
+            alias apt_update="sudo aptitude update"
+            # Network Start, Stop, and Restart
+            alias networkrestart='sudo service networking restart'
+            alias networkstop='sudo service networking stop'
+            alias networkstart='sudo service networking start'
             ;;
         *bsd) 
             [[ $debug -eq 1 ]] && echo "Setting alias' for: *BSD" || echo "Setting alias' for: *BSD" >> $LOG; sleep ${SLEEP}

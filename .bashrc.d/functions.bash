@@ -42,10 +42,10 @@ function ff() {
         echo "Usage: 'ff <filename to search for>'"
         return 1
     else
-        [[ -f $HOME/bin/spinner.sh ]]  && start_spinner 'searching...'
+        #[[ -f $HOME/bin/spinner.sh ]]  && start_spinner 'searching...'
         echo "searching for: $1"
         find . -name "$1"
-        [[ -f $HOME/bin/spinner.sh ]]  && stop_spinner $?
+        #[[ -f $HOME/bin/spinner.sh ]]  && stop_spinner $?
     fi
 }
 
