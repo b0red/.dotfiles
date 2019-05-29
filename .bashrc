@@ -95,11 +95,12 @@ get_os
 setting_standard_commands
 
 ###     Load tmux as soon as we login to shell, logout when exit tmux       
-#
-if command -v tmux &> /dev/null && [ -n "$PS1" ] && [[ ! "$TERM" =~ screen ]] && [[ ! "$TERM" =~ tmux ]] && [ -z "$TMUX" ]; then
- # exec tmux
- { tmux a -t 0 || exec tmux new-session && exit; }
-fi
+#           this fucks up tmux, can't save tmux panes layouts
+#           paused for now
+#if command -v tmux &> /dev/null && [ -n "$PS1" ] && [[ ! "$TERM" =~ screen ]] && [[ ! "$TERM" =~ tmux ]] && [ -z "$TMUX" ]; then
+# # exec tmux
+# { tmux a -t 0 || exec tmux new-session && exit; }
+#fi
 
 ###     Load any supplementary scripts
 #       Stolen from (https://bit.ly/2slDBSV)
