@@ -48,7 +48,7 @@ git submodule foreach git pull origin master
 * [https://github.com/kenorb/dotfiles/blob/master/.bash_functions](https://github.com/kenorb/dotfiles/blob/master/.bash_functions)
 * [https://github.com/kenorb/dotfiles/blob/master/.bash_aliases](https://github.com/kenorb/dotfiles/blob/master/.bash_aliases)
 * [https://github.com/sharkdp/bat/](https://github.com/sharkdp/bat/)
-* [https://github.com/denilsonsa/prettyping.git]https://github.com/denilsonsa/prettyping.git) ~/dotfiles/extras/prettyping
+* [https://github.com/denilsonsa/prettyping.git](https://github.com/denilsonsa/prettyping.git) ~/dotfiles/extras/prettyping
 
 ### tested on:
 * Debian (Ubuntu)
