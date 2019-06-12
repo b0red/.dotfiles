@@ -91,8 +91,9 @@ export PAGER='less'
 
 ###     Trying to run alias'es here
 #
-get_os
-setting_standard_commands
+# NOT working 4 the moment
+# get_os
+# setting_standard_commands
 
 ###     Load tmux as soon as we login to shell, logout when exit tmux       
 #           this fucks up tmux, can't save tmux panes layouts
@@ -125,5 +126,6 @@ fi
 
 ###     For getting gitstatus in tmux
 #       stolen from https://github.com/drmad/tmux-git
-if [[ $TMUX ]]; then source ~/.tmux-git/tmux-git.sh; fi
-echo "Done!"; sleep 2; clear
+if [[ $TMUX ]]; then source ~/.tmux/extras/tmux-git/tmux-git.sh; fi
+
+echo "Done!"; sleep 5; clear
