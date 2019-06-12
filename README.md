@@ -31,7 +31,7 @@ git submodule init && git submodule update
 * Running the 'RunMe.sh' script
 * the script wont break anything, but it might not work as intended :(
 
-### Other stuff thats good to have
+### Other stuff thats nice to have
 * htop ncdu pydf tree mc 
 ```
 sudo apt install htop ncdu pydf tree mc #On debianbased systems (The RunMe script installs these)
