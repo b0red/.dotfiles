@@ -257,7 +257,7 @@ function setting_standard_commands() {
             alias install="apt-get install" $1
             alias {uninstall,remove}="sudo apt remove"
             alias apt_update="sudo aptitude update"
-            alias {sys_update,update,sysupdate}="sudo apt-get update && sudo apt-get upgrade"
+            alias {sys_update,update,sysupdate}="sudo apt-get update && sudo apt-get upgrade -y"
             alias sysclean="sudo apt clean; sudo apt autoremove; sudo apt purge"
             ;;
         *bsd) 
