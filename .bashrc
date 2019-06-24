@@ -129,3 +129,4 @@ fi
 if [[ $TMUX ]]; then source ~/.tmux/extras/tmux-git/tmux-git.sh; fi
 
 echo "Done!"; sleep 5; clear
+export PATH=$PATH:/snap/bin

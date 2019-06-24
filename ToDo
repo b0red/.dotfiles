@@ -20,6 +20,19 @@ Att göra:
  ☐ git clone git://github.com/drmad/tmux-git.git ~/.tmux-git
  ☐ git clone git://github.com/arl/tmux-gitbar ~/.tmux-gitbar
 
+Kanske kan omarbetas: 
+Källa: https://www.cyberciti.biz/tips/bash-aliases-mac-centos-linux-unix.html
+### Get os name via uname ###
+_myos="$(uname)"
+ 
+### add alias as per os using $_myos ###
+case $_myos in
+   Linux) alias foo='/path/to/linux/bin/foo';;
+      FreeBSD|OpenBSD) alias foo='/path/to/bsd/bin/foo' ;;
+         SunOS) alias foo='/path/to/sunos/bin/foo' ;;
+            *) ;;
+            esac
+
 
 Länkar:
 ---------------------------------------------------------------------------------
@@ -32,4 +45,5 @@ Används inte:
 
 #[[ -e $LOG ]] && rm -f $LOG || touch $LOG; echo -e "\n\n$NAME - $DATE" > $LOG
 #[[ -e ${LOG} ]] && rm -f ${LOG} || (touch ${LOG}; echo -e "\n\n$NAME - $DATE" > ${LOG})
-    
+
+
