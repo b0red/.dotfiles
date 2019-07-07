@@ -215,3 +215,5 @@ alias psg="ps aux | grep -v grep | grep -i -e VSZ -e"
 #
 alias ports='netstat -tulanp'
 
+###     Lazydocker
+if command_check lazydocker; then alias lzd="lazydocker"; fi
