@@ -17,23 +17,24 @@ git submodule init && git submodule update
 ## 2 ways to install the dotfiles
 
 ### Steps for manual installation
-1. git clone git@bitbucket.org:b0red/dotfiles.git ~/dotfiles
-2. mv ~/.profile ~/.profile.old; mv ~/.bashrc ~/.bashrc.old; ln -s ~/dotfiles/.bashrc ~/.bashrc; ln -s ~/dotfiles/.profile ~/.profile 
-3. git submodule init && git submodule update
-4. sudo apt install htop ncdu pydf tree mc
-5. (update submodules)
+1. install git, vim, tmux (check your distro how to do this)
+2. git clone git@bitbucket.org:b0red/dotfiles.git ~/dotfiles
+3. mv ~/.profile ~/.profile.old; mv ~/.bashrc ~/.bashrc.old; ln -s ~/dotfiles/.bashrc ~/.bashrc; ln -s ~/dotfiles/.profile ~/.profile 
+4. git submodule init && git submodule update
+5. sudo apt install htop ncdu pydf tree mc
+6. (update submodules)
   * git submodule foreach git pull origin master
 
-### Automated install __On Your own risk_!!!
+### Automated install __*On Your own risk*__!!!
 * Download the repo as usual git clone ...
-* Running the 'RunMe.sh' script
 * sudo chmod +x RunMe.sh; ./RunMe.sh  
+* Running the 'RunMe.sh' script
 * the script wont break anything, but it might not work as intended :(
 
-### Other stuff thats good to have
+### Other stuff thats nice to have
 * htop ncdu pydf tree mc 
 ```
-sudo apt install htop ncdu pydf tree mc #On debianbased systems (The RunMe script install these)
+sudo apt install htop ncdu pydf tree mc #On debianbased systems (The RunMe script installs these)
 ```
 ### Updating submodules
 ```
@@ -48,7 +49,7 @@ git submodule foreach git pull origin master
 * [https://github.com/kenorb/dotfiles/blob/master/.bash_functions](https://github.com/kenorb/dotfiles/blob/master/.bash_functions)
 * [https://github.com/kenorb/dotfiles/blob/master/.bash_aliases](https://github.com/kenorb/dotfiles/blob/master/.bash_aliases)
 * [https://github.com/sharkdp/bat/](https://github.com/sharkdp/bat/)
-* [https://raw.githubusercontent.com/denilsonsa/prettyping/master/prettyping](https://raw.githubusercontent.com/denilsonsa/prettyping/master/prettyping)
+* [https://github.com/denilsonsa/prettyping.git](https://github.com/denilsonsa/prettyping.git) ~/dotfiles/extras/prettyping
 
 ### tested on:
 * Debian (Ubuntu)

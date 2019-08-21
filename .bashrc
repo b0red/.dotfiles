@@ -94,6 +94,8 @@ export PAGER='less'
 #           paused for now
 #get_os
 #setting_standard_commands
+#
+###     NOT working 4 the moment
 
 ###     Load tmux as soon as we login to shell, logout when exit tmux       
 #           this fucks up tmux, can't save tmux panes layouts
@@ -114,16 +116,18 @@ if [ -d "$HOME"/dotfiles/.bashrc.d ]; then
     unset -v config
 fi
 
-# if [ -d "$HOME"/dotfiles/.profile.d ]; then
-#     for config in $HOME/dotfiles/.profile.d/*.sh;
-#     do
-#         source "$config"
-#         #echo "file $config loaded"; sleep 1
-#     done
-#     unset -v config
-# fi
+if [ -d "$HOME"/dotfiles/.profile.d ]; then
+     for config in $HOME/dotfiles/.profile.d/*.sh;
+     do
+         source "$config"
+         #echo "file $config loaded"; sleep 1
+     done
+     unset -v config
+ fi
 
 ###     For getting gitstatus in tmux
 #       stolen from https://github.com/drmad/tmux-git
-if [[ $TMUX ]]; then source ~/.tmux-git/tmux-git.sh; fi
+if [[ $TMUX ]]; then source ~/.tmux/extras/tmux-git/tmux-git.sh; fi
+
 echo "Done!"; sleep 2; clear
+export PATH=$PATH:/snap/bin

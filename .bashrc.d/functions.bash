@@ -377,7 +377,14 @@ function gh-clone-user() {
     curl -sL "https://api.github.com/users/$1/repos?per_page=1000" | jq -r '.[]|.clone_url' | xargs -L1 git clone --recurse-submodules
 }
 
-
+###     Check which drive usb is assigned to
+#
+#function myusb () { 
+    #usb_array=();
+    #while read -r -d $'n'; 
+        #do usb_array+=("$REPLY"); 
+        #done << (find /dev/disk/by-path/ -type l -iname *usb*scsi* -not -iname *usb*scsi*part* -print0 | xargs -0 -iD readlink -f D | cut -c 8) && for usb in "${usb_array[@]}"; do echo "USB drive assigned to sd$usb"; done; 
+#}
 
 ### Function to backup latest commands
 #
