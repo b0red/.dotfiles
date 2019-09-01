@@ -4,6 +4,3 @@
 [submodule "extras/.tmux-gitbar"]
 	path = extras/.tmux-gitbar
 	url = git://github.com/arl/tmux-gitbar
-[submodule "extras/lzd"]
-	path = extras/lzd
-	url = https://github.com/jesseduffield/lazydocker
