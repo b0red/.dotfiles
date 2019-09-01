@@ -1,6 +1,3 @@
-[submodule "extras/bat"]
-	path = extras/bat
-	url = https://github.com/sharkdp/bat.git
 [submodule "extras/.tmux-git"]
 	path = extras/.tmux-git
 	url = git://github.com/drmad/tmux-git.git
