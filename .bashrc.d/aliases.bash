@@ -159,14 +159,6 @@ if command_check prettyping; then alias ping="prettyping --nolegend"; fi
 alias services="service --status-all"
 alias services_run="service --status-all | grep running"
 
-###     Docker commands
-#
-alias dcp="docker-compose -f ~/docker/compose/docker-compose-basic.yml "
-alias dcpull="docker-compose -f ~/docker/compose/docker-compose-basic.yml pull --parallel"
-alias dclogs='docker-compose -f ~/docker/compose/docker-compose-basic.yml logs -tf --tail="50" '
-alias dtail='docker logs -tf --tail="50" "$@"'
-alias dclean="docker run --rm -v /var/run/docker.sock:/var/run/docker.sock zzrot/docker-clean"
-
 ###     Replace ifconfig                <----- Kanske inte funkar på LinuxMINT
 #
 alias ifconfig="ip -c a"
