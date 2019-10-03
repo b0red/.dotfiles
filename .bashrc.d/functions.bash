@@ -10,7 +10,7 @@
 [[ -f $HOME/bin/ColorCodes.inc ]]  && source $HOME/bin/ColorCodes.inc        #For printing output i pretty colors
 [[ -f $HOME/bin/spinner.sh ]]  && source $HOME/bin/spinner.sh                #Running a spinner for long commands
 
-###	    Create dir and enter it
+###	Create dir and enter it
 #
 function mcd () { # Makes a directory and enters it
     [ -z "$1" ] && { echo "Usage: 'mcd <directory name> (Need to be root if outside of $HOME)'" >&2; return; }
@@ -18,7 +18,7 @@ function mcd () { # Makes a directory and enters it
         cd "$1"
 }
 
-###	    Startbitbucket - creates remote bitbucket repo and adds it as git remote to cwd
+###	Startbitbucket - creates remote bitbucket repo and adds it as git remote to cwd
 #
 function startbitbucket () # Creates a remote bitbucketrepo & adds it as a git remote
 {
@@ -35,7 +35,7 @@ function startbitbucket () # Creates a remote bitbucketrepo & adds it as a git r
     git push -u origin --tags
 }
 
-###	    Find file by exact name recursively.
+###	Find file by exact name recursively.
 #       Usage: ff (file)
 function ff() {
     if [ -z "$1" ]; then
