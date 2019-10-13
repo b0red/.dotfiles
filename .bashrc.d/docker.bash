@@ -16,7 +16,7 @@ alias dcr="docker-compose restart"
 # May be extended with the service name to get service-specific logs, like
 # 'dcl php' to get the logs of the php container
 alias dcls="docker-compose logs"
-alias dcl="docker-compose -f log $1"
+alias dcl="docker logs -f $1"
 
 # Quickly run the docker exec command like this: 'dex container-name bash'
 alias dex="docker exec -it $1 /bin/bash"
@@ -37,4 +37,10 @@ alias dcpull="docker-compose -f ~/docker/compose/docker-compose.yml pull --paral
 alias dclogs='docker-compose -f ~/docker/compose/docker-compose.yml logs -tf --tail="50" '
 alias dtail='docker logs -tf --tail="50" "$@"'
 alias dclean="docker run --rm -v /var/run/docker.sock:/var/run/docker.sock zzrot/docker-clean"
+
+###     Docker reload
+#
+alias r_traefik="docker stop traefik; docker start traefik"
+alias r_transmission-v="docker stop transmission-vpn; docker start tranmsission-vpn"
+alias r_plex="docker stop plex; docker start plex"
 
