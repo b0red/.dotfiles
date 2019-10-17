@@ -208,7 +208,12 @@ alias ports='netstat -tulanp'
 alias treels="find . -type d |sed 's:[^-][^/]*/:--:g; s:^-: |:'"
 
 ###     Lazydocker
+#
 if command_check lazydocker; then alias lzd="lazydocker"; fi
+
+###     Update - move to check for os version lzter
+#
+alias update="sudo apt update && sudo apt upgrade -y && sudo apt autoclean"
 
 ###     Scan open ports
 #

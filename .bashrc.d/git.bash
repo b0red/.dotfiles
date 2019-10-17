@@ -15,7 +15,6 @@ alias lg='git log --graph --full-history --all --color --pretty=format:"%x1b[31m
 ###		Git command shortcuts
 #
 alias g="git"
-alias gm="git merge"
 alias gmv="git mv"
 alias {gstat,gs}='git status' 
 alias gss="git status -s"
@@ -41,9 +40,21 @@ alias gfrb="git fetch && git rebase"
 ###     git functions
 #
 function gacp() {
-          git add . && git commit -am "$1" && git push origin master
+    CURRENT_BRANCH="$(git rev-parse --abbrev-ref HEAD)"
+    git add . && git commit -am "$1" && git push origin "$CURRENT_BRANCH"
       }
 
+# Git merge
+# Eg. gm branch-name
+function gm() {
+   git merge "$1"
+ }
+
+# Git checkout
+# Eg. gc branch-name
+function gco(){
+     git checkout "$1" && gp
+ }
 ###     Just checking
 #
 # echo ${file##*/}
