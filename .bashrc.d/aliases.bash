@@ -12,6 +12,18 @@ alias reload="source ~/.bashrc"
 alias nano="nano -c"
 alias wget="wget -c $1"
 
+###     Repeat the last command with sudo prefixed
+#
+alias please='sudo $(fc -ln -1)'
+
+###     Apt is always sudo
+#
+alias apt='sudo apt'
+
+###     vi is vim
+#
+alias vi="vim"
+
 ###     Check if command exists             # Needs to be here first
 #
 function command_exists() {
@@ -119,6 +131,15 @@ alias du="ncdu"
 alias df="pydf"
 alias psg="ps aux | grep -v grep | grep -i -e VSZ -e"
 
+###     alias chmod commands
+#:
+alias mx='chmod a+x'
+alias 000='chmod -R 000'
+alias 644='chmod -R 644'
+alias 666='chmod -R 666'
+alias 755='chmod -R 755'
+alias 777='chmod -R 777'
+
 ###     TMUX
 #
 alias tm="tmux new -s main \; split-window -h \; split-window -v -p 30 \;"
@@ -136,6 +157,7 @@ alias sshrestart="service ssh restart"
 alias no_extensions='find . -type f ! -name "*.*"'
 alias {module-update,modup}="git submodule foreach git pull origin master"
 alias weather="curl wttr.in/stockholm"
+alias weather2="curl v2.wttr.in"
 alias comstat="push \"Command ran! (uname -n)\" || push \"Command failed!\""
 
 ###		MidnightCommande
@@ -213,7 +235,11 @@ if command_check lazydocker; then alias lzd="lazydocker"; fi
 
 ###     Update - move to check for os version lzter
 #
-alias update="sudo apt update && sudo apt upgrade -y && sudo apt autoclean"
+alias update="sudo apt update && sudo apt upgrade -y && sudo apt autoclean && sudo apt autoremove"
+
+###     update aliases
+#
+alias update-dotfiles='cd ~/dotfiles  && git pull && source ~/.bashrc'
 
 ###     Scan open ports
 #

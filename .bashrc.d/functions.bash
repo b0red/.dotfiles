@@ -14,7 +14,7 @@
 #
 function mcd () { # Makes a directory and enters it
     [ -z "$1" ] && { echo "Usage: 'mcd <directory name> (Need to be root if outside of $HOME)'" >&2; return; }
-        mkdir -p "$1" && 
+    mkdir -p "$1" && 
         cd "$1"
 }
 
@@ -164,7 +164,7 @@ function ltree() {
 function cdl () {
     if [ -z "$1" ]; then
         echo "Usage: 'cdl <folder to enter and list>'"
-       else
+    else
         cd $1; ls
     fi
 }
@@ -282,15 +282,21 @@ function push() {
 }
 ###     Check so not to nest tmux sessions
 #
-if [[ $TMUX ]]; then
-    source ~/.tmux-git/tmux-git.sh
-fi
+#if [[ $TMUX ]]; then
+#    source ~/.tmux-git/tmux-git.sh
+#fi
+sshtmux()
+{
+    # A name for the session
+    local session_name="$(whoami)_sess"
 
-###     Check if command exists
-#
-#function command_exists() {
-#    command -v "$1" &> /dev/null 
-#}
+    if [ ! -z $1 ]; then
+        ssh -t "$1" "tmux attach -t $session_name || tmux new -s $session_name"
+    else
+        echo "Usage: sshtmux HOSTNAME"
+        echo "You must specify a hostname"
+    fi
+}
 
 ###     Function for simple search and replace in current folder
 #
@@ -361,13 +367,13 @@ function funchelp() {
 ###     Lock folder
 #
 function lockfolder() {
-if ! [ $(id -u) = 0 ]; then
-   echo "This command must run as root"
-   exit 1
-else 
-    touch .donotdelete
-    chmod 444 .dotnotdelete
-fi
+    if ! [ $(id -u) = 0 ]; then
+        echo "This command must run as root"
+        exit 1
+    else 
+        touch .donotdelete
+        chmod 444 .dotnotdelete
+    fi
 }
 
 ###     Clone all repos from user
@@ -385,13 +391,25 @@ function gs_remove() {
     rm -rf $1
 }
 
+
+###     Automatically do an ls after each cd
+cd ()
+{
+    if [ -n "$1" ]; then
+        builtin cd "$@" && ls
+    else
+        builtin cd ~ && ls
+    fi
+}
+
+
 ###     Check which drive usb is assigned to
 #
 #function myusb () { 
-    #usb_array=();
-    #while read -r -d $'n'; 
-        #do usb_array+=("$REPLY"); 
-        #done << (find /dev/disk/by-path/ -type l -iname *usb*scsi* -not -iname *usb*scsi*part* -print0 | xargs -0 -iD readlink -f D | cut -c 8) && for usb in "${usb_array[@]}"; do echo "USB drive assigned to sd$usb"; done; 
+#usb_array=();
+#while read -r -d $'n'; 
+#do usb_array+=("$REPLY"); 
+#done << (find /dev/disk/by-path/ -type l -iname *usb*scsi* -not -iname *usb*scsi*part* -print0 | xargs -0 -iD readlink -f D | cut -c 8) && for usb in "${usb_array[@]}"; do echo "USB drive assigned to sd$usb"; done; 
 #}
 
 ### Function to backup latest commands

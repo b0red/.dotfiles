@@ -129,5 +129,9 @@ if [ -d "$HOME"/dotfiles/.profile.d ]; then
 #       stolen from https://github.com/drmad/tmux-git
 if [[ $TMUX ]]; then source ~/.tmux/extras/tmux-git/tmux-git.sh; fi
 
-echo "Done!"; sleep 2; clear
 export PATH=$PATH:/snap/bin
+
+### Source Homeshick
+#
+source "$HOME/.homesick/repos/homeshick/homeshick.sh"
+echo "Done!"; sleep .5; clear
