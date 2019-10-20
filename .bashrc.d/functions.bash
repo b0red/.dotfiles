@@ -170,7 +170,7 @@ function cdl () {
 }
 
 ###	    Find a pattern in a set of files and highlight them:
-#	      + (needs a recent version of egrep).
+#	    + (needs a recent version of egrep).
 function fstr() {
     OPTIND=1
     local mycase=""
@@ -280,11 +280,13 @@ function push() {
         -F "title=${TITLE:-No_Title}" \
         -F "message=$1" https://api.pushover.net/1/messages.json
 }
+
 ###     Check so not to nest tmux sessions
 #
 #if [[ $TMUX ]]; then
 #    source ~/.tmux-git/tmux-git.sh
 #fi
+
 sshtmux()
 {
     # A name for the session
@@ -377,7 +379,7 @@ function lockfolder() {
 }
 
 ###     Clone all repos from user
-#           (https://github.com/kenorb/dotfiles/blob/master/.bash_functions)
+#       (https://github.com/kenorb/dotfiles/blob/master/.bash_functions)
 function gh-clone-user() {
     [ -z "$1" ] && { echo "Usage: 'git clone <user>'" >&2; return; }
     curl -sL "https://api.github.com/users/$1/repos?per_page=1000" | jq -r '.[]|.clone_url' | xargs -L1 git clone --recurse-submodules
@@ -393,8 +395,7 @@ function gs_remove() {
 
 
 ###     Automatically do an ls after each cd
-cd ()
-{
+function cd () {
     if [ -n "$1" ]; then
         builtin cd "$@" && ls
     else
@@ -402,29 +403,7 @@ cd ()
     fi
 }
 
-
-###     Check which drive usb is assigned to
-#
-#function myusb () { 
-#usb_array=();
-#while read -r -d $'n'; 
-#do usb_array+=("$REPLY"); 
-#done << (find /dev/disk/by-path/ -type l -iname *usb*scsi* -not -iname *usb*scsi*part* -print0 | xargs -0 -iD readlink -f D | cut -c 8) && for usb in "${usb_array[@]}"; do echo "USB drive assigned to sd$usb"; done; 
-#}
-
-### Function to backup latest commands
-#
-#function backup() { 
-#    local CA=c T=/backup.tar.gz; [[ -f  ]]&& C=r; find ~ -type f -newer  | tar vfz  -T - ;
-#}
-
 ###     Just to check if loaded
 #
 # echo ${file##*/}
 ###     Function for backing up latest command
-
-
-
-
-
-

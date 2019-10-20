@@ -4,7 +4,8 @@
 #
 #       links:
 #           https://www.cyberciti.biz/tips/bash-aliases-mac-centos-linux-unix.html
-#-------------------------------------------------------------------------
+#           https://unix.stackexchange.com/questions/43601/how-can-i-set-my-default-shell-to-start-up-tmux
+#----------------------------------------------------------------------------------------------------------------
 ###     Reload aliases, functions and all
 #
 alias reload="source ~/.bashrc"
@@ -53,7 +54,7 @@ alias ......="cd ../../../../../"
 
 ###	Various
 # 
-alias h="history | grep "
+alias h="history | grep $1 "
 alias hr="history | sort -rn"
 alias mv="mv -v" 
 alias rm="rm -i"
@@ -149,6 +150,7 @@ alias tmx="tmux a -t 0"
 ### WIP
 #   Trying to make so it's not nesting session and always starting one with a name
 # session=$(uname -n); session=${session,,}; tmux new -s $session
+[ -z "$TMUX"  ] && { tmux attach || exec tmux new-session && exit;}
 
 ###     Misc
 #
@@ -239,8 +241,9 @@ alias update="sudo apt update && sudo apt upgrade -y && sudo apt autoclean && su
 
 ###     update aliases
 #
-alias update-dotfiles='cd ~/dotfiles  && git pull && source ~/.bashrc'
+alias dotupdate='cd ~/dotfiles  && git pull && source ~/.bashrc'
 
 ###     Scan open ports
 #
 #alias portscan="for i in {1..65535}; do (echo < /dev/tcp/127.0.0.1/$i) &>/dev/null && printf "\n[+] Open Port at\n: \t%d\n" "$i" || printf "."; done"
+
