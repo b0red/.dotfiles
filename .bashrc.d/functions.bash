@@ -123,7 +123,19 @@ function debug() {
 ###	    Creates an archive (*.tar.gz) from given directory.
 #
 function maketar() {
-    tar cvzf "${1%%/}.tar.gz"  "${1%%/}/";
+    if [ $# -ne 1 ]; then
+        echo "Usage: maketar <filename to create> <folder to compress>"
+    fi
+        tar -cvzf "${1%%/}.tar.gz"  "${1%%/}/";
+}
+
+###	    Creates an archive (*.tar.bz2) from given directory.
+#
+function makejar() {
+    if [ $# -ne 1 ]; then
+        echo "Usage: makejar <filename to create> <folder to compress>"
+    fi
+    tar -cjf "${1%%/}.tar.bz2"  "${1%%/}/";
 }
 
 ###	    Create a ZIP archive of a file or folder.
@@ -247,6 +259,9 @@ function myip() {
 #
 function getnic() { 
     nic=$(sudo ip route | grep default | sed -e "s/^.*dev.//" -e "s/.proto.*//")
+    if [ ! -z "$1" ]; then
+        echo "NIC: $nic"
+    fi
 }
 
 ###	Send pushover messages
