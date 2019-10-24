@@ -135,8 +135,5 @@ export PATH=$PATH:/snap/bin
 #
 source "$HOME/.homesick/repos/homeshick/homeshick.sh"
 
-[[ $? -ne 0 ]] && sleep=10 || sleep=.5
-echo "Done!"; sleep $sleep; clear
-echo $slee
-echo $sleep
+echo "Done!"; sleep .5; clear
 
