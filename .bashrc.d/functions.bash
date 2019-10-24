@@ -252,8 +252,9 @@ function ii() {
 function myip() {
     #MY_IP=$(/sbin/ifconfig eth0 | awk '/inet/ { print $2 } ' | sed -e s/addr://)
      MY_IP=$(/sbin/ifconfig $(getnic) | awk '/inet / { print $2 } ' | sed -e s/addr://| tr '' '/n' |sort)
-     echo -e "$MY_IP"
+    #echo -e "$MY_IP"
     #echo -e ${MYP_IP}
+    printf '%s\n' ${MY_IP:-"Not connected"}
 }
 
 ###     Get active Network Interface
