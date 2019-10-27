@@ -3,7 +3,7 @@ SHELL=/bin/bash
 PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 export TERM=${TERM:-dumb}
 export DISPLAY=:0.0
-################################################################################################################################
+###################################################################################################################
 ##
 ##                   W A R N I N G !  - You ar running this at your own risk½
 ##
@@ -18,7 +18,7 @@ export DISPLAY=:0.0
 ##          The following needs to be installed manually, if you want them,
 ##          bat (optional), prettyping (optional)
 ##
-##          v2.7
+##          v3.0
 ##
 ##          ref:
 ##          https://stackoverflow.com/questions/394230/how-to-detect-the-os-from-a-bash-script
@@ -30,18 +30,18 @@ export DISPLAY=:0.0
 ##          https://github.com/sharkdp/bat/releases/download/v0.10.0/bat_0.10.0_amd64.deb; sudo dpkg -i bat_0.10.0_amd64.deb; rm -f bat*
 ##          curl -O https://raw.githubusercontent.com/denilsonsa/prettyping/master/prettyping; chmod +x prettyping; mv prettyping ~/bin
 ##
-################################################################################################################################
+###################################################################################################################
 clear
 
 #
-# ~--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--++--+--+--+--+--++--+--+--+--+--+
+# +-+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--++--+--+--+--+--++--+--+--+--+--+
 #
 
 ###     Debug on/off  - Change for debugging purposes
 #
-debug=0
-trace_debug=0
-SLEEP=0
+debug=1
+trace_debug=1
+SLEEP=2
 
 ###     Settings - Change if you need to
 #
@@ -62,6 +62,7 @@ OLDFILEARRAY=(.bashrc .profile .bash_profile .inputrc)
 
 ###     LogMessages
 #
+LOG_MESS_001="Done unaliasing!"
 LOG_MESS_01="Ran function date_it."
 LOG_MESS_01_1="\nChecking for OS specifics:"
 LOG_MESS_02="Setting appropriate aliases for this system." 
@@ -71,15 +72,16 @@ LOG_MESS_05="\nSymlinked the new dotfiles!"
 LOG_MESS_06="\nRan function 'archive_it'"
 LOG_MESS_07="\nCloning TMUX and submodules"
 LOG_MESS_07_1="Cloning additional TMUX stuff"
-LOG_MESS_07_1_a="Not updating submodules"
-LOG_MESS_07_1_b="Submodules updated!"
+LOG_MESS_07_1_a="Not adding/updating submodules"
+LOG_MESS_07_1_b="Submodules added/updated!"
 LOG_MESS_07_2="gvimrc doesn't exist"
 LOG_MESS_07_3="Added line for .tmux-git to .bashrc"
 LOG_MESS_08="Cloning VÍM and submodules"
 LOG_MESS_09="\nDone setting up ~/dotfiles"
 
-# ~--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--++--+--+--+--+--++--+--+--+--+--+
+# +-+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--++--+--+--+--+--++--+--+--+--+--+
 ###     ^NO Editing below this line ^
+
 ###    Tracedebug
 #
 if [ $trace_debug -eq 1 ]; then
@@ -92,8 +94,7 @@ unalias -a
 ###     Delete old log and create new
 #
 function date_it() {
-    rm -f ${LOG}
-    touch ${LOG}
+    rm -f ${LOG}; touch ${LOG}
     #[[ $debug -eq 1 ]] && printf "\n$TITLE - $DATE\n"; sleep ${SLEEP}
     [[ $debug -eq 1 ]] && printf "\n$TITLE - $DATE\n" || printf "\n$TITLE - $DATE\n" >> $LOG; sleep ${SLEEP}
 }
@@ -117,7 +118,7 @@ function app_installer() {
         if command -v $APP >/dev/null 2>&1 ; then
             STATUS="$APP already installed!"
         elif ! [ -x command -v $APP >/dev/null 2>&1 ]; then
-           sudo apt install $APP
+            install $APP
             STATUS="Installing $APP"
         else
             STATUS="$APP failed to install!"
@@ -128,11 +129,16 @@ function app_installer() {
 
 function copy_old_files() {
     # copies old dotfiles to backup folder
+    if [ ! -d $DIR ]; then 
+        ###     Create backup dir
+        mkdir $DIR 2> /dev/null
+        [[ $debug -eq 1 ]] && echo "$LOG_MESS_03 $DIR" || echo "$LOG_MESS_03 $DIR" >> ${LOG} ; sleep ${SLEEP}
+    fi
     for OLDFILE in "${OLDFILEARRAY[@]}"
-        do
-            cp ~/"$OLDFILE" $DIR/ 2>/dev/null
-            [[ $debug -eq 1 ]] && echo "$OLDFILE moved to $DIR" || echo "$OLDFILE moved to $DIR" >> ${LOG} ; sleep ${SLEEP}
-        done
+    do
+        cp ~/"$OLDFILE" $DIR/ 2>/dev/null
+        [[ $debug -eq 1 ]] && echo "$OLDFILE moved to $DIR" || echo "$OLDFILE moved to $DIR" >> ${LOG} ; sleep ${SLEEP}
+    done
 }
 
 function archive_it() {
@@ -151,9 +157,9 @@ function sym_link_check() {
     ###     Check for old (sym)links
     for LINK in "${DOTARRAY[@]}"
     do
-    ###     Test if files are symlimked or not
+        ###     Test if files are symlimked or not
         if [ -L "${LINK}" ] ; then
-           if [ -e "${LINK}" ] ; then
+            if [ -e "${LINK}" ] ; then
                 ### Found link
                 LINK_STATUS="removing $LINK" 
                 rm -f "$LINK" 
@@ -161,7 +167,7 @@ function sym_link_check() {
                 ### Broken link
                 LINK_STATUS="Broken link: $LINK, removing it!"
                 rm -f "$LINK"
-             fi
+            fi
         elif [ -e "${LINK}" ] ; then
             ### Broken link
             LINK_STATUS="$LINK is not a symlink. Moving it" 
@@ -219,14 +225,14 @@ function get_os() {
             fi
             OS="${OS,,}"
             DistroBasedOn="${DistroBasedOn,,}"
-            readonly OS
-            readonly DIST
-            readonly DistroBasedOn
-            readonly PSEUDONAME
-            readonly REV
-            readonly KERNEL
-            readonly MACH
-            readonly OSSYS
+            #readonly OS
+            #readonly DIST
+            #readonly DistroBasedOn
+            #readonly PSEUDONAME
+            #readonly REV
+            #readonly KERNEL
+            #readonly MACH
+            #readonly OSSYS
             ###     export variables
             # export OS
             # export DIST
@@ -257,15 +263,15 @@ function setting_standard_commands() {
             alias install="apt-get install" $1
             alias {uninstall,remove}="sudo apt remove"
             alias apt_update="sudo aptitude update"
-            alias {sys_update,update,sysupdate}="sudo apt-get update && sudo apt-get upgrade -y"
+            alias {sys_update,update,sysupdate}="sudo apt update && sudo apt upgrade -y && sudo apt autoclean && sudo apt autoremove"
             alias sysclean="sudo apt clean; sudo apt autoremove; sudo apt purge"
             ;;
         *bsd) 
             [[ $debug -eq 1 ]] && echo "Setting alias' for: *BSD" || echo "Setting alias' for: *BSD" >> $LOG; sleep ${SLEEP}
             alias install="pkg install" $1
-            alias {uninstall,remove}="pkg delete" $1
+            alias {uninstall,remove}="pkg delete " $1
             alias {sys_update,sysup,sysupdate}="freebsd-update fetch && freebsd-update install"
-            alias upgrade="pkg update && pkg upgrade"
+            alias update="pkg update && pkg upgrade"
             alias autoclean="pkg autoremove"
             alias clean="pkg clean -c"
             unalias ll; alias ll="";;
@@ -317,34 +323,49 @@ function setting_standard_commands() {
     esac
 }
 
-# ~--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--++--+--+--+--+--++--+--+--+--+--+
+# --+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--++--+--+--+--+--++--+--+--+--+--+
 
 ###     On first run. This is a quick and dirty script, no backups or questions asked!
+
+###     Removing all old aliases
+#
+unalias -a
+[[ $debug -eq 1 ]] && echo "$LOG_MESS_001" || echo "$LOG_MESS_001" >> ${LOG}; sleep ${SLEEP}
 
 ###     Create  logfile
 #
 date_it
 [[ $debug -eq 1 ]] && echo "$LOG_MESS_01" || echo "$LOG_MESS_01" >> ${LOG}; sleep ${SLEEP}
 
-###     Removing all old aliases
+###     Moving/Copying old files
 #
-unalias -a
-[[ $debug -eq 1 ]] && echo "Done unalias'" || echo "Done unalias'" >> ${LOG}; sleep ${SLEEP}
-###     Check for apps, install if not found
+copy_old_files
+
+###     Symlink new files
 #
-app_installer
+ln -s ~/dotfiles/.bashrc ~/.bashrc; ln -s ~/dotfiles/.profile ~/.profile
+[[ $debug -eq 1 ]] && echo "$LOG_MESS_05" || echo "$LOG_MESS_05" >> ${LOG}; sleep ${SLEEP}
+
+###     Archive old files (Not necessary?)
+#
+archive_it
 
 ###     Check what os this is running on
 #
 get_os
 [[ $debug -eq 1 ]] && printf "$LOG_MESS_01_1\n" || printf "$LOG_MESS_01_1\n" >> ${LOG}; sleep ${SLEEP}
 [[ $debug -eq 1 ]] && printf "OS=$OS\nDIST=$DIST\nDistroBasedOn=$DistroBasedOn\n" || printf \
-"OS=$OS\nDIST=$DIST\nDistroBasedOn=$DistroBasedOn\n\n" >> ${LOG}; sleep ${SLEEP}
+    "OS=$OS\nDIST=$DIST\nDistroBasedOn=$DistroBasedOn\n\n" >> ${LOG}; sleep ${SLEEP}
 
 ###     Setting up aliases for specific os'
 #
 setting_standard_commands
 [[ $debug -eq 1 ]] && printf "Added aliases for $OSSYS-based system!\n" || printf "Added aliases for $OSSYS-based system!\n" >> ${LOG}; sleep ${SLEEP}
+
+###     Check for apps, install if not found
+#
+app_installer
+
 
 ###     Feth any updates to the dotfiles repo
 #
@@ -353,35 +374,18 @@ git pull origin master
 ###     Ask confirmation for github
 #
 read -p "Update all repos (y/n)?" 
-if [ "$x" = "yes" ]
-then
- ###     If debug mode is on (=1) then don't fetch submodules, faster
-#
-[[ $debug -eq 1 ]] && echo "Not fetching submodules" || submodules_init; echo "Submodules added!" >> ${LOG}
-#[[ $debug -eq 1 ]] && echo "ran submodules_init" ; sleep ${SLEEP}
-[[ $debug -eq 1 ]] && echo "Not updating submodules" || submodules_update; echo "Submodules updated!" >> ${LOG}
+if [ "$x" = "yes"  ]; then
+    ##     If debug mode is on (=1) then don't fetch submodules, faster
+    [[ $debug -eq 1 ]] && echo "$LOG_MESS_07_1_a" || submodules_init; echo "$LOG_MESS_07_1_b" >> ${LOG}
+    #[[ $debug -eq 1 ]] && echo "ran submodules_init" ; sleep ${SLEEP}
+    [[ $debug -eq 1 ]] && echo "$LOG_MESS_07_1_a" || submodules_update; echo "$LOG_MESS_07_1_b" >> ${LOG}
 fi
-
-###     Create backup dir
-#
-mkdir $DIR 2> /dev/null
-[[ $debug -eq 1 ]] && echo "$LOG_MESS_03 $DIR" || echo "$LOG_MESS_03 $DIR" >> ${LOG} ; sleep ${SLEEP}
-
-###     Moving/Copying old files
-#
-copy_old_files
-ln -s ~/dotfiles/.bashrc ~/.bashrc; ln -s ~/dotfiles/.profile ~/.profile
-[[ $debug -eq 1 ]] && echo "$LOG_MESS_05" || echo "$LOG_MESS_05" >> ${LOG}; sleep ${SLEEP}
-
-###     Archive old files (Not necessary?)
-#
-archive_it
 
 ###     Clone tmux repo
 #
 git clone --recurse-submodules git@bitbucket.org:b0red/tmux.git ~/.tmux; cd ~/.tmux
 [[ $debug -eq 1 ]] && echo "$LOG_MESS_07" || echo "$LOG_MESS_07" >> ${LOG}; sleep ${SLEEP}
-[[ $debug -eq 1 ]] && echo "Not updating submodules! (TMUX)" || submodules_update; echo "Submodules updated! (TMUX)" >> ${LOG}
+[[ $debug -eq 1 ]] && echo "$LOG_MESS_07_1_a (TMUX)" || submodules_update; echo "$LOG_MESS_07_1_b (TMUX)" >> ${LOG}
 ln -s ~/.tmux/.tmux.conf ~/.tmux.conf
 
 
@@ -393,7 +397,6 @@ ln -s extras/tmux-git.git ~/.tmux-git
 ln -s extras/tmux-gitbar ~/.tmux-gitbar
 #[[ $debug -eq 1 ]] && echo "$LOG_MESS_07_1" || echo "$LOG_MESS_07_1" >> ${LOG}; sleep ${SLEEP}
 
-
 ###     Check if line exists in file .bashrc, if not copy it
 #
 grep -qxF "if [[ \$TMUX ]]; then source ~/.tmux-git/tmux-git.sh; fi" ~/.bashrc
@@ -401,7 +404,7 @@ if [ $? -ne 0 ]; then
     echo "if [[ \$TMUX ]]; then source ~/.tmux-git/tmux-git.sh; fi" >> ~/.bashrc
     [[ $debug -eq 1 ]] && echo "$LOG_MESS_07_3" || echo "$LOG_MESS_07_3" >> ${LOG}; sleep ${SLEEP}
 else
-    STATUS="Line not added!";  echo $STATUS
+    STATUS="Line '~/.tmux-git/tmux-git.sh' not added to ~/.bashrc!";  echo $STATUS
 fi
 
 ###     Clone vim repo & submodules & symlink files
@@ -410,17 +413,16 @@ git clone --recurse-submodules git@bitbucket.org:b0red/.vim.git ~/.vim; cd ~/.vi
 [[ $debug -eq 1 ]] && echo "$LOG_MESS_07_1_a" || submodules_update; echo "$LOG_MESS_07_1_b" >> ${LOG}
 ln -s ~/.vim/vimrc ~/vimrc; 
 [[ -f ~/.vim/gvimrc ]] && ln -s ~/.vim/gvimrc ~/gvimrc; echo "Symlinked gvimrc" || echo "$LOG_MESS_07_2"; \
-echo "$LOG_MESS_07_2" >> ${LOG}
-[[ $debug -eq 1 ]] && echo "$LOG_MESS_08" || echo "$LOG_MESS_08" >> ${LOG}; sleep ${SLEEP}
+    echo "$LOG_MESS_07_2" >> ${LOG}
+    [[ $debug -eq 1 ]] && echo "$LOG_MESS_08" || echo "$LOG_MESS_08" >> ${LOG}; sleep ${SLEEP}
 
- 
 ###     Source .bashrc
 #
 source  ~/.bashrc
 
 echo "$LOG_MESS_09"
 
-# ~--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--++--+--+--+--+--++--+--+--+--+--+
+# --+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--++--+--+--+--+--++--+--+--+--+--+
 
 ###     Show summary of what was done
 #
@@ -430,8 +432,8 @@ printf "\n====== Summary ======\nResult of $TITLE"
 cat ${LOG}
 sleep ${SLEEP}
 [[ ! $debug -eq 1 ]] && exit 0
-    
-## ~--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--++--+--+--+--+--++--+--+--+--+--+
+
+## -+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--++--+--+--+--+--++--+--+--+--+--+
 ###     Debuginfo - just printing  values to screen
 #
 if [ $debug -eq 1 ]; then

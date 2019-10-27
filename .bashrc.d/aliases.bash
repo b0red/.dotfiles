@@ -1,4 +1,4 @@
-#-------------------------------------------------------------------------
+#----------------------------------------------------------------------------------------------------------------
 #
 #		.bash_aliases
 #
@@ -101,16 +101,13 @@ alias tree4="tree -L 4"
 #
 alias lf="ls -l | egrep -v '^d'"
 alias ldir="ls -l | egrep '^d'"
-alias clean="audo apt y"
+#alias clean="sudo apt y"
 
 ###     Enable colorsupport of ls and add hanndy aliases
 #
 if [[ -x /usr/bin/dircolors ]]; then
     test -r ~/.dircolors && eval "$(dircolors -b ~/.dircolors)"||eval "$(dircolors -b)"
     alias ls="ls --color=auto"
-    #alias grep="grep --color=auto"
-    #alias fgrep="fgrep --color=auto"
-    #alias egrep="egrep --color=auto"
 	###     Colorize the grep command output for ease of use (good for log files)
 	# 
 	alias {grep,egrep,fgrep}="grep --color=always --line-number --no-messages --binary-files=without-match"
@@ -171,7 +168,7 @@ if command_check mc; then alias mc="sudo mc"; fi
 alias zombiekill="ps axo state,ppid | awk '!/PPID/$1~"Z"{print $2}' | xargs -r kill -9"
 
 ###     Replace cat with bat, nicer output
-#   	https://github.com/sharkdp/bat/releases/download/v0.10.0/bat_0.10.0_amd64.deb; sudo dpkg -i bat_0.10.0_amd64.deb; rm -f bat*
+#
 if command_check bat; then alias cat="bat" ; fi
 
 ###     Install prettyping
@@ -225,7 +222,7 @@ alias psg="ps aux | grep -v grep | grep -i -e VSZ -e"
 
 ###     Ports
 #
-alias ports='netstat -tulanp'
+alias ports='sudo netstat -tulanp'
 
 ###     LS tree
 #
