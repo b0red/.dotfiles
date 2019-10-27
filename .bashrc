@@ -133,7 +133,9 @@ export PATH=$PATH:/snap/bin
 
 ### Source Homeshick
 #
-source "$HOME/.homesick/repos/homeshick/homeshick.sh"
+if [ -d "$HOME/.homeshick" ]; then
+    source "$HOME/.homesick/repos/homeshick/homeshick.sh"
+fi
 
 echo "Done!"; sleep .5; clear
 

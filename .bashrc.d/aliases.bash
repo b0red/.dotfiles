@@ -234,7 +234,7 @@ if command_check lazydocker; then alias lzd="lazydocker"; fi
 
 ###     Update - move to check for os version lzter
 #
-alias update="sudo apt update && sudo apt upgrade -y && sudo apt autoclean && sudo apt autoremove"
+#alias update="sudo apt update && sudo apt upgrade -y && sudo apt autoclean && sudo apt autoremove"
 
 ###     update aliases
 #

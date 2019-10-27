@@ -12,22 +12,24 @@ debug=1
 SLEEP=0
 
 ###		Check for 'firstrun'
-if [ -f ~/dotfiles/firstrun ]; then
-	# File has ran before
-	###		Check value
-	read -r line < firstrun
-	#echo $line
-	if [ $line = 0 ]; then 
-	 	####	Do first ttime stuff here
-	 	echo "it's 0"
-	 else
-	 	###		Do update stuff here
-	 	echo "It's 1"
-	fi
-	else
-	echo ""
-	# This is the first time, file doesn't exist
-fi
+function first_run(){
+    if [ -f ~/dotfiles/firstrun ]; then
+        # File has ran before
+        ###		Check value
+        read -r line < firstrun
+        #echo $line
+        if [ $line = 0 ]; then 
+            ####	Do first ttime stuff here
+            echo "it's 0"
+        else
+            ###		Do update stuff here
+            echo "It's 1"
+        fi
+    else
+        echo ""
+        # This is the first time, file doesn't exist
+    fi
+}
 
 function get_os() 
 {
@@ -73,14 +75,15 @@ function get_os()
             fi
             OS="${OS,,}"
             DistroBasedOn="${DistroBasedOn,,}"
-            readonly OS
-            readonly DIST
-            readonly DistroBasedOn
-            readonly PSEUDONAME
-            readonly REV
-            readonly KERNEL
-            readonly MACH
-            readonly OSSYS
+            #readnly make varaible readonly
+            # readonly OS
+            # readonly DIST
+            # readonly DistroBasedOn
+            # readonly PSEUDONAME
+            # readonly REV
+            # readonly KERNEL
+            # readonly MACH
+            # readonly OSSYS
             ###     export variables
             # export OS
             # export DIST
@@ -190,4 +193,5 @@ function setting_standard_commands()
 }
 echo "get_os"; get_os
 echo "setting_standard_commands"; setting_standard_commands
-
+echo "Distro: $DistroBasedOn"
+echo "OS: $OS"

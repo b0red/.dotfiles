@@ -357,11 +357,6 @@ get_os
 [[ $debug -eq 1 ]] && printf "OS=$OS\nDIST=$DIST\nDistroBasedOn=$DistroBasedOn\n" || printf \
     "OS=$OS\nDIST=$DIST\nDistroBasedOn=$DistroBasedOn\n\n" >> ${LOG}; sleep ${SLEEP}
 
-###     Setting up aliases for specific os'
-#
-setting_standard_commands
-[[ $debug -eq 1 ]] && printf "Added aliases for $OSSYS-based system!\n" || printf "Added aliases for $OSSYS-based system!\n" >> ${LOG}; sleep ${SLEEP}
-
 ###     Check for apps, install if not found
 #
 app_installer
@@ -419,6 +414,11 @@ ln -s ~/.vim/vimrc ~/vimrc;
 ###     Source .bashrc
 #
 source  ~/.bashrc
+
+###     Setting up aliases for specific os
+get_os
+setting_standard_commands
+[[ $debug -eq 1 ]] && printf "Added aliases for $OSSYS-based system!\n" || printf "Added aliases for $OSSYS-based system!\n" >> ${LOG}; sleep ${SLEEP}
 
 echo "$LOG_MESS_09"
 
