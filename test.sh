@@ -107,7 +107,6 @@ function setting_standard_commands()
             alias install="apt-get install" $1
             alias {uninstall,remove}="sudo apt remove"
             alias {sys_update,update,sysupdate}="sudo apt-get update && sudo apt-get upgrade"
-            alias {sys_update,update,sysupdate}="sudo apt-get update && sudo apt-get upgrade"
             alias sysclean="sudo apt clean; sudo apt autoremove; sudo apt purge"
             alias installf="sudo apt -f install" #force install
             alias {reinnstall,installfr}="sudo apt -f install --rreinstall" # Force reinstall
@@ -116,7 +115,6 @@ function setting_standard_commands()
             alias remove="sudo apt remove && sudo apt autoremove"
             alias purge="sudo apt purge"
             alias deborphan="sudo deborphan | xaargs sudo apt -y remove --purge"
-            alias apt_update="sudo aptitude update"
             alias apt_update="sudo aptitude update"
             # Network Start, Stop, and Restart
             alias networkrestart='sudo service networking restart'
@@ -196,6 +194,7 @@ function setting_standard_commands()
             ;;
     esac
 }
+
 clear
 echo "function: get_os"; get_os
 echo "function: standard_commands"; setting_standard_commands
