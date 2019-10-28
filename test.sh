@@ -1,4 +1,4 @@
-#!/bin/bash -p
+#!/usr/bin/env bash
 ###############################################################################################
 ##
 ##
@@ -23,6 +23,7 @@ function get_os()
         OS=mac; OSSYS="mac"
     elif [ "${OS}" == "freebsd" ]; then
         OS=bsd; OSSYS="freebsd"
+        OSSTR=$(uname -rs)
     else
         OS="linux"
         if [ "${OS}" = "SunOS" ] ; then
@@ -125,7 +126,8 @@ function setting_standard_commands()
             alias upgrade="pkg update && pkg upgrade"
             alias autoclean="pkg autoremove"
             alias clean="pkg clean -c"
-            unalias ll; alias ll="";;
+            #unalias ll; alias ll=""
+            ;;
         redhat*)                                                           #     YUM (RedHat Linux, centos)
             [[ $debug -eq 1 ]] && echo "Setting alias' for: RedHat" || echo "Setting alias' for: RedHat" >> $LOG; sleep ${SLEEP}
             #PATH=$PATH:$HOME/bin
