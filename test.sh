@@ -88,9 +88,11 @@ function setting_standard_commands()
             alias {uninstall,remove}="pkg uninstall" $1
             alias app_search="pkg search" $1
             alias update="pkg update --accept" 
+            os_status="solaris"
             ;;
         darwin*)  
             [[ $debug -eq 1 ]] && echo "Setting alias' for: OSX" || echo "Setting alias' for: OSX" >> $LOG; sleep ${SLEEP}
+            os_status="Mac/Darwin"
             ;; 
         debian*)   
             [[ $debug -eq 1 ]] && echo "Setting alias' for: LINUX (Debian)" || echo "Setting alias' for: LINUX (Debian)" >> $LOG; sleep ${SLEEP}
@@ -117,16 +119,18 @@ function setting_standard_commands()
             alias networkrestart='sudo service networking restart'
             alias networkstop='sudo service networking stop'
             alias networkstart='sudo service networking start'
+            os_status="Debian"
             ;;
         *bsd) 
             [[ $debug -eq 1 ]] && echo "Setting alias' for: *BSD" || echo "Setting alias' for: *BSD" >> $LOG; sleep ${SLEEP}
-            alias install="pkg install" $1
-            alias {uninstall,remove}="pkg delete" $1
+            alias install="pkg install " $1
+            alias {uninstall,remove}="pkg deletei " $1
             alias {sys_update,sysup,sysupdate}="freebsd-update fetch && freebsd-update install"
             alias upgrade="pkg update && pkg upgrade"
             alias autoclean="pkg autoremove"
             alias clean="pkg clean -c"
             #unalias ll; alias ll=""
+            os_status="*bsd"
             ;;
         redhat*)                                                           #     YUM (RedHat Linux, centos)
             [[ $debug -eq 1 ]] && echo "Setting alias' for: RedHat" || echo "Setting alias' for: RedHat" >> $LOG; sleep ${SLEEP}
@@ -138,6 +142,7 @@ function setting_standard_commands()
             alias swap="sudo yum swap" $1 $2
             alias autoremove="sudo yum autoremove" $1
             alias reinstall="sudo yum reinstall" $1
+            os_status="redhadt"
             ;;
         suse*)                                                            #     OpenSuSe)
             [[ $debug -eq 1 ]] && echo "Setting alias' for: OpenSuSe" || echo "Setting alias' for: OpenSuSe" >> $LOG; sleep ${SLEEP}
@@ -147,6 +152,7 @@ function setting_standard_commands()
             alias update="sudo zypper refresh; sudo zypper dup"
             alias sysclean="sudo zypper clean -a"
             alias dist_upgrade="sudo zypper dist-upgrade"
+            os_status="suse"
             ;;
         fedora*)                                                           #        Fedora
             [[ $debug -eq 1 ]] && echo "Setting alias' for: Fedora" || echo "Setting alias' for: Fedora" >> $LOG; sleep ${SLEEP}
@@ -156,6 +162,7 @@ function setting_standard_commands()
             alias search="dnf search" $1
             alias autoremove="dnf remove" $1
             alias sysclean="dnf clean all"
+            os_status="fedora"
             ;;
         pacman*)                                                           #        ArchLinux
             [[ $debug -eq 1 ]] && echo "Setting alias' for: ArchLinux" || echo "Setting alias' for: ArchLinux" >> $LOG; sleep ${SLEEP}
@@ -166,15 +173,19 @@ function setting_standard_commands()
             alias update="pacman -Syu"
             alias sysclean="pacman -Sc"
             alias package_list="pacman -Q"
+            os_status="pacman"
             ;;
         msys*)    
             [[ $debug -eq 1 ]] && echo "Setting alias' for: CygWIN" || echo "Setting alias' for: CygWIN" >> $LOG; sleep ${SLEEP}
+            os_status="ms Dos"
             ;;
         *)        
             [[ $debug -eq 1 ]] && echo "Unknown OS!" || echo "Unknown OS!" >> $LOG; sleep ${SLEEP} 
+            os_status="I have no clue"
             ;;
     esac
 }
+echo os_status: $os_status
 echo "get_os"; get_os
 echo "setting_standard_commands"; setting_standard_commands
 echo "Distro: $DistroBasedOn"
