@@ -49,6 +49,11 @@ function get_os()
                 DIST=$(cat /etc/lsb-release | grep '^DISTRIB_ID' | awk -F=  '{ print $2 }')
                 PSEUDONAME=$(cat /etc/lsb-release | grep '^DISTRIB_CODENAME' | awk -F=  '{ print $2 }')
                 REV=$(cat /etc/lsb-release | grep '^DISTRIB_RELEASE' | awk -F=  '{ print $2 }')
+            elif [ -f /etc/sabayon-edition ] ; then
+                DistroBasedOn='Gentoo'; OSSYS="gentoo"
+                DIST=$(cat /etc/*-release | grep '^DISTRIB_ID' | awk -F=  '{ print $2 }')
+                #PSEUDONAME=$(cat /etc/lsb-release | grep '^DISTRIB_CODENAME' | awk -F=  '{ print $2 }')
+                REV=$(cat /etc/sabayon-edition | grep -Eo '[0-9][0-9]'.'[0-9][0-9]')    
             fi
             if [ -f /etc/UnitedLinux-release ] ; then
                 DIST=$(${DIST}["cat /etc/UnitedLinux-release | tr "\n" ' ' | sed s/VERSION.*//"])
@@ -188,4 +193,7 @@ echo "function: get_os"; get_os
 echo "function: standard_commands"; setting_standard_commands
 echo -e "\nDistro: $DistroBasedOn"
 echo "OS: $OS"
+echo "Dist: $DIST"
+echo "Rev: $REV"
+3cho "PSEUDONAME: $PSEUDONAME"
 echo "os_status: $os_status"
