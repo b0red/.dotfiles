@@ -3,4 +3,4 @@ oldfiles/*
 install_progress_log
 *.swp
 firstrun
- 
+symlink.sh

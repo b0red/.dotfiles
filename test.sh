@@ -18,7 +18,7 @@ function get_os()
     if [ "${OS}" == "windowsnt" ]; then
         OS=windows; OSSYS="windows"
     elif [ "${OS}" == "darwin" ]; then
-        OS=mac; OSSYS="mac"
+        OS=mac; OSSYS="darwin"
     elif [ "${OS}" == "freebsd" ]; then
         OS=bsd; OSSYS="bsd"
         OSSTR=$(uname -rs)
@@ -41,7 +41,7 @@ function get_os()
                 PSEUDONAME=$(cat /etc/SuSE-release | tr "\n" ' '| sed s/VERSION.*//)
                 REV=$(cat /etc/SuSE-release | tr "\n" ' ' | sed s/.*=\ //)
             elif [ -f /etc/mandrake-release ] ; then
-                DistroBasedOn='Mandrake'; OSSYS="mandrake"
+                DistroBasedOn='Mandrake'; OSSYS="mandriva"
                 PSEUDONAME=$(cat /etc/mandrake-release | sed s/.*\(// | sed s/\)//)
                 REV=$(cat /etc/mandrake-release | sed s/.*release\ // | sed s/\ .*//)
             elif [ -f /etc/debian_version ] ; then
@@ -93,46 +93,6 @@ function setting_standard_commands()
             alias update="pkg update --accept" 
             os_status="solaris"
             ;;
-        darwin*)  
-            [[ $debug -eq 1 ]] && echo "Setting alias' for: OSX" || echo "Setting alias' for: OSX" >> $LOG; sleep ${SLEEP}
-            os_status="Mac/Darwin"
-            ;; 
-        debian*)   
-            [[ $debug -eq 1 ]] && echo "Setting alias' for: LINUX (Debian)" || echo "Setting alias' for: LINUX (Debian)" >> $LOG; sleep ${SLEEP}
-            #alias rm='rm -i' 
-            # Upgrade
-            alias apt_update="sudo aptitude update"
-            alias {sys_update,update,sysupdate}="sudo apt-get update && sudo apt-get upgrade"
-            # install
-            alias install="apt-get install" $1
-            alias {uninstall,remove}="sudo apt remove"
-            alias {sys_update,update,sysupdate}="sudo apt-get update && sudo apt-get upgrade"
-            alias sysclean="sudo apt clean; sudo apt autoremove; sudo apt purge"
-            alias installf="sudo apt -f install" #force install
-            alias {reinnstall,installfr}="sudo apt -f install --rreinstall" # Force reinstall
-            # Cleaning
-            alias clean="sudo apt clean && sudo apt autoclean"
-            alias remove="sudo apt remove && sudo apt autoremove"
-            alias purge="sudo apt purge"
-            alias deborphan="sudo deborphan | xaargs sudo apt -y remove --purge"
-            alias apt_update="sudo aptitude update"
-            # Network Start, Stop, and Restart
-            alias networkrestart='sudo service networking restart'
-            alias networkstop='sudo service networking stop'
-            alias networkstart='sudo service networking start'
-            os_status="Debian"
-            ;;
-        *bsd) 
-            [[ $debug -eq 1 ]] && echo "Setting alias' for: *BSD" || echo "Setting alias' for: *BSD" >> $LOG; sleep ${SLEEP}
-            alias install="pkg install " $1
-            alias {uninstall,remove}="pkg deletei " $1
-            alias {sys_update,sysup,sysupdate}="freebsd-update fetch && freebsd-update install"
-            alias upgrade="pkg update && pkg upgrade"
-            alias autoclean="pkg autoremove"
-            alias clean="pkg clean -c"
-            #unalias ll; alias ll=""
-            os_status="*bsd"
-            ;;
         redhat*)                                                           #     YUM (RedHat Linux, centos)
             [[ $debug -eq 1 ]] && echo "Setting alias' for: RedHat" || echo "Setting alias' for: RedHat" >> $LOG; sleep ${SLEEP}
             #PATH=$PATH:$HOME/bin
@@ -155,6 +115,55 @@ function setting_standard_commands()
             alias dist_upgrade="sudo zypper dist-upgrade"
             os_status="suse"
             ;;
+        mandriva*)
+            ;;
+        debian*)   
+            [[ $debug -eq 1 ]] && echo "Setting alias' for: LINUX (Debian)" || echo "Setting alias' for: LINUX (Debian)" >> $LOG; sleep ${SLEEP}
+            #alias rm='rm -i' 
+            # Upgrade
+            alias apt_update="sudo aptitude update"
+            # install
+            alias install="apt-get install" $1
+            alias {uninstall,remove}="sudo apt remove"
+            alias {sys_update,update,sysupdate}="sudo apt-get update && sudo apt-get upgrade"
+            alias sysclean="sudo apt clean; sudo apt autoremove; sudo apt purge"
+            alias installf="sudo apt -f install" #force install
+            alias {reinnstall,installfr}="sudo apt -f install --rreinstall" # Force reinstall
+            # Cleaning
+            alias clean="sudo apt clean && sudo apt autoclean"
+            alias remove="sudo apt remove && sudo apt autoremove"
+            alias purge="sudo apt purge"
+            alias deborphan="sudo deborphan | xaargs sudo apt -y remove --purge"
+            alias apt_update="sudo aptitude update"
+            # Network Start, Stop, and Restart
+            alias networkrestart='sudo service networking restart'
+            alias networkstop='sudo service networking stop'
+            alias networkstart='sudo service networking start'
+            os_status="Debian"
+            ;;
+        gentoo*)
+            alias repo_update="emerge --sync"
+            alias update="emerge --update --deep --ask @world"
+            alias sysupdate="emerge --update --deep --with-bdeps=y --newuse @world"
+            alias cleanupdate="emerge --update --deep --newuse @world && emerge --depclean &&  revdep-rebuild"
+            alias app_search="emerge --search " $1
+            alias {remove,uninstall}="emerge --unmerge " $1
+            ;;
+        darwin*)  
+            [[ $debug -eq 1 ]] && echo "Setting alias' for: OSX" || echo "Setting alias' for: OSX" >> $LOG; sleep ${SLEEP}
+            os_status="Mac/Darwin"
+            ;; 
+        *bsd) 
+            [[ $debug -eq 1 ]] && echo "Setting alias' for: *BSD" || echo "Setting alias' for: *BSD" >> $LOG; sleep ${SLEEP}
+            alias install="pkg install " $1
+            alias {uninstall,remove}="pkg deletei " $1
+            alias {sys_update,sysup,sysupdate}="freebsd-update fetch && freebsd-update install"
+            alias upgrade="pkg update && pkg upgrade"
+            alias autoclean="pkg autoremove"
+            alias clean="pkg clean -c"
+            #unalias ll; alias ll=""
+            os_status="*bsd"
+            ;;
         fedora*)                                                           #        Fedora
             [[ $debug -eq 1 ]] && echo "Setting alias' for: Fedora" || echo "Setting alias' for: Fedora" >> $LOG; sleep ${SLEEP}
             alias install="dnf install" $1
@@ -175,14 +184,6 @@ function setting_standard_commands()
             alias sysclean="pacman -Sc"
             alias package_list="pacman -Q"
             os_status="pacman"
-            ;;
-        gentoo*)
-            alias repo_update="emerge --sync"
-            alias update="emerge --update --deep --ask @world"
-            alias sysupdate="emerge --update --deep --with-bdeps=y --newuse @world"
-            alias cleanupdate="emerge --update --deep --newuse @world && emerge --depclean &&  revdep-rebuild"
-            alias app_search="emerge --search " $1
-            alias {remove,uninstall}="emerge --unmerge " $1
             ;;
         msys*)    
             [[ $debug -eq 1 ]] && echo "Setting alias' for: CygWIN" || echo "Setting alias' for: CygWIN" >> $LOG; sleep ${SLEEP}
