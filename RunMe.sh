@@ -191,6 +191,10 @@ function get_os() {
         OS=windows; OSSYS="windows"
     elif [ "${OS}" == "darwin" ]; then
         OS=mac; OSSYS="mac"
+    elif [ "${OS}" == "freebsd" ]; then
+        OS=freebsd; OSSYS="BSD"
+        ARCH=$(uname -p)
+       # OSSTR="${OS} ${REV}(${ARCH} "uname -v" )"
     else
         OS="linux"
         if [ "${OS}" = "SunOS" ] ; then
@@ -271,7 +275,7 @@ function setting_standard_commands() {
             alias install="pkg install" $1
             alias {uninstall,remove}="pkg delete " $1
             alias {sys_update,sysup,sysupdate}="freebsd-update fetch && freebsd-update install"
-            alias update="pkg update && pkg upgrade"
+            alias portsupdate="pkg update && pkg upgrade"
             alias autoclean="pkg autoremove"
             alias clean="pkg clean -c"
             unalias ll; alias ll="";;
