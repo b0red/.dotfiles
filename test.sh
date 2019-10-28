@@ -22,7 +22,7 @@ function get_os()
     elif [ "${OS}" == "darwin" ]; then
         OS=mac; OSSYS="mac"
     elif [ "${OS}" == "freebsd" ]; then
-        OS=bsd; OSSYS="freebsd"
+        OS=bsd; OSSYS="bsd"
         OSSTR=$(uname -rs)
     else
         OS="linux"
