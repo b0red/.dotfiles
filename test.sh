@@ -162,7 +162,7 @@ function setting_standard_commands()
             alias install="dnf install" $1
             alias {uninstall,remove}="dnf remove" $1
             alias upgrade="dnf upgrade"
-            alias search="dnf search" $1
+            alias app_search="dnf search" $1
             alias autoremove="dnf remove" $1
             alias sysclean="dnf clean all"
             os_status="fedora"
@@ -177,6 +177,14 @@ function setting_standard_commands()
             alias sysclean="pacman -Sc"
             alias package_list="pacman -Q"
             os_status="pacman"
+            ;;
+        gentoo*)
+            alias repo_update="emerge --sync"
+            alias update="emerge --update --deep --ask @world"
+            alias sysupdate="emerge --update --deep --with-bdeps=y --newuse @world"
+            alias cleanupdate="emerge --update --deep --newuse @world && emerge --depclean &&  revdep-rebuild"
+            alias app_search="emerge --search " $1
+            alias {remove,uninstall}="emerge --unmerge " $1
             ;;
         msys*)    
             [[ $debug -eq 1 ]] && echo "Setting alias' for: CygWIN" || echo "Setting alias' for: CygWIN" >> $LOG; sleep ${SLEEP}
@@ -195,5 +203,5 @@ echo -e "\nDistro: $DistroBasedOn"
 echo "OS: $OS"
 echo "Dist: $DIST"
 echo "Rev: $REV"
-3cho "PSEUDONAME: $PSEUDONAME"
+echo "PSEUDONAME: $PSEUDONAME"
 echo "os_status: $os_status"
