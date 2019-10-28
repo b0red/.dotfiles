@@ -6,8 +6,6 @@
 ##          https://askubuntu.com/questions/1705/how-can-i-create-a-select-menu-in-a-shell-script
 ##
 ###############################################################################################
-LOG="logfil"
-
 debug=1
 SLEEP=0
 
@@ -185,8 +183,9 @@ function setting_standard_commands()
             ;;
     esac
 }
-echo os_status: $os_status
-echo "get_os"; get_os
-echo "setting_standard_commands"; setting_standard_commands
-echo "Distro: $DistroBasedOn"
+clear
+echo "function: get_os"; get_os
+echo "function: standard_commands"; setting_standard_commands
+echo -e "\nDistro: $DistroBasedOn"
 echo "OS: $OS"
+echo "os_status: $os_status"
