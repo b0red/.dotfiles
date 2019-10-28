@@ -11,26 +11,6 @@ LOG="logfil"
 debug=1
 SLEEP=0
 
-###		Check for 'firstrun'
-function first_run(){
-    if [ -f ~/dotfiles/firstrun ]; then
-        # File has ran before
-        ###		Check value
-        read -r line < firstrun
-        #echo $line
-        if [ $line = 0 ]; then 
-            ####	Do first ttime stuff here
-            echo "it's 0"
-        else
-            ###		Do update stuff here
-            echo "It's 1"
-        fi
-    else
-        echo ""
-        # This is the first time, file doesn't exist
-    fi
-}
-
 function get_os() 
 {
     #checks for os tyoe, this to alias right things
@@ -41,6 +21,8 @@ function get_os()
         OS=windows; OSSYS="windows"
     elif [ "${OS}" == "darwin" ]; then
         OS=mac; OSSYS="mac"
+    elif [ "${OS}" == "freebsd" ]; then
+        OS=bsd; OSSYS="freebsd"
     else
         OS="linux"
         if [ "${OS}" = "SunOS" ] ; then
