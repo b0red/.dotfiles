@@ -605,7 +605,6 @@ function usage(){
  Usage: RunMe.sh [Options]
  Options:
    -h, --help: Show this message
-   -u, --create-daemon-users: Create users & group for use with the Nix daemon
 EOF
 }
 
