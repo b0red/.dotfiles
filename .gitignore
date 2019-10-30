@@ -5,5 +5,5 @@ oldfiles/*
 *.log
 *.swp
 firstrun
-symlink.sh
+symlinks.sh
 a.txt
