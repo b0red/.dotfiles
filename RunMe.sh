@@ -48,7 +48,7 @@ SLEEP=2                                             # Sleeptimer
 DIR=~/dotfiles/oldfiles                             # Where to store old backuped files
 OLDFILES=oldfiles.txt                               # Filelist - not in use right now
 ARCHIVE="$FILE"                                     # Arhchive name
-LOG=~/dotfiles/oldfiles/install_progress_log        # Installation prograss log
+LOG=~/dotfiles/oldfiles/install_progress.log        # Installation prograss log
 DATE=$(date +"%Y-%m-%d %H:%M:%S")                   # Date - for zipfile
 TITLE="Dotfiles Installer Script"                   # scriptname
 FILE="$HOSTNAME-$DATE.zip"                          # Filename
@@ -250,7 +250,7 @@ function get_repos() {
         [[ $debug -eq 1 ]] && echo "$LOG_MESS_08" || echo "$LOG_MESS_08" >> ${LOG}; sleep ${SLEEP}
             
         ln -s ~/dotfiles/extras/tmux-git.git ~/.tmux-git
-        ln -s ~/dotfiles/extras/tmux-gitbar ~/.tmux-gitbar
+        #ln -s ~/dotfiles/extras/tmux-gitbar ~/.tmux-gitbar
 
     #fi
 }
