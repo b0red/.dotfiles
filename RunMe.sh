@@ -5,7 +5,7 @@ export TERM=${TERM:-dumb}
 export DISPLAY=:0.0
 ###################################################################################################################
 ##
-##                   W A R N I N G !  - You ar running this at your own risk½
+##                   W A R N I N G !  - You ar running this at your own risk -  W A R N I N G ! 
 ##
 ##
 ##      Script for installing dotfiles. It will copy and backup old dotfiles to location under 
@@ -39,45 +39,48 @@ clear
 
 ###     Debug on/off  - Change for debugging purposes
 #
-debug=1
-trace_debug=1
-SLEEP=2
+debug=0                                             # Debug 1 = echo to screen / 0 = echo to logfile
+trace_debug=0
+SLEEP=2                                             # Sleeptimer
 
 ###     Settings - Change if you need to
 #
 DIR=~/dotfiles/oldfiles                             # Where to store old backuped files
 OLDFILES=oldfiles.txt                               # Filelist - not in use right now
-FILE="$HOSTNAME-(date +%Y-%m-%d-%H:%M).zip"         # Filename
 ARCHIVE="$FILE"                                     # Arhchive name
-LOG=~/dotfiles/install_progress_log                 # Installation prograss log
+LOG=~/dotfiles/oldfiles/install_progress_log        # Installation prograss log
 DATE=$(date +"%Y-%m-%d %H:%M:%S")                   # Date - for zipfile
 TITLE="Dotfiles Installer Script"                   # scriptname
+FILE="$HOSTNAME-$DATE.zip"                          # Filename
 
 ###     Software array
 #
 APPARRAY=(curl htop ncdu pydf tree tmux vim mc)     # Apps to be installed - add if you like
-DOTARRAY=(.profile .bashrc)                         # old dotfiles
-OLDFILEARRAY=(.bashrc .profile .bash_profile .inputrc)
+DOTARRAY=(~/.profile ~/.bashrc ~/.bash_profile ~/.inputrc)                         # old dotfiles
+OLDFILEARRAY=(~/.bashrc ~/.profile ~/.bash_profile ~/.inputrc)
 #SUBMODULES=(https://github.com/denilsonsa/prettyping.git https://github.com/tlatsas/bash-spinner.git) #s submodules for git repos
 
 ###     LogMessages
 #
 LOG_MESS_001="Done unaliasing!"
 LOG_MESS_01="Ran function date_it."
-LOG_MESS_01_1="\nChecking for OS specifics:"
+LOG_MESS_01_1="Checking for OS type and found:"
 LOG_MESS_02="Setting appropriate aliases for this system." 
 LOG_MESS_03="Created backup dir: "
 LOG_MESS_04="Ran function 'app_installer'"
-LOG_MESS_05="\nSymlinked the new dotfiles!"
-LOG_MESS_06="\nRan function 'archive_it'"
-LOG_MESS_07="\nCloning TMUX and submodules"
+LOG_MESS_05="Symlinked the new dotfiles!"
+LOG_MESS_06="Ran function 'archive_it'"
+LOG_MESS_07="Cloning TMUX and submodules"
 LOG_MESS_07_1="Cloning additional TMUX stuff"
 LOG_MESS_07_1_a="Not adding/updating submodules"
 LOG_MESS_07_1_b="Submodules added/updated!"
 LOG_MESS_07_2="gvimrc doesn't exist"
 LOG_MESS_07_3="Added line for .tmux-git to .bashrc"
 LOG_MESS_08="Cloning VÍM and submodules"
-LOG_MESS_09="\nDone setting up ~/dotfiles"
+LOG_MESS_09="Done setting up ~/dotfiles"
+LOG_MESS_091_a="Files compressed ok!"
+LOG_MESS_091_b="Files not compressed!"
+LOG_MESS_092="File or directory empty. Nothing to archive!"
 
 # +-+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--++--+--+--+--+--++--+--+--+--+--+
 ###     ^NO Editing below this line ^
@@ -89,14 +92,40 @@ if [ $trace_debug -eq 1 ]; then
     trap read debug
 fi
 
-unalias -a
-
-###     Delete old log and create new
+###     Removing all old aliases
 #
+unalias -a
+[[ $debug -eq 1 ]] && echo "$LOG_MESS_001" || echo "$LOG_MESS_001" >> ${LOG}; sleep ${SLEEP}
+
+## #     Ensure script is not being run with root privileges
+#
+if [ $EUID -eq 0 ]; then
+    echo "Please don't run this script with root privileges!"
+    exit 1
+fi
+#
+# +-+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--++--+--+--+--+--++--+--+--+--+--+
+#
+function init() {
+    if [ $# -gt 0 ]; then
+        case "$1" in
+            -h|--help)
+                usage
+                exit 1
+                ;;
+            *)
+                echo -e "ERROR: Unrecognized parameter: '${1}'\nSee usage (--help) for options..." 1>&2
+                exit 1
+                ;;
+        esac
+    fi
+}
+
 function date_it() {
+    ###     Delete old log and create new
     rm -f ${LOG}; touch ${LOG}
-    #[[ $debug -eq 1 ]] && printf "\n$TITLE - $DATE\n"; sleep ${SLEEP}
     [[ $debug -eq 1 ]] && printf "\n$TITLE - $DATE\n" || printf "\n$TITLE - $DATE\n" >> $LOG; sleep ${SLEEP}
+    [[ $debug -eq 1 ]] && echo "$LOG_MESS_01" || echo "$LOG_MESS_01" >> ${LOG}; sleep ${SLEEP}
 }
 
 ###     Function for updating submodules
@@ -110,8 +139,7 @@ function submodules_update() {
 }
 
 function app_installer() {
-    ###     Installs software
-    #
+    # Installs apps/software
     for APP in "${APPARRAY[@]}"
     do
         #echo $APP
@@ -137,20 +165,26 @@ function copy_old_files() {
     for OLDFILE in "${OLDFILEARRAY[@]}"
     do
         cp ~/"$OLDFILE" $DIR/ 2>/dev/null
-        [[ $debug -eq 1 ]] && echo "$OLDFILE moved to $DIR" || echo "$OLDFILE moved to $DIR" >> ${LOG} ; sleep ${SLEEP}
+        [[ $debug -eq 1 ]] && echo "$OLDFILE copied to $DIR" || echo "$OLDFILE copied to $DIR" >> ${LOG} ; sleep ${SLEEP}
     done
+}
+
+function symlink_us(){
+    # Symlink files
+    ln -s ~/dotfiles/.bashrc ~/.bashrc; ln -s ~/dotfiles/.profile ~/.profile
+    [[ $debug -eq 1 ]] && echo "$LOG_MESS_05" || echo -e "\n$LOG_MESS_05" >> ${LOG}; sleep ${SLEEP}
 }
 
 function archive_it() {
     ### Archive the old files if there are any
-    #
     if [ -n "$(find ${DIR} -prune -empty 2>/dev/null)" ]; then
-        FILE_STATUS="File or directory empty. Nothing to archive!"
+        FILE_STATUS="$LOG_MESS_092"
     else
-        zip -r -q -u -m $DIR/"$FILE" $DIR -x "*.zip" && FILE_STATUS="Files compressed ok!" || FILE_STATUS="Files not compressed!"
+        zip -r -q -u -m $DIR/"$FILE" $DIR -x "*.zip" && FILE_STATUS="$LOG_MESS_091_a" || FILE_STATUS="$LOG_MESS_091_b"
     fi
     [[ $debug -eq 1 ]] && echo "$LOG_MESS_06" || echo "$LOG_MESS_06" >> ${LOG}; sleep ${SLEEP}
     [[ $debug -eq 1 ]] && echo "$FILE_STATUS" || echo "$FILE_STATUS" >> ${LOG} ; sleep ${SLEEP}
+    [[ $debug -eq 1 ]] && echo "Created $FILE" || echo -e "Created $FILE\n" >> ${LOG} ; sleep ${SLEEP}    
 }
 
 function sym_link_check() {
@@ -180,6 +214,47 @@ function sym_link_check() {
         fi
         [[ $debug -eq 1 ]] && echo "$LINK_STATUS" || echo "$LINK_STATUS" >> ${LOG} ; sleep ${SLEEP}
     done
+}
+
+
+function get_repos() {
+    ###     Ask confirmation for github
+    #
+    #read -p "Update all repos (y/n)?" 
+    #if [ "$x" = "yes"  ]; then
+        ###     Clone tmux repo
+        #
+        git clone --recurse-submodules git@bitbucket.org:b0red/tmux.git ~/.tmux; cd ~/.tmux
+        ln -s ~/.tmux/.tmux.conf ~/.tmux.conf
+        submodules_init; submodules_update
+        [[ $debug -eq 1 ]] && echo "$LOG_MESS_07" || echo "$LOG_MESS_07" >> ${LOG}; sleep ${SLEEP}
+
+        ###     Clone .vim repo
+        #
+        git clone --recurse-submodules git@bitbucket.org:b0red/.vim.git ~/.vim; cd ~/.vim
+        [[ $debug -eq 1 ]] && echo "$LOG_MESS_07_1_a" || submodules_update; echo "$LOG_MESS_07_1_b" >> ${LOG}
+        ln -s ~/.vim/vimrc ~/vimrc 
+        if [ -f ~/.vim/gvimrc ]; then
+            ln -s ~/.vim/gvimrc ~/gvimrc
+        fi
+        submodules_init; submodules_update
+        [[ $debug -eq 1 ]] && echo "$LOG_MESS_08" || echo "$LOG_MESS_08" >> ${LOG}; sleep ${SLEEP}
+            
+        ln -s ~/dotfiles/extras/tmux-git.git ~/.tmux-git
+        ln -s extras/tmux-gitbar ~/.tmux-gitbar
+
+    #fi
+}
+
+function add_line(){
+        ###     Check if line exists in file .bashrc, if not copy it
+        grep -qxF "if [[ $TMUX ]]; then source ~/.tmux/extras/tmux-git/tmux-git.sh; fi" ~/.bashrc
+        if [ $? -ne 0 ]; then
+            echo "if [[ $TMUX ]]; then source ~/.tmux/extras/tmux-git/tmux-git.sh" >> ~/.bashrc
+            [[ $debug -eq 1 ]] && echo "$LOG_MESS_07_3" || echo "$LOG_MESS_07_3" >> ${LOG}; sleep ${SLEEP}
+        else
+            STATUS="Line '~/.tmux-git/tmux-git.sh' was not added to ~/.bashrc!";  echo $STATUS
+        fi
 }
 
 function get_os() 
@@ -253,6 +328,9 @@ function get_os()
             # export MACH
         fi
     fi
+    [[ $debug -eq 1 ]] && printf "$LOG_MESS_01_1\n" || printf "$LOG_MESS_01_1\n" >> ${LOG}; sleep ${SLEEP}
+    [[ $debug -eq 1 ]] && printf "OS=$OS\nDIST=$DIST\nDistroBasedOn=$DistroBasedOn\n" || printf \
+    "OS=$OS\nDIST=$DIST\nDistroBasedOn=$DistroBasedOn\n\n" >> ${LOG}; sleep ${SLEEP}
 }
 
 function setting_standard_commands() 
@@ -312,7 +390,7 @@ function setting_standard_commands()
             alias networkrestart='sudo service networking restart'
             alias networkstop='sudo service networking stop'
             alias networkstart='sudo service networking start'
-            os_status="Debian"
+        os_status="Debian"
             ;;
         gentoo*)
             alias repo_update="emerge --sync"
@@ -367,103 +445,68 @@ function setting_standard_commands()
             os_status="I have no clue"
             ;;
     esac
+    [[ $debug -eq 1 ]] && printf "Added aliases for $OSSYS-based system!\n" || printf "Added aliases for $OSSYS-based system!\n" >> ${LOG}; sleep ${SLEEP}
+}
+
+function show_summary() {
+    sleep 5
+    printf "\n====== Summary ======\nResult of $TITLE"
+    cat ${LOG}
+    sleep ${SLEEP}
+#[[ ! $debug -eq 1 ]] && exit 0
 }
 # --+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--++--+--+--+--+--++--+--+--+--+--+
 
 ###     On first run. This is a quick and dirty script, no backups or questions asked!
 
-###     Removing all old aliases
-#
-unalias -a
-[[ $debug -eq 1 ]] && echo "$LOG_MESS_001" || echo "$LOG_MESS_001" >> ${LOG}; sleep ${SLEEP}
-
 ###     Create  logfile
 #
 date_it
-[[ $debug -eq 1 ]] && echo "$LOG_MESS_01" || echo "$LOG_MESS_01" >> ${LOG}; sleep ${SLEEP}
 
 ###     Moving/Copying old files
 #
 copy_old_files
 
+###     Delete old symlinks
+#
+sym_link_check
+
 ###     Symlink new files
 #
-ln -s ~/dotfiles/.bashrc ~/.bashrc; ln -s ~/dotfiles/.profile ~/.profile
-[[ $debug -eq 1 ]] && echo "$LOG_MESS_05" || echo "$LOG_MESS_05" >> ${LOG}; sleep ${SLEEP}
-
-###     Archive old files (Not necessary?)
-#
-archive_it
+symlink_us
 
 ###     Check what os this is running on
 #
 get_os
-[[ $debug -eq 1 ]] && printf "$LOG_MESS_01_1\n" || printf "$LOG_MESS_01_1\n" >> ${LOG}; sleep ${SLEEP}
-[[ $debug -eq 1 ]] && printf "OS=$OS\nDIST=$DIST\nDistroBasedOn=$DistroBasedOn\n" || printf \
-    "OS=$OS\nDIST=$DIST\nDistroBasedOn=$DistroBasedOn\n\n" >> ${LOG}; sleep ${SLEEP}
 
 ###     Check for apps, install if not found
 #
 app_installer
 
-
-###     Feth any updates to the dotfiles repo
+###     Archive old files (Not necessary?)
 #
-git pull origin master
+archive_it
 
-###     Ask confirmation for github
+###     Get subrepos
 #
-read -p "Update all repos (y/n)?" 
-if [ "$x" = "yes"  ]; then
-    ##     If debug mode is on (=1) then don't fetch submodules, faster
-    [[ $debug -eq 1 ]] && echo "$LOG_MESS_07_1_a" || submodules_init; echo "$LOG_MESS_07_1_b" >> ${LOG}
-    #[[ $debug -eq 1 ]] && echo "ran submodules_init" ; sleep ${SLEEP}
-    [[ $debug -eq 1 ]] && echo "$LOG_MESS_07_1_a" || submodules_update; echo "$LOG_MESS_07_1_b" >> ${LOG}
-fi
+get_repos
 
-###     Clone tmux repo
+###     Add line about tmux to ~/.bashrc
 #
-git clone --recurse-submodules git@bitbucket.org:b0red/tmux.git ~/.tmux; cd ~/.tmux
-[[ $debug -eq 1 ]] && echo "$LOG_MESS_07" || echo "$LOG_MESS_07" >> ${LOG}; sleep ${SLEEP}
-[[ $debug -eq 1 ]] && echo "$LOG_MESS_07_1_a (TMUX)" || submodules_update; echo "$LOG_MESS_07_1_b (TMUX)" >> ${LOG}
-ln -s ~/.tmux/.tmux.conf ~/.tmux.conf
-
-
-###     Clone additional tmux stuff
-#
-#git clone git://github.com/drmad/tmux-git.git ~/.tmux-git
-#git clone git://github.com/arl/tmux-gitbar ~/.tmux-gitbar
-ln -s extras/tmux-git.git ~/.tmux-git
-ln -s extras/tmux-gitbar ~/.tmux-gitbar
-#[[ $debug -eq 1 ]] && echo "$LOG_MESS_07_1" || echo "$LOG_MESS_07_1" >> ${LOG}; sleep ${SLEEP}
-
-###     Check if line exists in file .bashrc, if not copy it
-#
-grep -qxF "if [[ \$TMUX ]]; then source ~/.tmux-git/tmux-git.sh; fi" ~/.bashrc
-if [ $? -ne 0 ]; then
-    echo "if [[ \$TMUX ]]; then source ~/.tmux-git/tmux-git.sh; fi" >> ~/.bashrc
-    [[ $debug -eq 1 ]] && echo "$LOG_MESS_07_3" || echo "$LOG_MESS_07_3" >> ${LOG}; sleep ${SLEEP}
-else
-    STATUS="Line '~/.tmux-git/tmux-git.sh' not added to ~/.bashrc!";  echo $STATUS
-fi
-
-###     Clone vim repo & submodules & symlink files
-#
-git clone --recurse-submodules git@bitbucket.org:b0red/.vim.git ~/.vim; cd ~/.vim
-[[ $debug -eq 1 ]] && echo "$LOG_MESS_07_1_a" || submodules_update; echo "$LOG_MESS_07_1_b" >> ${LOG}
-ln -s ~/.vim/vimrc ~/vimrc; 
-[[ -f ~/.vim/gvimrc ]] && ln -s ~/.vim/gvimrc ~/gvimrc; echo "Symlinked gvimrc" || echo "$LOG_MESS_07_2"; \
-    echo "$LOG_MESS_07_2" >> ${LOG}
-    [[ $debug -eq 1 ]] && echo "$LOG_MESS_08" || echo "$LOG_MESS_08" >> ${LOG}; sleep ${SLEEP}
+add_line
 
 ###     Source .bashrc
 #
 source  ~/.bashrc
 
 ###     Setting up aliases for specific os
-get_os
+#
 setting_standard_commands
-[[ $debug -eq 1 ]] && printf "Added aliases for $OSSYS-based system!\n" || printf "Added aliases for $OSSYS-based system!\n" >> ${LOG}; sleep ${SLEEP}
+
+###     Run shit here
+#init "$@"
+#sanity
+#install
 
 echo "$LOG_MESS_09"
 
@@ -471,12 +514,7 @@ echo "$LOG_MESS_09"
 
 ###     Show summary of what was done
 #
-sleep 5
-#clear; 
-printf "\n====== Summary ======\nResult of $TITLE"
-cat ${LOG}
-sleep ${SLEEP}
-[[ ! $debug -eq 1 ]] && exit 0
+show_summary
 
 ## -+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--++--+--+--+--+--++--+--+--+--+--+
 ###     Debuginfo - just printing  values to screen

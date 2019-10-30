@@ -607,7 +607,27 @@ function setting_standard_commands()
     esac
 }
 
+# Usage
+function usage(){
+    cat <<EOF
+ Usage: RunMe.sh [Options]
+ Options:
+   -h, --help: Show this message
+   -u, --create-daemon-users: Create users & group for use with the Nix daemon
+EOF
+}
+
+function tail_me() {
+    while :
+    do
+        tail -f $1; sleep 1
+    done
+}
+
 ###     Just to check if loaded
 #
 # echo ${file##*/}
 ###     Function for backing up latest command
+
+
+#!/bin/ksh

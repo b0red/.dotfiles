@@ -58,15 +58,15 @@ if ! shopt -oq posix; then
 fi
 
 
-###	If id command returns zero, you have root access.
+### If id command returns zero, you have root access.
 #
 if [ $(id -u) -eq 0 ];
     then # you are root, set red colour prompt
         PS1='\[\e[1;31m\]\u\[\e[m\]\[\e[0;32m\]@\h: \[\e[m\]\[\e[1;34m\]\w\[\e[m\] \[\e[1;32m\]\$\[\e[m\] \[\e[1;37m\]'
     else # normal
-	# PS1="[\\u@\\h:\\w] $ "
+  # PS1="[\\u@\\h:\\w] $ "
         # PROMPT='\[\e[1;32m\]\u \[\e[m\]\[\e[0;32m\]@\[\e[m\]\[\e[1;32m\]\h: \w \$\[\e[m\] '
-	PS1='\[\e[1;32m\]\u\[\e[m\]\[\e[0;32m\]@\h: \[\e[m\]\[\e[1;34m\]\w\[\e[m\] \[\e[1;32m\]\$\[\e[m\] \[\e[1;37m\]'
+  PS1='\[\e[1;32m\]\u\[\e[m\]\[\e[0;32m\]@\h: \[\e[m\]\[\e[1;34m\]\w\[\e[m\] \[\e[1;32m\]\$\[\e[m\] \[\e[1;37m\]'
 fi
 
 ###     Color manpages for 'less'
@@ -139,3 +139,6 @@ fi
 
 echo "Done!"; sleep .5; clear
 
+if [[ /tmp/tmux-1000/default,2382,43 ]]; then source ~/.tmux/extras/tmux-git/tmux-git.sh
+if [[ /tmp/tmux-1000/default,2382,43 ]]; then source ~/.tmux/extras/tmux-git/tmux-git.sh
+if [[ /tmp/tmux-1000/default,2382,43 ]]; then source ~/.tmux/extras/tmux-git/tmux-git.sh

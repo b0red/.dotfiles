@@ -85,8 +85,8 @@ function get_os()
 function setting_standard_commands() 
 {
     case $OSSYS in
-        solaris*) 
-            [[ $debug -eq 1 ]] && echo "Setting alias' for: Solaris" || echo "Setting alias' for: Ssolaris" >> $LOG; sleep ${SLEEP}
+        solaris*)                                                           # Solaris
+            [[ $debug -eq 1 ]] && echo "Setting alias' for: $DistroBasedOn" || echo "Setting alias' for: $DistroBasedOn" >> $LOG; sleep ${SLEEP}
             alias install="pkg install" $1
             alias {uninstall,remove}="pkg uninstall" $1
             alias app_search="pkg search" $1
@@ -94,7 +94,7 @@ function setting_standard_commands()
             os_status="solaris"
             ;;
         redhat*)                                                           #     YUM (RedHat Linux, centos)
-            [[ $debug -eq 1 ]] && echo "Setting alias' for: RedHat" || echo "Setting alias' for: RedHat" >> $LOG; sleep ${SLEEP}
+            [[ $debug -eq 1 ]] && echo "Setting alias' for: $DistroBasedOn" || echo "Setting alias' for: $DistroBasedOn" >> $LOG; sleep ${SLEEP}
             #PATH=$PATH:$HOME/bin
             alias install="sudo yum install -y" $1
             alias {uninstall,remove}="sudo yum remove" $1
@@ -106,7 +106,7 @@ function setting_standard_commands()
             os_status="redhadt"
             ;;
         suse*)                                                            #     OpenSuSe)
-            [[ $debug -eq 1 ]] && echo "Setting alias' for: OpenSuSe" || echo "Setting alias' for: OpenSuSe" >> $LOG; sleep ${SLEEP}
+            [[ $debug -eq 1 ]] && echo "Setting alias' for: $DistroBasedOn" || echo "Setting alias' for: $DistroBasedOn" >> $LOG; sleep ${SLEEP}
             alias install="zypper install" $1
             alias {uninstall,remove}="zypper remove" $1
             alias app_search="zypper search" $1
@@ -115,26 +115,24 @@ function setting_standard_commands()
             alias dist_upgrade="sudo zypper dist-upgrade"
             os_status="suse"
             ;;
-        mandriva*)
+        mandriva*)                                                          # Mandrake/Mandriva
             ;;
-        debian*)   
-            [[ $debug -eq 1 ]] && echo "Setting alias' for: LINUX (Debian)" || echo "Setting alias' for: LINUX (Debian)" >> $LOG; sleep ${SLEEP}
+        debian*)                                                            # Ubuntu and derivates
+            [[ $debug -eq 1 ]] && echo "Setting alias' for: $DistroBasedOn" || echo "Setting alias' for: $DistroBasedOn" >> $LOG; sleep ${SLEEP}
             #alias rm='rm -i' 
             # Upgrade
             alias apt_update="sudo aptitude update"
             # install
             alias install="apt-get install" $1
-            alias {uninstall,remove}="sudo apt remove"
-            alias {sys_update,update,sysupdate}="sudo apt-get update && sudo apt-get upgrade"
+            alias {uninstall,remove}="sudo apt remove && sudo apt autoremove"
+            alias {sys_update,update,sysupdate}="sudo apt-get update && sudo apt-get upgrade -y && sudo apt autoremove && sudo apt autoremove"
             alias sysclean="sudo apt clean; sudo apt autoremove; sudo apt purge"
             alias installf="sudo apt -f install" #force install
-            alias {reinnstall,installfr}="sudo apt -f install --rreinstall" # Force reinstall
+            alias reinstall="sudo apt -f install --reinstall" # Force reinstall
             # Cleaning
             alias clean="sudo apt clean && sudo apt autoclean"
-            alias remove="sudo apt remove && sudo apt autoremove"
             alias purge="sudo apt purge"
             alias deborphan="sudo deborphan | xaargs sudo apt -y remove --purge"
-            alias apt_update="sudo aptitude update"
             # Network Start, Stop, and Restart
             alias networkrestart='sudo service networking restart'
             alias networkstop='sudo service networking stop'
@@ -142,30 +140,31 @@ function setting_standard_commands()
             os_status="Debian"
             ;;
         gentoo*)
+            [[ $debug -eq 1 ]] && echo "Setting alias' for: $DistroBasedOn" || echo "Setting alias' for: $DistroBasedOn" >> $LOG; sleep ${SLEEP}
             alias repo_update="emerge --sync"
             alias update="emerge --update --deep --ask @world"
             alias sysupdate="emerge --update --deep --with-bdeps=y --newuse @world"
             alias cleanupdate="emerge --update --deep --newuse @world && emerge --depclean &&  revdep-rebuild"
             alias app_search="emerge --search " $1
             alias {remove,uninstall}="emerge --unmerge " $1
+            os_status="Gentoo"
             ;;
         darwin*)  
-            [[ $debug -eq 1 ]] && echo "Setting alias' for: OSX" || echo "Setting alias' for: OSX" >> $LOG; sleep ${SLEEP}
+            [[ $debug -eq 1 ]] && echo "Setting alias' for: $DistroBasedOn" || echo "Setting alias' for: $DistroBasedOn" >> $LOG; sleep ${SLEEP}
             os_status="Mac/Darwin"
             ;; 
         *bsd) 
-            [[ $debug -eq 1 ]] && echo "Setting alias' for: *BSD" || echo "Setting alias' for: *BSD" >> $LOG; sleep ${SLEEP}
+            [[ $debug -eq 1 ]] && echo "Setting alias' for: $DistroBasedOn" || echo "Setting alias' for: $DistroBasedOn" >> $LOG; sleep ${SLEEP}
             alias install="pkg install " $1
             alias {uninstall,remove}="pkg deletei " $1
             alias {sys_update,sysup,sysupdate}="freebsd-update fetch && freebsd-update install"
             alias upgrade="pkg update && pkg upgrade"
             alias autoclean="pkg autoremove"
             alias clean="pkg clean -c"
-            #unalias ll; alias ll=""
             os_status="*bsd"
             ;;
         fedora*)                                                           #        Fedora
-            [[ $debug -eq 1 ]] && echo "Setting alias' for: Fedora" || echo "Setting alias' for: Fedora" >> $LOG; sleep ${SLEEP}
+            [[ $debug -eq 1 ]] && echo "Setting alias' for: $DistroBasedOn" || echo "Setting alias' for: $DistroBasedOn" >> $LOG; sleep ${SLEEP}
             alias install="dnf install" $1
             alias {uninstall,remove}="dnf remove" $1
             alias upgrade="dnf upgrade"
@@ -175,7 +174,7 @@ function setting_standard_commands()
             os_status="fedora"
             ;;
         pacman*)                                                           #        ArchLinux
-            [[ $debug -eq 1 ]] && echo "Setting alias' for: ArchLinux" || echo "Setting alias' for: ArchLinux" >> $LOG; sleep ${SLEEP}
+            [[ $debug -eq 1 ]] && echo "Setting alias' for: $DistroBasedOn" || echo "Setting alias' for: $DistroBasedOn" >> $LOG; sleep ${SLEEP}
             alias install="pacman -Syu" $1
             alias {uninstall,remove}="pacman -Rsc" $1
             alias force_install="pacman -S --force" $1
@@ -186,7 +185,7 @@ function setting_standard_commands()
             os_status="pacman"
             ;;
         msys*)    
-            [[ $debug -eq 1 ]] && echo "Setting alias' for: CygWIN" || echo "Setting alias' for: CygWIN" >> $LOG; sleep ${SLEEP}
+            [[ $debug -eq 1 ]] && echo "Setting alias' for: $DistroBasedOn" || echo "Setting alias' for: $DistroBasedOn" >> $LOG; sleep ${SLEEP}
             os_status="ms Dos"
             ;;
         *)        
@@ -199,9 +198,11 @@ function setting_standard_commands()
 clear
 echo "function: get_os"; get_os
 echo "function: standard_commands"; setting_standard_commands
-echo -e "\nDistro: $DistroBasedOn"
-echo "OS: $OS"
-echo "Dist: $DIST"
-echo "Rev: $REV"
-echo "PSEUDONAME: $PSEUDONAME"
-echo "os_status: $os_status"
+
+echo -e "\nOS:                   ${OS^} "
+echo -e "DistroBased on:       ${DistroBasedOn^}"
+
+echo "Dist:                 ${DIST^}"
+echo "Rev:                  ${REV^}"
+echo "PSEUDONAME:           ${PSEUDONAME^}"
+echo "os_status:            $os_status"
