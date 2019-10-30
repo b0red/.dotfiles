@@ -10,4 +10,6 @@
 [submodule "extras/extras/bat"]
 	path = extras/extras/bat
 	url = https://github.com/sharkdp/bat
-
+[submodule "extras/lzd"]
+	path = extras/lzd
+	url = https://github.com/jesseduffield/lazydocker
