@@ -158,6 +158,10 @@ alias {module-update,modup}="git submodule foreach git pull origin master"
 alias weather="curl wttr.in/stockholm"
 alias weather2="curl v2.wttr.in"
 alias comstat="push \"Command ran! (uname -n)\" || push \"Command failed!\""
+alias diff="colordiff"                          # colorise diff output
+#alias mount="mount | column -t"                 # prettier outpu mount
+alias nocomment="grep -Ev '''^(#|$)'''"         #remove comments from file
+
 
 ###		MidnightCommande
 #
@@ -232,13 +236,11 @@ alias treels="find . -type d |sed 's:[^-][^/]*/:--:g; s:^-: |:'"
 #
 if command_check lazydocker; then alias lzd="lazydocker"; fi
 
-###     Update - move to check for os version lzter
-#
-#alias update="sudo apt update && sudo apt upgrade -y && sudo apt autoclean && sudo apt autoremove"
-
 ###     update aliases
 #
 alias dotupdate='cd ~/dotfiles  && git pull && source ~/.bashrc'
+
+
 
 ###     Scan open ports
 #
