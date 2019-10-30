@@ -91,10 +91,10 @@ export PAGER='less'
 
 ###     Load tmux as soon as we login to shell, logout when exit tmux       
 #           this fucks up tmux, can't save tmux panes layouts
-if command -v tmux &> /dev/null && [ -n "$PS1" ] && [[ ! "$TERM" =~ screen ]] && [[ ! "$TERM" =~ tmux ]] && [ -z "$TMUX" ]; then
-    exec tmux
-    { tmux a -t 0 || exec tmux new-session && exit; }
+if [[ -z "$TMUX" ]] && [ "$SSH_CONNECTION" != "" ]; then
+    tmux attach-session -t ssh_tmux || tmux new-session -s psr_tmux
 fi
+
 
 ###     Load any supplementary scripts
 #       Stolen from (https://bit.ly/2slDBSV)
