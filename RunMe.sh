@@ -57,7 +57,7 @@ FILE="$HOSTNAME-$DATE.zip"                          # Filename
 #
 APPARRAY=(curl htop ncdu pydf tree tmux vim mc)     # Apps to be installed - add if you like
 DOTARRAY=(~/.profile ~/.bashrc ~/.bash_profile ~/.inputrc)                         # old dotfiles
-OLDFILEARRAY=(~/.bashrc ~/.profile ~/.bash_profile ~/.inputrc)
+OLDFILEARRAY=(~/.bashrc ~/.profile ~/.bash_profile ~/.inputrc ~/.cshrc ~/.login)
 #SUBMODULES=(https://github.com/denilsonsa/prettyping.git https://github.com/tlatsas/bash-spinner.git) #s submodules for git repos
 
 ###     LogMessages
@@ -92,7 +92,7 @@ if [ $trace_debug -eq 1 ]; then
     trap read debug
 fi
 
-[[ $debug -eq 1 ]] && echo "$LOG_MESS_001" || echo "$LOG_MESS_001" >> ${LOG}; sleep ${SLEEP}
+#[[ $debug -eq 1 ]] && echo "$LOG_MESS_001" || echo "$LOG_MESS_001" >> ${LOG}; sleep ${SLEEP}
 
 ## #     Ensure script is not being run with root privileges
 #
@@ -172,8 +172,9 @@ function copy_old_files() {
     fi
     for OLDFILE in "${OLDFILEARRAY[@]}"
     do
-        cp ~/"$OLDFILE" $DIR/ 2>/dev/null
-        [[ $debug -eq 1 ]] && echo "$OLDFILE copied to $DIR" || echo "$OLDFILE copied to $DIR" >> ${LOG} ; sleep ${SLEEP}
+        cp ~/."$OLDFILE" "$OLDFILE".bak
+        #mv ~/"$OLDFILE" $DIR/ 2>/dev/null
+        [[ $debug -eq 1 ]] && echo "$OLDFILE backed up and moved to $DIR" || echo "$OLDFILE backed up and moved to $DIR" >> ${LOG} ; sleep ${SLEEP}
     done
 }
 
@@ -249,7 +250,7 @@ function get_repos() {
         [[ $debug -eq 1 ]] && echo "$LOG_MESS_08" || echo "$LOG_MESS_08" >> ${LOG}; sleep ${SLEEP}
             
         ln -s ~/dotfiles/extras/tmux-git.git ~/.tmux-git
-        ln -s extras/tmux-gitbar ~/.tmux-gitbar
+        ln -s ~/dotfiles/extras/tmux-gitbar ~/.tmux-gitbar
 
     #fi
 }

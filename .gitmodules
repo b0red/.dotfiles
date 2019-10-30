@@ -3,7 +3,7 @@
 	url = git://github.com/drmad/tmux-git.git
 [submodule "extras/.tmux-gitbar"]
 	path = extras/.tmux-gitbar
-	url = git://github.com/arl/tmux-gitbar
+	url = git://github.com/arl/tmux-gitbar.git
 [submodule "extras/extras/lzd"]
 	path = extras/extras/lzd
 	url = https://github.com/jesseduffield/lazydocker
