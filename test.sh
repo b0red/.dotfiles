@@ -21,7 +21,6 @@ function check_for_line(){
             STATUS="Was not added to ~/.bashrc!";  
         fi
 }
-
 function get_os() 
 {
     #checks for os tyoe, this to alias right things
@@ -140,15 +139,14 @@ function setting_standard_commands()
             alias apt_update="sudo aptitude update"
             # install
             alias install="apt install" $1
-            alias {uninstall,remove}="sudo apt remove && sudo apt autoremove"
-            alias {sys_update,update,sysupdate}="sudo apt-get update && sudo apt-get upgrade -y && sudo apt autoremove && sudo apt autoremove"
-            alias sysclean="apt clean; sudo apt autoremove; sudo apt purge"
-            alias installf="apt -f install" #force install
+            alias {uninstall,remove}="sudo apt remove && sudo apt autoremove" $1
+            alias {sys_update,update,sysupdate}="sudo sh -c 'apt update && apt upgrade -y && apt autoremove && apt autoremove'"
+            alias {clean,sysclean}="sudo sh -c 'apt clean && apt autoremove && apt purge'"
+            alias f_install="apt -f install" #force install
             alias reinstall="apt -f install --reinstall" # Force reinstall
             # Cleaning
-            alias clean="apt clean && sudo apt autoclean"
             alias purge="apt purge"
-            alias deborphan="deborphan | xaargs sudo apt -y remove --purge"
+            # alias deborphan="deborphan | xaargs sudo apt -y remove --purge"
             # Network Start, Stop, and Restart
             alias networkrestart="sudo service networking restart"
             alias networkstop="sudo service networking stop"
