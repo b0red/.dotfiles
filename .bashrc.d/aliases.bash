@@ -15,11 +15,11 @@ alias wget="wget -c $1"
 
 ###     Repeat the last command with sudo prefixed
 #
-alias please='sudo $(fc -ln -1)'
+alias please="sudo $(fc -ln -1)"
 
 ###     Apt is always sudo
 #
-alias apt='sudo apt'
+alias apt="sudo apt"
 
 ###     vi is vim
 #

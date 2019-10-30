@@ -18,7 +18,7 @@ fi
 # between POSIX shells, because ksh relies on aliases to implement certain
 # POSIX utilities, like fc(1) and type(1)
 #[[ $debug -eq 1 ]] && echo Unaliasing here!; sleep 1
-#unalias -a
+unalias -a
 
 # If ENV is set, source it to get all the POSIX-compatible interactive stuff;
 # we should be able to do this even if we're running a truly ancient Bash
@@ -89,14 +89,6 @@ export PAGER='less'
 #ssh-add ~/.ssh/id_dsa &>/dev/null        # Load key 2
 #}
 
-###     Trying to run alias'es here
-#
-#           paused for now
-#get_os
-#setting_standard_commands
-#
-###     NOT working 4 the moment
-
 ###     Load tmux as soon as we login to shell, logout when exit tmux       
 #           this fucks up tmux, can't save tmux panes layouts
 if command -v tmux &> /dev/null && [ -n "$PS1" ] && [[ ! "$TERM" =~ screen ]] && [[ ! "$TERM" =~ tmux ]] && [ -z "$TMUX" ]; then
@@ -139,6 +131,3 @@ fi
 
 echo "Done!"; sleep .5; clear
 
-if [[ /tmp/tmux-1000/default,2382,43 ]]; then source ~/.tmux/extras/tmux-git/tmux-git.sh
-if [[ /tmp/tmux-1000/default,2382,43 ]]; then source ~/.tmux/extras/tmux-git/tmux-git.sh
-if [[ /tmp/tmux-1000/default,2382,43 ]]; then source ~/.tmux/extras/tmux-git/tmux-git.sh
