@@ -129,6 +129,7 @@ if [ -d "$HOME/.homeshick" ]; then
     source "$HOME/.homesick/repos/homeshick/homeshick.sh"
 fi
 
-echo "Done!"; sleep .5; clear
+get_os
+setting_standard_commands
 
-#All your base are belong to Debian
+echo "Done!"; sleep .5; clear
