@@ -8,4 +8,4 @@ firstrun
 symlinks.sh
 a.txt
 dotfiles.sublime-project
-dotfiles.*
+dotfiles.sublime.*	
