@@ -1,4 +1,4 @@
-#!/bin/bash -p
+#!/usr/bin/env bash -p
 SHELL=/bin/bash
 PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 export TERM=${TERM:-dumb}
