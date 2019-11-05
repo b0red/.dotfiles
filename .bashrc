@@ -132,5 +132,15 @@ fi
 get_os
 setting_standard_commands
 
+###     For tldr
+#       https://github.com/raylee/tldr
+if [ -f "~/bin/tldr" ]; then
+    export TLDR_HEADER='magenta bold underline'
+    export TLDR_QUOTE='italic'
+    export TLDR_DESCRIPTION='green'
+    export TLDR_CODE='red'
+    export TLDR_PARAM='blue'
+fi
+
 echo "Done!"; sleep .5; clear
 #All your base are belong to Debian
