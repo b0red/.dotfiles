@@ -73,7 +73,7 @@ function ff() {
 #       Usage: ft "my string" *.php
 function fif() {
     if [ -z "$1" ]; then
-        echo "Usage: Enter 'fif <text>' to search for in files recursevly from <location>. Default is: $PWD"
+        echo "Usage: Enter 'fif <text>' to search for in files recursevly from current location which is: $PWD"
         return 1
     else
         echo "searching for\'$1\' in \'$PWD\'"

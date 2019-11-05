@@ -39,7 +39,6 @@ function command_check() {
      command -v "$1" >/dev/null 2>&1
 }
 
-
 ###	Getting colored results when using a pipe from grep to less.
 # 
 alias less="less -R"
@@ -114,7 +113,6 @@ if [[ -x /usr/bin/dircolors ]]; then
     unset GREP_OPTIONS
 fi
 
-
 ###		Dirlistings
 #
 alias {kk,ll,öö}="ls -alF --group-directories-first"
@@ -161,7 +159,9 @@ alias comstat="push \"Command ran! (uname -n)\" || push \"Command failed!\""
 alias diff="colordiff"                          # colorise diff output
 #alias mount="mount | column -t"                 # prettier outpu mount
 alias nocomment="grep -Ev '''^(#|$)'''"         #remove comments from file
-
+if command_exists deborphan 2>/dev/null ; then
+    alias deborphan='sudo deborphan | xargs sudo apt-get -y remove --purge'
+fi
 
 ###		MidnightCommande
 #

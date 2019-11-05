@@ -172,15 +172,18 @@ function copy_old_files() {
     fi
     for OLDFILE in "${OLDFILEARRAY[@]}"
     do
-        cp ~/."$OLDFILE" "$OLDFILE".bak
-        #mv ~/"$OLDFILE" $DIR/ 2>/dev/null
-        [[ $debug -eq 1 ]] && echo "$OLDFILE backed up and moved to $DIR" || echo "$OLDFILE backed up and moved to $DIR" >> ${LOG} ; sleep ${SLEEP}
+        if [ -f $OLDFILE ]; then
+            cp ~/."$OLDFILE" "$OLDFILE".bak
+            #mv ~/"$OLDFILE" $DIR/ 2>/dev/null
+            [[ $debug -eq 1 ]] && echo "$OLDFILE backed up and moved to $DIR" || echo "$OLDFILE backed up and moved to $DIR" \ 
+            >> ${LOG} ; sleep ${SLEEP}
+        fi
     done
 }
 
 function symlink_us(){
     # Symlink files
-    ln -s ~/dotfiles/.bashrc ~/.bashrc; ln -s ~/dotfiles/.profile ~/.profile
+    ln -sf ~/dotfiles/.bashrc ~/.bashrc; ln -sf ~/dotfiles/.profile ~/.profile
     [[ $debug -eq 1 ]] && echo "$LOG_MESS_05" || echo -e "\n$LOG_MESS_05" >> ${LOG}; sleep ${SLEEP}
 }
 
@@ -218,7 +221,7 @@ function sym_link_check() {
         else
             ### Missing link
             LINK_STATUS="Missing: $LINK. Symlinking it!"
-            ln -s ~/dotfiles/"$LINK" ~/
+            ln -sf ~/dotfiles/"$LINK" ~/
             #[[ $debug -eq 1 ]] && echo "updating submodules" || echo "updating submodules"; sleep ${SLEEP}
         fi
         [[ $debug -eq 1 ]] && echo "$LINK_STATUS" || echo "$LINK_STATUS" >> ${LOG} ; sleep ${SLEEP}
@@ -234,7 +237,7 @@ function get_repos() {
         ###     Clone tmux repo
         #
         git clone --recurse-submodules git@bitbucket.org:b0red/tmux.git ~/.tmux; cd ~/.tmux
-        ln -s ~/.tmux/.tmux.conf ~/.tmux.conf
+        ln -sf ~/.tmux/.tmux.conf ~/.tmux.conf
         submodules_init; submodules_update
         [[ $debug -eq 1 ]] && echo "$LOG_MESS_07" || echo "$LOG_MESS_07" >> ${LOG}; sleep ${SLEEP}
 
@@ -242,15 +245,15 @@ function get_repos() {
         #
         git clone --recurse-submodules git@bitbucket.org:b0red/.vim.git ~/.vim; cd ~/.vim
         [[ $debug -eq 1 ]] && echo "$LOG_MESS_07_1_a" || submodules_update; echo "$LOG_MESS_07_1_b" >> ${LOG}
-        ln -s ~/.vim/vimrc ~/vimrc 
+        ln -sf ~/.vim/vimrc ~/vimrc 
         if [ -f ~/.vim/gvimrc ]; then
-            ln -s ~/.vim/gvimrc ~/gvimrc
+            ln -sf ~/.vim/gvimrc ~/gvimrc
         fi
         submodules_init; submodules_update
         [[ $debug -eq 1 ]] && echo "$LOG_MESS_08" || echo "$LOG_MESS_08" >> ${LOG}; sleep ${SLEEP}
             
-        ln -s ~/dotfiles/extras/tmux-git.git ~/.tmux-git
-        #ln -s ~/dotfiles/extras/tmux-gitbar ~/.tmux-gitbar
+        ln -sf ~/dotfiles/extras/tmux-git.git ~/.tmux-git
+        #ln -sf ~/dotfiles/extras/tmux-gitbar ~/.tmux-gitbar
 
     #fi
 }
