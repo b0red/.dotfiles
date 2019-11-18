@@ -15,11 +15,11 @@ alias wget="wget -c $1"
 
 ###     Repeat the last command with sudo prefixed
 #
-alias please='sudo $(fc -ln -1)'
+alias please="sudo $(fc -ln -1)"
 
 ###     Apt is always sudo
 #
-alias apt='sudo apt'
+alias apt="sudo apt"
 
 ###     vi is vim
 #
@@ -38,7 +38,6 @@ function command_exists() {
 function command_check() {
      command -v "$1" >/dev/null 2>&1
 }
-
 
 ###	Getting colored results when using a pipe from grep to less.
 # 
@@ -114,7 +113,6 @@ if [[ -x /usr/bin/dircolors ]]; then
     unset GREP_OPTIONS
 fi
 
-
 ###		Dirlistings
 #
 alias {kk,ll,öö}="ls -alF --group-directories-first"
@@ -158,6 +156,12 @@ alias {module-update,modup}="git submodule foreach git pull origin master"
 alias weather="curl wttr.in/stockholm"
 alias weather2="curl v2.wttr.in"
 alias comstat="push \"Command ran! (uname -n)\" || push \"Command failed!\""
+alias diff="colordiff"                          # colorise diff output
+#alias mount="mount | column -t"                 # prettier outpu mount
+alias nocomment="grep -Ev '''^(#|$)'''"         #remove comments from file
+if command_exists deborphan 2>/dev/null ; then
+    alias deborphan='sudo deborphan | xargs sudo apt-get -y remove --purge'
+fi
 
 ###		MidnightCommande
 #
@@ -232,13 +236,11 @@ alias treels="find . -type d |sed 's:[^-][^/]*/:--:g; s:^-: |:'"
 #
 if command_check lazydocker; then alias lzd="lazydocker"; fi
 
-###     Update - move to check for os version lzter
-#
-#alias update="sudo apt update && sudo apt upgrade -y && sudo apt autoclean && sudo apt autoremove"
-
 ###     update aliases
 #
 alias dotupdate='cd ~/dotfiles  && git pull && source ~/.bashrc'
+
+
 
 ###     Scan open ports
 #

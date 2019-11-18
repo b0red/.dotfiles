@@ -18,7 +18,7 @@ fi
 # between POSIX shells, because ksh relies on aliases to implement certain
 # POSIX utilities, like fc(1) and type(1)
 #[[ $debug -eq 1 ]] && echo Unaliasing here!; sleep 1
-#unalias -a
+unalias -a
 
 # If ENV is set, source it to get all the POSIX-compatible interactive stuff;
 # we should be able to do this even if we're running a truly ancient Bash
@@ -58,15 +58,15 @@ if ! shopt -oq posix; then
 fi
 
 
-###	If id command returns zero, you have root access.
+### If id command returns zero, you have root access.
 #
 if [ $(id -u) -eq 0 ];
     then # you are root, set red colour prompt
         PS1='\[\e[1;31m\]\u\[\e[m\]\[\e[0;32m\]@\h: \[\e[m\]\[\e[1;34m\]\w\[\e[m\] \[\e[1;32m\]\$\[\e[m\] \[\e[1;37m\]'
     else # normal
-	# PS1="[\\u@\\h:\\w] $ "
+  # PS1="[\\u@\\h:\\w] $ "
         # PROMPT='\[\e[1;32m\]\u \[\e[m\]\[\e[0;32m\]@\[\e[m\]\[\e[1;32m\]\h: \w \$\[\e[m\] '
-	PS1='\[\e[1;32m\]\u\[\e[m\]\[\e[0;32m\]@\h: \[\e[m\]\[\e[1;34m\]\w\[\e[m\] \[\e[1;32m\]\$\[\e[m\] \[\e[1;37m\]'
+  PS1='\[\e[1;32m\]\u\[\e[m\]\[\e[0;32m\]@\h: \[\e[m\]\[\e[1;34m\]\w\[\e[m\] \[\e[1;32m\]\$\[\e[m\] \[\e[1;37m\]'
 fi
 
 ###     Color manpages for 'less'
@@ -89,20 +89,12 @@ export PAGER='less'
 #ssh-add ~/.ssh/id_dsa &>/dev/null        # Load key 2
 #}
 
-###     Trying to run alias'es here
-#
-#           paused for now
-#get_os
-#setting_standard_commands
-#
-###     NOT working 4 the moment
-
 ###     Load tmux as soon as we login to shell, logout when exit tmux       
 #           this fucks up tmux, can't save tmux panes layouts
-if command -v tmux &> /dev/null && [ -n "$PS1" ] && [[ ! "$TERM" =~ screen ]] && [[ ! "$TERM" =~ tmux ]] && [ -z "$TMUX" ]; then
-    exec tmux
-    { tmux a -t 0 || exec tmux new-session && exit; }
+if [[ -z "$TMUX" ]] && [ "$SSH_CONNECTION" != "" ]; then
+    tmux attach-session -t ssh_tmux || tmux new-session -s psr_tmux
 fi
+
 
 ###     Load any supplementary scripts
 #       Stolen from (https://bit.ly/2slDBSV)
@@ -137,5 +129,18 @@ if [ -d "$HOME/.homeshick" ]; then
     source "$HOME/.homesick/repos/homeshick/homeshick.sh"
 fi
 
-echo "Done!"; sleep .5; clear
+get_os
+setting_standard_commands
 
+###     For tldr
+#       https://github.com/raylee/tldr
+if [ -f "~/bin/tldr" ]; then
+    export TLDR_HEADER='magenta bold underline'
+    export TLDR_QUOTE='italic'
+    export TLDR_DESCRIPTION='green'
+    export TLDR_CODE='red'
+    export TLDR_PARAM='blue'
+fi
+
+echo "Done!"; sleep .5; clear
+#All your base are belong to Debian

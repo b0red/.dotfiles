@@ -1,6 +1,12 @@
 .bashrc.d/local_alias.bash
 oldfiles/*
-install_progress_log
+#Ignore logs
+**/logs
+*.log
 *.swp
 firstrun
- 
+symlinks.sh
+a.txt
+dotfiles.sublime-project
+dotfiles.sublime.*
+dotfiles_install.*	

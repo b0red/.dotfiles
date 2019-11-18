@@ -42,8 +42,8 @@ alias gfrb="git fetch && git rebase"
 function gacp() {
     CURRENT_BRANCH="$(git rev-parse --abbrev-ref HEAD)"
     git secret hide
-    git add . -p && git commit -am "$1" && git push origin "$CURRENT_BRANCH"
-      }
+    git add . && git commit -am "$1" && git push origin "$CURRENT_BRANCH"
+}
 
 # Git merge
 # Eg. gm branch-name

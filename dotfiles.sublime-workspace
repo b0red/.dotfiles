@@ -1,0 +1,571 @@
+{
+	"auto_complete":
+	{
+		"selected_items":
+		[
+			[
+				"bash",
+				"bashrc"
+			],
+			[
+				"chec",
+				"check_for_line"
+			],
+			[
+				"Dis",
+				"DistroBasedOn"
+			],
+			[
+				"in",
+				"inputrc"
+			],
+			[
+				"LO",
+				"LOG_MESS_09"
+			],
+			[
+				"syml",
+				"symlink_us"
+			],
+			[
+				"sym",
+				"symlink_us"
+			],
+			[
+				"sub",
+				"submodules_update"
+			],
+			[
+				"get",
+				"get_repos"
+			],
+			[
+				"file",
+				"file_count"
+			],
+			[
+				"delete",
+				"deletearray"
+			],
+			[
+				"fil",
+				"file_del"
+			],
+			[
+				"lis",
+				"list_junk"
+			],
+			[
+				"list",
+				"list_junk"
+			],
+			[
+				"e",
+				"echo"
+			],
+			[
+				"sta",
+				"startdir"
+			],
+			[
+				"push",
+				"push_message"
+			],
+			[
+				"f",
+				"file_cc"
+			],
+			[
+				"entr",
+				"entryPoints"
+			],
+			[
+				"tra",
+				"traefik_proxy"
+			],
+			[
+				"ce",
+				"cleanfile"
+			],
+			[
+				"log",
+				"logs"
+			],
+			[
+				"T",
+				"TITLE"
+			],
+			[
+				"title",
+				"TITLE"
+			],
+			[
+				"File",
+				"Filelisting"
+			],
+			[
+				"folder",
+				"folder_total"
+			],
+			[
+				"file_",
+				"file_email"
+			],
+			[
+				"date",
+				"datefolder"
+			]
+		]
+	},
+	"buffers":
+	[
+		{
+			"file": ".bashrc.d/aliases.bash",
+			"settings":
+			{
+				"buffer_size": 6552,
+				"encoding": "UTF-8",
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": ".gitignore",
+			"settings":
+			{
+				"buffer_size": 122,
+				"encoding": "UTF-8",
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": ".bashrc.d/functions.bash",
+			"settings":
+			{
+				"buffer_size": 23588,
+				"encoding": "UTF-8",
+				"line_ending": "Unix"
+			}
+		}
+	],
+	"build_system": "",
+	"build_system_choices":
+	[
+	],
+	"build_varint": "",
+	"command_palette":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+			[
+				"instal",
+				"Package Control: Install Package"
+			],
+			[
+				"inst",
+				"Package Control: Install Package"
+			],
+			[
+				"install pa",
+				"Package Control: Install Package"
+			],
+			[
+				"insta",
+				"Package Control: Install Local Dependency"
+			],
+			[
+				"Package Control: ",
+				"Package Control: Discover Packages"
+			],
+			[
+				"convert to linux",
+				"Plugin Development: Convert Syntax to .sublime-syntax"
+			],
+			[
+				"convert",
+				"Indentation: Convert to Tabs"
+			]
+		],
+		"width": 0.0
+	},
+	"console":
+	{
+		"height": 0.0,
+		"history":
+		[
+		]
+	},
+	"distraction_free":
+	{
+		"menu_visible": true,
+		"show_minimap": false,
+		"show_open_files": false,
+		"show_tabs": false,
+		"side_bar_visible": false,
+		"status_bar_visible": false
+	},
+	"expanded_folders":
+	[
+		"/home/patrick/dotfiles",
+		"/home/patrick/dotfiles/.bashrc.d",
+		"/home/patrick/dotfiles/.cygwin.d",
+		"/home/patrick/dotfiles/.profile.d",
+		"/home/patrick/dotfiles/extras"
+	],
+	"file_history":
+	[
+		"/home/patrick/dotfiles/test.sh",
+		"/home/patrick/dotfiles/RunMe.sh",
+		"/home/patrick/dotfiles/.bashrc.d/functions.bash",
+		"/home/patrick/dotfiles/.bashrc.d/aliases.bash",
+		"/home/patrick/dotfiles/.bashrc",
+		"/home/patrick/dotfiles/.gitignore",
+		"/home/patrick/dotfiles/symlinks.sh",
+		"/home/patrick/dotfiles/.gitmodules",
+		"/home/patrick/dotfiles/.bashrc.d/git.bash",
+		"/home/patrick/dotfiles/a.txt",
+		"/home/patrick/dotfiles/extras/.tmux-git/.git",
+		"/home/patrick/dotfiles/.profile",
+		"/home/patrick/dotfiles/extras/oldfiles.txt",
+		"/home/patrick/dotfiles/oldfiles/USBmint-.zip",
+		"/home/patrick/bin/delete_files.inc",
+		"/home/patrick/bin/CleanupDirs.sh",
+		"/home/patrick/bin/test.sh",
+		"/home/patrick/bin/FolderCompressor.sh",
+		"/home/patrick/.config/sublime-text-3/Packages/User/do..done.sublime-snippet",
+		"/home/patrick/docker/compose/traefik.toml",
+		"/home/patrick/docker/compose/example.com-index.html",
+		"/home/patrick/docker/compose/.env",
+		"/home/patrick/docker/compose/docker-compose-basic.yml",
+		"/home/patrick/docker/compose/docker-compose.yml",
+		"/home/patrick/Desktop/ca.crt",
+		"/home/patrick/.config/joplin/tmp/c82eee3e9e3d482a99c6b75f3bb50861.md",
+		"/home/patrick/.config/joplin/tmp/0c755d76f2d24941a8eb16ed3cfd6e91.md",
+		"/home/patrick/docker/traefik/traefik.toml",
+		"/home/patrick/docker/traefik/acme.json",
+		"/home/patrick/docker/wp-config-sample.php",
+		"/home/patrick/docker/wp-config.php",
+		"/home/patrick/bin/CurrentIp.sh",
+		"/home/patrick/.config/sublime-text-3/Packages/PackageSync/PackageSync.sublime-settings",
+		"/home/patrick/bin/bootmail.sh",
+		"/home/patrick/bin/TermColors.sh",
+		"/home/patrick/bin/TvList.sh",
+		"/home/patrick/Downloads/Machines/tv_shows.json",
+		"/home/patrick/.config/joplin/tmp/d5b2ef8758994cbe816005bf36992db4.md",
+		"/home/patrick/bin/CurrentTvList.sh",
+		"/home/patrick/bin/DockerBackup.sh",
+		"/home/patrick/bin/ShowMover.sh",
+		"/home/patrick/bin/ScriptTemplate.sh",
+		"/home/patrick/bin/FileCompressor.sh",
+		"/home/patrick/bin/list_installed_packages_by_size.sh",
+		"/home/patrick/bin/shortupdate.sh",
+		"/home/patrick/bin/old_TvListing.sh",
+		"/home/patrick/bin/SettingsBackup.sh",
+		"/home/patrick/bin/mail_on_ipchange.sh",
+		"/home/patrick/bin/mt.sh",
+		"/home/patrick/bin/CurrentTemp.sh",
+		"/home/patrick/bin/current_temp.sh",
+		"/home/patrick/bin/emailchecker.sh",
+		"/home/patrick/bin/change_hostname.sh",
+		"/home/patrick/bin/bsd_update.sh",
+		"/home/patrick/bin/DirClean.sh",
+		"/home/patrick/bin/ColorCodes.inc",
+		"/home/patrick/bin/email_variables.inc",
+		"/home/patrick/bin/.gitignore",
+		"/home/patrick/bin/.ignore",
+		"/home/patrick/.config/joplin/tmp/119d4a95737c496fbf1050a2c981fcf4.md",
+		"/home/patrick/Downloads/ca.crt",
+		"/home/patrick/Downloads/fstab_import",
+		"/home/patrick/Downloads/fstab",
+		"/home/patrick/dev/elinvikner/.htaccess",
+		"/home/patrick/.local/share/cinnamon/applets/cheaty@centurix/template.json",
+		"/home/patrick/Downloads/Argentina - Buenos Aires.ovpn",
+		"/home/patrick/Downloads/Australia - Sydney.ovpn",
+		"/home/patrick/Downloads/Brazil - Rio de Janeiro.ovpn",
+		"/home/patrick/Downloads/Brazil - Sao Paulo.ovpn",
+		"/home/patrick/Downloads/Canada - East.ovpn",
+		"/home/patrick/Downloads/Canada - West.ovpn",
+		"/home/patrick/Downloads/China - Hong Kong.ovpn",
+		"/home/patrick/Downloads/Costa Rica - San Jose.ovpn",
+		"/home/patrick/Downloads/Czech Republic - Prague.ovpn",
+		"/home/patrick/Downloads/Denmark - Copenhagen.ovpn",
+		"/home/patrick/Downloads/Finland - Helsinki.ovpn",
+		"/home/patrick/Downloads/France - Paris.ovpn",
+		"/home/patrick/Downloads/Germany - Dusseldorf.ovpn",
+		"/home/patrick/Downloads/Germany - Frankfurt.ovpn",
+		"/home/patrick/Downloads/Iceland - Reykjavik.ovpn",
+		"/home/patrick/Downloads/India - New Delhi.ovpn",
+		"/home/patrick/Downloads/Ireland - Dublin.ovpn",
+		"/home/patrick/Downloads/Israel - Tel Aviv.ovpn",
+		"/home/patrick/Downloads/Italy - Porcia.ovpn",
+		"/home/patrick/Downloads/Italy - Venice.ovpn",
+		"/home/patrick/Downloads/Japan - Tokyo.ovpn",
+		"/home/patrick/Downloads/Korea (South) - Seoul.ovpn",
+		"/home/patrick/Downloads/Luxembourg - Mersch.ovpn",
+		"/home/patrick/Downloads/Malaysia - Puchong.ovpn",
+		"/home/patrick/Downloads/Mexico - Mexico City.ovpn",
+		"/home/patrick/Downloads/New Zealand - Auckland.ovpn",
+		"/home/patrick/Downloads/Netherlands - Amsterdam.ovpn",
+		"/home/patrick/Downloads/Norway - Oslo.ovpn",
+		"/home/patrick/Downloads/Panama - Panama.ovpn",
+		"/home/patrick/Downloads/Poland - Warsaw.ovpn",
+		"/home/patrick/Downloads/Poland - Gdansk.ovpn",
+		"/home/patrick/Downloads/Portugal - Lisbon.ovpn",
+		"/home/patrick/Downloads/Russia - Saint Petersburg.ovpn",
+		"/home/patrick/Downloads/Singapore - Singapore.ovpn",
+		"/home/patrick/Downloads/Spain - Barcelona.ovpn",
+		"/home/patrick/Downloads/Sweden - Stockholm.ovpn",
+		"/home/patrick/Downloads/Sweden - Stockholm Public IP.ovpn",
+		"/home/patrick/Downloads/Switzerland - Zurich.ovpn",
+		"/home/patrick/Downloads/Turkey - Istanbul.ovpn",
+		"/home/patrick/Downloads/United Kingdom - BBC iPlayer.ovpn",
+		"/home/patrick/Downloads/United Kingdom - Coventry.ovpn",
+		"/home/patrick/Downloads/United Kingdom - London.ovpn",
+		"/home/patrick/Downloads/United States - California.ovpn",
+		"/home/patrick/Downloads/United States - Florida.ovpn",
+		"/home/patrick/Downloads/United States - Illinois.ovpn",
+		"/home/patrick/Downloads/United States - New York.ovpn",
+		"/home/patrick/Downloads/United States - Texas.ovpn",
+		"/home/patrick/Downloads/United States - US-Netflix-East.ovpn",
+		"/home/patrick/Downloads/United States - US-Netflix-West.ovpn",
+		"/home/patrick/Downloads/United States - Virginia.ovpn"
+	],
+	"find":
+	{
+		"height": 41.0
+	},
+	"find_in_files":
+	{
+		"height": 101.0,
+		"where_history":
+		[
+		]
+	},
+	"find_state":
+	{
+		"case_sensitive": false,
+		"find_history":
+		[
+			"[[ $debug -eq 1 ]]",
+			">> $LOG; sleep ${SLEEP}",
+			"please",
+			"MESS_001",
+			"#[[ $debug -eq 1 ]] ",
+			"[[ $debug -eq 1 ]]",
+			"$DistroBasedOn\"",
+			"tmux",
+			"LOG_MESS_05",
+			"movin",
+			"move",
+			"mov",
+			"search",
+			"inc",
+			"dir"
+		],
+		"highlight": true,
+		"in_selection": false,
+		"preserve_case": false,
+		"regex": false,
+		"replace_history":
+		[
+			"#[[ $debug -eq 1 ]]",
+			"",
+			"[[ $debug -eq 1 ]] ",
+			"#[[ $debug -eq 1 ]]",
+			"${DistroBasedOn^}\"",
+			"$DistroBasedOn^\""
+		],
+		"reverse": false,
+		"show_context": true,
+		"use_buffer2": true,
+		"whole_word": false,
+		"wrap": true
+	},
+	"groups":
+	[
+		{
+			"selected": 1,
+			"sheets":
+			[
+				{
+					"buffer": 0,
+					"file": ".bashrc.d/aliases.bash",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 6552,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								4201,
+								4201
+							]
+						],
+						"settings":
+						{
+							"git_savvy.repo_path": "/home/patrick/dotfiles",
+							"syntax": "Packages/ShellScript/Bash.sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 1,
+					"type": "text"
+				},
+				{
+					"buffer": 1,
+					"file": ".gitignore",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 122,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								122,
+								122
+							]
+						],
+						"settings":
+						{
+							"git_savvy.repo_path": "/home/patrick/dotfiles",
+							"syntax": "Packages/Git Formats/Git Ignore.sublime-syntax"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 0,
+					"type": "text"
+				},
+				{
+					"buffer": 2,
+					"file": ".bashrc.d/functions.bash",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 23588,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								815,
+								815
+							]
+						],
+						"settings":
+						{
+							"git_savvy.repo_path": "/home/patrick/dotfiles",
+							"syntax": "Packages/ShellScript/Bash.sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 2,
+					"type": "text"
+				}
+			]
+		}
+	],
+	"incremental_find":
+	{
+		"height": 28.0
+	},
+	"input":
+	{
+		"height": 41.0
+	},
+	"layout":
+	{
+		"cells":
+		[
+			[
+				0,
+				0,
+				1,
+				1
+			]
+		],
+		"cols":
+		[
+			0.0,
+			1.0
+		],
+		"rows":
+		[
+			0.0,
+			1.0
+		]
+	},
+	"menu_visible": true,
+	"output.find_results":
+	{
+		"height": 0.0
+	},
+	"output.git":
+	{
+		"height": 133.0
+	},
+	"pinned_build_system": "Packages/ShellScript/ShellScript.sublime-build",
+	"project": "dotfiles.sublime-project",
+	"replace":
+	{
+		"height": 52.0
+	},
+	"save_all_on_build": false,
+	"select_file":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"select_project":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"select_symbol":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"selected_group": 0,
+	"settings":
+	{
+	},
+	"show_minimap": true,
+	"show_open_files": false,
+	"show_tabs": true,
+	"side_bar_visible": true,
+	"side_bar_width": 285.0,
+	"status_bar_visible": true,
+	"template_settings":
+	{
+	}
+}
