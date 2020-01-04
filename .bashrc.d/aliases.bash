@@ -236,11 +236,22 @@ alias treels="find . -type d |sed 's:[^-][^/]*/:--:g; s:^-: |:'"
 #
 if command_check lazydocker; then alias lzd="lazydocker"; fi
 
+###     fd instead of find
+#
+if command_check fd-find; then alias fd="fdfind"; fi
+
+###     exa
+#       https://the.exa.website/      
+if command_check exa; 
+    then 
+        alias ls="exa"  
+        alias ll="exa -lh"  
+        alias la="exa -lhaa"
+fi
+
 ###     update aliases
 #
 alias dotupdate='cd ~/dotfiles  && git pull && source ~/.bashrc'
-
-
 
 ###     Scan open ports
 #
