@@ -4,6 +4,7 @@
 
 ###     Determine within a startup script whether Bash is running interactively or not.
 #
+
 if [ ! -z "$PS1" ]; then
     :
     # echo " .bashrc loaded, running interactively."
@@ -91,10 +92,13 @@ export PAGER='less'
 
 ###     Load tmux as soon as we login to shell, logout when exit tmux       
 #           this fucks up tmux, can't save tmux panes layouts
-#if [[ -z "$TMUX" ]] && [ "$SSH_CONNECTION" != "" ]; then
-#    tmux attach-session -t ssh_tmux || tmux new-session -s psr_tmux
-#fi
-
+if [[ $(uname -n) = 'dellubuntu' ]]; then 
+    echo "tmux loaded"
+    if [[ -n "$PS1" ]] && [[ -z "$TMUX" ]] && [[ -n "$SSH_CONNECTION" ]]; then
+        tmux attach-session -t ssh_tmux || tmux new-session -s ssh_tmux
+    fi
+fi
+    
 
 ###     Load any supplementary scripts
 #       Stolen from (https://bit.ly/2slDBSV)
