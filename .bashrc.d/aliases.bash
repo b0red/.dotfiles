@@ -245,7 +245,7 @@ if command_check fd-find; then alias fd="fdfind"; fi
 if command_check exa; 
     then 
         alias ls="exa"  
-        alias ll="exa -lh"  
+        alias ll="exa -lha" 
         alias la="exa -lhaa"
 fi
 
