@@ -145,7 +145,7 @@ alias tmx="tmux a -t 0"
 ### WIP
 #   Trying to make so it's not nesting session and always starting one with a name
 # session=$(uname -n); session=${session,,}; tmux new -s $session
-[ -z "$TMUX"  ] && { tmux attach || exec tmux new-session && exit;}
+#[ -z "$TMUX"  ] && { tmux attach || exec tmux new-session && exit;}
 
 ###     Misc
 #
@@ -245,7 +245,7 @@ if command_check fd-find; then alias fd="fdfind"; fi
 if command_check exa; 
     then 
         alias ls="exa"  
-        alias ll="exa -lh"  
+        alias ll="exa -lha" 
         alias la="exa -lhaa"
 fi
 
