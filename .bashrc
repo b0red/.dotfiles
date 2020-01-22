@@ -119,7 +119,7 @@ if [ -d "$HOME"/dotfiles/.profile.d ]; then
 
 ###     For getting gitstatus in tmux
 #       stolen from https://github.com/drmad/tmux-git
-if [[ $TMUX ]]; then source ~/.tmux/extras/tmux-git/tmux-git.sh; fi
+if [[ $TMUX ]]; then source ~/.tmux-git/tmux-git.sh; fi
 
 export PATH=$PATH:/snap/bin
 
