@@ -10,6 +10,8 @@
 #
 alias reload="source ~/.bashrc"
 
+NOW=$(date '+%Y-%m-%d_%H:%M')
+
 alias nano="nano -c"
 alias wget="wget -c $1"
 
@@ -173,7 +175,7 @@ alias zombiekill="ps axo state,ppid | awk '!/PPID/$1~"Z"{print $2}' | xargs -r k
 
 ###     Replace cat with bat, nicer output
 #
-if command_check bat; then alias cat="bat" ; fi
+if command_check batcat; then alias cat="batcat" ; fi
 
 ###     Install prettyping
 #  		curl -O https://raw.githubusercontent.com/denilsonsa/prettyping/master/prettyping; chmod +x prettyping; mv prettyping ~/bin
@@ -252,6 +254,10 @@ fi
 ###     update aliases
 #
 alias dotupdate='cd ~/dotfiles  && git pull && source ~/.bashrc'
+
+###     Crontab safety
+#
+alias crontab="crontab -i"
 
 ###     Scan open ports
 #

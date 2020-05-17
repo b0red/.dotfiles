@@ -127,12 +127,6 @@ if [[ $TMUX ]]; then source ~/.tmux/extras/tmux-git/tmux-git.sh; fi
 
 export PATH=$PATH:/snap/bin
 
-### Source Homeshick
-#
-if [ -d "$HOME/.homeshick" ]; then
-    source "$HOME/.homesick/repos/homeshick/homeshick.sh"
-fi
-
 get_os
 setting_standard_commands
 
@@ -144,6 +138,10 @@ if [ -f "~/bin/tldr" ]; then
     export TLDR_DESCRIPTION='green'
     export TLDR_CODE='red'
     export TLDR_PARAM='blue'
+fi
+###     Load tmux on start  
+if [[ -n "$PS1"  ]] && [[ -z "$TMUX"  ]] && [[ -n "$SSH_CONNECTION"  ]]; then
+      tmux attach-session -t ssh_tmux || tmux new-session -s ssh_tmux
 fi
 
 echo "Done!"; sleep .5; clear

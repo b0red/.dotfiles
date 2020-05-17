@@ -38,6 +38,12 @@ function mcd () { # Makes a directory and enters it
         cd "$1"
 }
 
+### Check if command exists
+#
+function command_check() {
+         command -v "$1" >/dev/null 2>&1
+}
+
 ###	Startbitbucket - creates remote bitbucket repo and adds it as git remote to cwd
 #
 function startbitbucket () # Creates a remote bitbucketrepo & adds it as a git remote
@@ -281,9 +287,9 @@ function myip() {
 #
 function getnic() { 
     nic=$(sudo ip route | grep default | sed -e "s/^.*dev.//" -e "s/.proto.*//")
-    if [ ! -z "$1" ]; then
+    #if [ ! -z "$1" ]; then
         echo "NIC: $nic"
-    fi
+    #fi
 }
 
 ###	Send pushover messages
@@ -383,10 +389,10 @@ function reverseempty(){
             find . -maxdepth 1 -mindepth 1 -type d \! -exec sh -c 'find "$1" \( -iname "*.mov" -o -iname "*.avi" -o -iname "*.mkv" -o -iname "*.vob" -o -iname "*.ogg" -o -iname "*.wmv" -o -iname "*m4v" \) -type f | read a' _ {} \; -exec rm -rfv -- {} \;
             #stop_spinner $?
             ;;
-        epubs)
+        (epubs|ePubs)
             echo -e "Searching for folders ${ORANGE}not${NC} containing ${GREEN} $1-files ${NC} in $PWD"
             #start_spinner 'searching...'
-            find . -maxdepth 1 -mindepth 1 -type d \! -exec sh -c 'find "$1" \( -iname "*.epub" -o -iname "*.azw" -o -iname "*.mobi" -o -iname "*.pdf" \) -type f | read a' _ {} \; -exec rm -rfv -- {} \;
+            find . -maxdepth 2 -mindepth 2 -type d \! -exec sh -c 'find "$1" \( -iname "*.epub" -o -iname "*.azw" -o -iname "*.mobi" -o -iname "*.pdf" \) -type f | read a' _ {} \; -exec rm -rfv -- {} \;
             #stop_spinner $?
             ;;
         *)
@@ -643,6 +649,20 @@ function tail_me() {
     do
         tail -f $1; sleep 1
     done
+}
+
+function dock_restart() {
+    cd ~/docker/compose
+    dcp down
+    sudo systemctl restart docker
+    dcp up -d
+}
+
+function trans_restart() {
+    cd ~/docker/compose
+    docker stop transmission-vpn
+    docker system prune --volumes
+    dcp up -d
 }
 
 ###     Just to check if loaded
