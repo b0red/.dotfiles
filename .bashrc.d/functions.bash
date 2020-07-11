@@ -33,7 +33,7 @@ function up()
 ###	Create dir and enter it
 #
 function mcd () { # Makes a directory and enters it
-    [ -z "$1" ] && { echo "Usage: 'mcd <directory name> (Need to be root if outside of $HOME)'" >&2; return; }
+    [ -z "$1" ] && { echo "Usage: 'fmcd <directory name> (Need to be root if outside of $HOME)'" >&2; return; }
     mkdir -p "$1" && 
         cd "$1"
 }
@@ -658,13 +658,10 @@ function dock_restart() {
     dcp up -d
 }
 
-function trans_restart() {
-    cd ~/docker/compose
-    docker stop transmission-vpn
-    docker system prune --volumes
-    dcp up -d
+function multi_yt() {
+    cd bin
+    nohup cat download_list.inv| while read line; do youtube $line; done &>/dev/null &
 }
-
 ###     Just to check if loaded
 #
 # echo ${file##*/}

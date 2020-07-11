@@ -259,6 +259,10 @@ alias dotupdate='cd ~/dotfiles  && git pull && source ~/.bashrc'
 #
 alias crontab="crontab -i"
 
+##      Youtube-dl
+#
+alias youtube="/usr/bin/python3 /usr/local/bin/youtube-dl" $1
+:
 ###     Scan open ports
 #
 #alias portscan="for i in {1..65535}; do (echo < /dev/tcp/127.0.0.1/$i) &>/dev/null && printf "\n[+] Open Port at\n: \t%d\n" "$i" || printf "."; done"
