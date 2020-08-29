@@ -262,6 +262,9 @@ alias crontab="crontab -i"
 ##      Youtube-dl
 #
 alias youtube="/usr/bin/python3 /usr/local/bin/youtube-dl" $1
+
+alias wg_up="sudo wg-quick up ~/anonine/SeStockholm.conf"
+alias wg_down="sudo wg-quick down ~/anonine/SeStockholm.conf"
 :
 ###     Scan open ports
 #

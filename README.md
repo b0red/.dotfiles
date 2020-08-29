@@ -1,5 +1,9 @@
 # Trying to do the dotfiles again, and keeping them in sync..
 
+## Install some software first:
+tmux git vim 
+
+
 ### To install, clone this repo and symlink 2 files (for now, there might be a script to automate this)
 
 ```
@@ -34,7 +38,7 @@ git submodule init && git submodule update
 ### Other stuff thats nice to have
 * htop ncdu pydf tree mc 
 ```
-sudo apt install htop ncdu pydf tree mc #On debianbased systems (The RunMe script installs these)
+sudo apt install htop ncdu pydf tree mc vim tmux #On debianbased systems (The RunMe script installs these)
 ```
 ### Updating submodules
 ```

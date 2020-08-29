@@ -273,16 +273,6 @@ function ii() {
     echo
 }
 
-###	    Get IP adress on ethernet.
-#
-function myip() {
-    #MY_IP=$(/sbin/ifconfig eth0 | awk '/inet/ { print $2 } ' | sed -e s/addr://)
-     MY_IP=$(/sbin/ifconfig $(getnic) | awk '/inet / { print $2 } ' | sed -e s/addr://| tr '' '/n' |sort)
-    #echo -e "$MY_IP"
-    #echo -e ${MYP_IP}
-    printf '%s\n' ${MY_IP:-"Not connected"}
-}
-
 ###     Get active Network Interface
 #
 function getnic() { 
@@ -290,6 +280,16 @@ function getnic() {
     #if [ ! -z "$1" ]; then
         echo "NIC: $nic"
     #fi
+}
+###	    Get IP adress on ethernet.
+#
+
+function myip() {
+    #MY_IP=$(/sbin/ifconfig eth0 | awk '/inet/ { print $2 } ' | sed -e s/addr://)
+     MY_IP=$(/sbin/ifconfig $(getnic) | awk '/inet / { print $2 } ' | sed -e s/addr://| tr '' '/n' |sort)
+    echo -e "$MY_IP"
+    #echo -e ${MYP_IP}
+    printf '%s\n' ${MY_IP:-"Not connected"}
 }
 
 ###	Send pushover messages
@@ -330,7 +330,7 @@ function push() {
 #    source ~/.tmux-git/tmux-git.sh
 #fi
 
-sshtmux()
+function sshtmux()
 {
     # A name for the session
     local session_name="$(whoami)_sess"
