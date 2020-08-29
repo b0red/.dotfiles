@@ -38,7 +38,7 @@ git submodule init && git submodule update
 ### Other stuff thats nice to have
 * htop ncdu pydf tree mc 
 ```
-sudo apt install htop ncdu pydf tree mc vim tmux #On debianbased systems (The RunMe script installs these)
+sudo apt install htop ncdu pydf tree mc vim tmux fd-find #On debianbased systems (The RunMe script installs these)
 ```
 ### Updating submodules
 ```
