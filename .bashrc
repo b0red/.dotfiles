@@ -121,6 +121,7 @@ if [ -d "$HOME"/dotfiles/.profile.d ]; then
      unset -v config
  fi
 
+<<<<<<< HEAD
 ###     For getting gitstatus in tmux
 #       stolen from https://github.com/drmad/tmux-git
 if [[ $TMUX ]]; then source ~/.tmux-git/tmux-git.sh; fi
@@ -133,20 +134,22 @@ if [ -d "$HOME/.homeshick" ]; then
     source "$HOME/.homesick/repos/homeshick/homeshick.sh"
 fi
 
+=======
+>>>>>>> cf0ec830e8a386f313ca715f89da7c2afb5eca4c
 get_os
 setting_standard_commands
 
-###     For tldr
-#       https://github.com/raylee/tldr
-if [ -f "~/bin/tldr" ]; then
-    export TLDR_HEADER='magenta bold underline'
-    export TLDR_QUOTE='italic'
-    export TLDR_DESCRIPTION='green'
-    export TLDR_CODE='red'
-    export TLDR_PARAM='blue'
+###     Load tmux on start  
+if [[ -n "$PS1"  ]] && [[ -z "$TMUX"  ]] && [[ -n "$SSH_CONNECTION"  ]]; then
+      tmux attach-session -t ssh_tmux || tmux new-session -s ssh_tmux
 fi
+###     For getting gitstatus in tmux
+#       stolen from https://github.com/drmad/tmux-git
+if [[ $TMUX ]]; then source ~/.tmux/extras/tmux-git/tmux-git.sh; fi
 
 eval ``keychain --eval --agents ssh id_rsa
 
 echo "Done!"; sleep 1; clear
 #All your base are belong to Debian
+
+

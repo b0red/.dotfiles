@@ -20,6 +20,7 @@ export EDITOR='vim'
 
 # Path.
 export PATH="$HOME/bin:$HOME/binfiles:/usr/local/sbin:/usr/local/bin:$PATH"
+export PATH=$PATH:/snap/bin
 
 # Don't put duplicate lines or lines starting with space in the history.
 # See bash(1) for more options.
@@ -71,3 +72,13 @@ fi
 ###	Prefer US English and use UTF_8 encoding
 export LANG="en_US"
 export LC_ALL="en_US.UTF-8"
+
+###     For tldr
+#       https://github.com/raylee/tldr
+if [ -f "~/bin/tldr" ]; then
+    export TLDR_HEADER='magenta bold underline'
+    export TLDR_QUOTE='italic'
+    export TLDR_DESCRIPTION='green'
+    export TLDR_CODE='red'
+    export TLDR_PARAM='blue'
+fi

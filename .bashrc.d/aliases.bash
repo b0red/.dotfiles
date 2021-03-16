@@ -10,6 +10,8 @@
 #
 alias reload="source ~/.bashrc"
 
+NOW=$(date '+%Y-%m-%d_%H:%M')
+
 alias nano="nano -c"
 alias wget="wget -c $1"
 
@@ -173,7 +175,7 @@ alias zombiekill="ps axo state,ppid | awk '!/PPID/$1~"Z"{print $2}' | xargs -r k
 
 ###     Replace cat with bat, nicer output
 #
-if command_check bat; then alias cat="bat" ; fi
+if command_check batcat; then alias cat="batcat" ; fi
 
 ###     Install prettyping
 #  		curl -O https://raw.githubusercontent.com/denilsonsa/prettyping/master/prettyping; chmod +x prettyping; mv prettyping ~/bin
@@ -237,6 +239,7 @@ alias treels="find . -type d |sed 's:[^-][^/]*/:--:g; s:^-: |:'"
 if command_check lazydocker; then alias lzd="lazydocker"; fi
 
 ###     fd instead of find
+#	https://github.com/sharkdp/fd
 #
 if command_check fd-find; then alias fd="fdfind"; fi
 
@@ -253,7 +256,24 @@ fi
 #
 alias dotupdate='cd ~/dotfiles  && git pull && source ~/.bashrc'
 
+###     Crontab safety
+#
+alias crontab="crontab -i"
+
+##      Youtube-dl
+#
+alias youtube="/usr/bin/python3 /usr/local/bin/youtube-dl" $1
+
+alias wg_up="sudo wg-quick up ~/anonine/SeStockholm.conf"
+alias wg_down="sudo wg-quick down ~/anonine/SeStockholm.conf"
+
+# alias cdir='source cdir.sh'
+alias lzd='docker run --rm -it -v /var/run/docker.sock:/var/run/docker.sock -v ~/docker/lazydocker/config:/.config/jesseduffield/lazydocker lazyteam/lazydocker'
+
 ###     Scan open ports
 #
 #alias portscan="for i in {1..65535}; do (echo < /dev/tcp/127.0.0.1/$i) &>/dev/null && printf "\n[+] Open Port at\n: \t%d\n" "$i" || printf "."; done"
 
+###     Just to check if loaded
+#
+echo ${file##*/}

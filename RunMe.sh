@@ -55,7 +55,7 @@ FILE="$HOSTNAME-$DATE.zip"                          # Filename
 
 ###     Software array
 #
-APPARRAY=(curl htop ncdu pydf tree tmux vim mc)     # Apps to be installed - add if you like
+APPARRAY=(curl htop ncdu pydf tree tmux vim mc fd-find)     # Apps to be installed - add if you like
 DOTARRAY=(~/.profile ~/.bashrc ~/.bash_profile ~/.inputrc)                         # old dotfiles
 OLDFILEARRAY=(~/.bashrc ~/.profile ~/.bash_profile ~/.inputrc ~/.cshrc ~/.login)
 #SUBMODULES=(https://github.com/denilsonsa/prettyping.git https://github.com/tlatsas/bash-spinner.git) #s submodules for git repos
@@ -102,7 +102,14 @@ if [ $EUID -eq 0 ]; then
 fi
 #
 # +-+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--++--+--+--+--+--++--+--+--+--+--+
-#
+#:
+
+function install_stuff {
+    cd ~/temp;
+    curl -O https://raw.githubusercontent.com/denilsonsa/prettyping; 
+    chmod +x prettyping; mv prettyping
+
+}
 function init() {
     if [ $# -gt 0 ]; then
         case "$1" in

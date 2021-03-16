@@ -33,9 +33,15 @@ function up()
 ###	Create dir and enter it
 #
 function mcd () { # Makes a directory and enters it
-    [ -z "$1" ] && { echo "Usage: 'mcd <directory name> (Need to be root if outside of $HOME)'" >&2; return; }
+    [ -z "$1" ] && { echo "Usage: 'fmcd <directory name> (Need to be root if outside of $HOME)'" >&2; return; }
     mkdir -p "$1" && 
         cd "$1"
+}
+
+### Check if command exists
+#
+function command_check() {
+         command -v "$1" >/dev/null 2>&1
 }
 
 ###	Startbitbucket - creates remote bitbucket repo and adds it as git remote to cwd
@@ -267,23 +273,23 @@ function ii() {
     echo
 }
 
-###	    Get IP adress on ethernet.
-#
-function myip() {
-    #MY_IP=$(/sbin/ifconfig eth0 | awk '/inet/ { print $2 } ' | sed -e s/addr://)
-     MY_IP=$(/sbin/ifconfig $(getnic) | awk '/inet / { print $2 } ' | sed -e s/addr://| tr '' '/n' |sort)
-    #echo -e "$MY_IP"
-    #echo -e ${MYP_IP}
-    printf '%s\n' ${MY_IP:-"Not connected"}
-}
-
 ###     Get active Network Interface
 #
 function getnic() { 
     nic=$(sudo ip route | grep default | sed -e "s/^.*dev.//" -e "s/.proto.*//")
-    if [ ! -z "$1" ]; then
+    #if [ ! -z "$1" ]; then
         echo "NIC: $nic"
-    fi
+    #fi
+}
+###	    Get IP adress on ethernet.
+#
+
+function myip() {
+    #MY_IP=$(/sbin/ifconfig eth0 | awk '/inet/ { print $2 } ' | sed -e s/addr://)
+     MY_IP=$(/sbin/ifconfig $(getnic) | awk '/inet / { print $2 } ' | sed -e s/addr://| tr '' '/n' |sort)
+    echo -e "$MY_IP"
+    #echo -e ${MYP_IP}
+    printf '%s\n' ${MY_IP:-"Not connected"}
 }
 
 ###	Send pushover messages
@@ -324,7 +330,7 @@ function push() {
 #    source ~/.tmux-git/tmux-git.sh
 #fi
 
-sshtmux()
+function sshtmux()
 {
     # A name for the session
     local session_name="$(whoami)_sess"
@@ -383,10 +389,10 @@ function reverseempty(){
             find . -maxdepth 1 -mindepth 1 -type d \! -exec sh -c 'find "$1" \( -iname "*.mov" -o -iname "*.avi" -o -iname "*.mkv" -o -iname "*.vob" -o -iname "*.ogg" -o -iname "*.wmv" -o -iname "*m4v" \) -type f | read a' _ {} \; -exec rm -rfv -- {} \;
             #stop_spinner $?
             ;;
-        epubs)
+        (epubs|ePubs)
             echo -e "Searching for folders ${ORANGE}not${NC} containing ${GREEN} $1-files ${NC} in $PWD"
             #start_spinner 'searching...'
-            find . -maxdepth 1 -mindepth 1 -type d \! -exec sh -c 'find "$1" \( -iname "*.epub" -o -iname "*.azw" -o -iname "*.mobi" -o -iname "*.pdf" \) -type f | read a' _ {} \; -exec rm -rfv -- {} \;
+            find . -maxdepth 2 -mindepth 2 -type d \! -exec sh -c 'find "$1" \( -iname "*.epub" -o -iname "*.azw" -o -iname "*.mobi" -o -iname "*.pdf" \) -type f | read a' _ {} \; -exec rm -rfv -- {} \;
             #stop_spinner $?
             ;;
         *)
@@ -645,6 +651,17 @@ function tail_me() {
     done
 }
 
+function dock_restart() {
+    cd ~/docker/compose
+    dcp down
+    sudo systemctl restart docker
+    dcp up -d
+}
+
+function multi_yt() {
+    cd bin
+    nohup cat download_list.inv| while read line; do youtube $line; done &>/dev/null &
+}
 ###     Just to check if loaded
 #
 # echo ${file##*/}
