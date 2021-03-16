@@ -146,5 +146,7 @@ if [ -f "~/bin/tldr" ]; then
     export TLDR_PARAM='blue'
 fi
 
-echo "Done!"; sleep .5; clear
+eval ``keychain --eval --agents ssh id_rsa
+
+echo "Done!"; sleep 1; clear
 #All your base are belong to Debian
