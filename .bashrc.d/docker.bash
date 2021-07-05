@@ -31,6 +31,9 @@ alias dsa="docker ps -q | awk '{print $1}' | xargs -o docker stop"
 # Remove stopped containers, unused images, unused networks, etc.:
 alias dsp="docker system prune"
 
+# stop and remove image(s)
+alias drm="docker stop $1; docker rm $1; docker image prune -a"
+
 ###     Docker commands
 #
 alias dcpull="docker-compose -f ~/docker/compose/docker-compose.yml pull --parallel"
