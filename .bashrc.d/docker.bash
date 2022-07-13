@@ -47,3 +47,9 @@ alias r_traefik="docker stop traefik; docker start traefik"
 alias r_transmission-v="docker stop transmission-vpn; docker start tranmsission-vpn"
 alias r_plex="docker stop plex; docker start plex"
 
+###     Docker functions
+function dcrm() {
+    docker stop $1
+    docker rm $1
+    docker start $1 
+}
