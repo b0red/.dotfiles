@@ -148,7 +148,6 @@ eval ``keychain --eval --agents ssh id_rsa
 
 echo "Done!"; sleep 1; clear
 
-neofetch
 #https://github.com/dylanaraps/neofetch/wiki/Customizing-Info#adding-custom-info
 
 #All your base are belong to Debian

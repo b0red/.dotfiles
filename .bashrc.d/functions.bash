@@ -662,6 +662,30 @@ function multi_yt() {
     cd bin
     nohup cat download_list.inv| while read line; do youtube $line; done &>/dev/null &
 }
+
+function version() {
+    clear
+    cat /etc/*release
+    echo -e /n
+    nneofetch
+}
+
+# Instead of apt
+# https://gitlab.com/volian/nala
+#
+apt() { 
+  command nala "$@"
+}
+
+sudo() {
+  if [ "$1" = "apt" ]; then
+    shift
+    command sudo nala "$@"
+  else
+    command sudo "$@"
+  fi
+}
+
 ###     Just to check if loaded
 #
 # echo ${file##*/}

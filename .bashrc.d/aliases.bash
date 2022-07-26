@@ -220,7 +220,7 @@ alias list_extensions="find . -type f | perl -ne 'print $1 if m/\.([^.\/]+)$/' |
 
 ###     Quick linux info
 #
-alias version="cat /etc/*release"   
+# alias version="cat /etc/*release"   
 
 ###     Make process table searchable
 #
