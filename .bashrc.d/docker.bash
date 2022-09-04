@@ -2,7 +2,7 @@
 #
 
 # Start the docker-compose stack in the current directory
-alias dcp="docker-compose -f ~/docker/compose/docker-compose.yml up -d"
+alias dcp="docker-compose -f ~/docker/compose/docker-compose.yml"
 
 # Start the docker-compose stack in the current directory and rebuild the images
 alias dcub="~/docker/compose/docker-compose up -d --build"
