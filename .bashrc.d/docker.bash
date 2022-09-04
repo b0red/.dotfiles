@@ -2,7 +2,7 @@
 #
 
 # Start the docker-compose stack in the current directory
-alias dcp="docker-compose -f ~/docker/compose/docker-compose.yml "
+alias dcp="docker-compose -f ~/docker/compose/docker-compose.yml up -d"
 
 # Start the docker-compose stack in the current directory and rebuild the images
 alias dcub="~/docker/compose/docker-compose up -d --build"
@@ -41,13 +41,13 @@ alias dclogs='docker-compose -f ~/docker/compose/docker-compose.yml logs -tf --t
 alias dtail='docker logs -tf --tail="50" "$@"'
 alias dclean="docker run --rm -v /var/run/docker.sock:/var/run/docker.sock zzrot/docker-clean"
 
-###     Docker reload
+###
 #
-alias r_traefik="docker stop traefik; docker start traefik"
-alias r_transmission-v="docker stop transmission-vpn; docker start tranmsission-vpn"
-alias r_plex="docker stop plex; docker start plex"
+alias dkps="docker ps --format '{{.ID}} - {{.Names}} - {{.Status}} - {{.Image}}'"
 
 ###     Docker functions
+# remove a container and restart
+#
 function dcrm() {
     docker stop $1
     docker rm $1
@@ -66,3 +66,40 @@ function docker () {
     fi
 }
 
+# https://medium.com/hackernoon/handy-docker-aliases-4bd85089a3b8
+# view the log for any container by name
+function dkln() {
+    docker logs -f `docker pf | grep $1 | awk {print $1}`
+}
+
+# View stats for a container
+# https://techietown.info/2017/03/docker-container-monitoring-using-docker-stats/
+function dkstats() {
+    if [ $# -eq 0 ]
+        then docker stats --no-stream;
+        else docker stats --no-stream | grep $1;
+    fi
+}
+
+# Show tops stats for memory, cpu, network i/o, block i/o
+# https://techietown.info/2017/03/docker-container-monitoring-using-docker-stats/
+function dktop() {
+    docker stats --format "table {{.Container}}\t{{.Name}}\t{{CPUPerc}}  {{.MemPerc}}\t{{.NetIO}}\t{{.BlockIO}}"
+}
+
+function dkclean() {
+  docker rm $(docker ps --all -q -f status=exited)
+  docker volume rm $(docker volume ls -qf dangling=true)
+}
+
+function dkprune() {
+  docker system prune -af
+}
+
+dke() {
+  docker exec -it $1 /bin/sh
+}
+
+dkexe() {
+  docker exec -it $1 $2
+}

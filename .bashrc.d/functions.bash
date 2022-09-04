@@ -667,7 +667,7 @@ function version() {
     clear
     cat /etc/*release
     echo -e /n
-    nneofetch
+    #neofetch
 }
 
 # Instead of apt
