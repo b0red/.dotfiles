@@ -103,3 +103,8 @@ dke() {
 dkexe() {
   docker exec -it $1 $2
 }
+
+function dclean() {
+    docker rmi $(docker images -q -f dangling=true)
+    docker volume rm $(docker volume ls -qf dangling=true)
+}
