@@ -3,6 +3,7 @@
 
 # Start the docker-compose stack in the current directory
 alias dcp="docker-compose -f ~/docker/compose/docker-compose.yml"
+alias dci="cd ~/docker/compose; docker-compose images"
 
 # Start the docker-compose stack in the current directory and rebuild the images
 alias dcub="~/docker/compose/docker-compose up -d --build"
@@ -69,7 +70,7 @@ function docker () {
 # https://medium.com/hackernoon/handy-docker-aliases-4bd85089a3b8
 # view the log for any container by name
 function dkln() {
-    docker logs -f `docker pf | grep $1 | awk {print $1}`
+    docker logs -f "docker pf | grep $1 | awk {print $1}"
 }
 
 # View stats for a container
@@ -88,7 +89,7 @@ function dktop() {
 }
 
 function dkclean() {
-  docker rm $(docker ps --all -q -f status=exited)
+  docker rm $(docker ps --all -q -f status=exited);
   docker volume rm $(docker volume ls -qf dangling=true)
 }
 
@@ -105,6 +106,6 @@ dkexe() {
 }
 
 function dclean() {
-    docker rmi $(docker images -q -f dangling=true)
+    docker rmi $(docker images -q -f dangling=true);
     docker volume rm $(docker volume ls -qf dangling=true)
 }
