@@ -220,7 +220,7 @@ alias list_extensions="find . -type f | perl -ne 'print $1 if m/\.([^.\/]+)$/' |
 
 ###     Quick linux info
 #
-alias version="cat /etc/*release"   
+# alias version="cat /etc/*release"   
 
 ###     Make process table searchable
 #
@@ -256,6 +256,8 @@ fi
 #
 alias dotupdate='cd ~/dotfiles  && git pull && source ~/.bashrc'
 
+alias binupdate="cd ~/bin && git pull origin master"
+
 ###     Crontab safety
 #
 alias crontab="crontab -i"
@@ -264,8 +266,10 @@ alias crontab="crontab -i"
 #
 alias youtube="/usr/bin/python3 /usr/local/bin/youtube-dl" $1
 
-alias wg_up="sudo wg-quick up ~/anonine/SeStockholm.conf"
-alias wg_down="sudo wg-quick down ~/anonine/SeStockholm.conf"
+###     Wireguard
+#
+alias wg_up="sudo wg-quick up ~/wireguard/conf/SeStockholm.conf"
+alias wg_down="sudo wg-quick down ~/wireguard/conf/SeStockholm.conf"
 
 # alias cdir='source cdir.sh'
 alias lzd='docker run --rm -it -v /var/run/docker.sock:/var/run/docker.sock -v ~/docker/lazydocker/config:/.config/jesseduffield/lazydocker lazyteam/lazydocker'
