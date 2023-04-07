@@ -23,6 +23,9 @@ shopt -s cmdhist
 #
 shopt -s histappend
 
+### Ignore stuff in history file
+#
+HISTIGNORE="pwd:clear:cls:cd:ls:kk:man:history"
 
 ################################################################################
 #
