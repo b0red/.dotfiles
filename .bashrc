@@ -121,7 +121,6 @@ if [ -d "$HOME"/dotfiles/.profile.d ]; then
      unset -v config
  fi
 
-<<<<<<< HEAD
 ###     For getting gitstatus in tmux
 #       stolen from https://github.com/drmad/tmux-git
 if [[ $TMUX ]]; then source ~/.tmux-git/tmux-git.sh; fi
@@ -134,8 +133,6 @@ if [ -d "$HOME/.homeshick" ]; then
     source "$HOME/.homesick/repos/homeshick/homeshick.sh"
 fi
 
-=======
->>>>>>> cf0ec830e8a386f313ca715f89da7c2afb5eca4c
 get_os
 setting_standard_commands
 
