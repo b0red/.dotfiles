@@ -11,13 +11,15 @@ alias dcub="~/docker/compose/docker-compose up -d --build"
 # Stop, delete (down) or restart the docker-compose stack in the current directory
 alias dcs="docker-compose stop $1"
 alias dcd="docker-compose down"
-alias dcr="docker-compose restart"
+alias dcr="docker restart $1"
 
 # Show the logs for the docker-compose stack in the current directory
 # May be extended with the service name to get service-specific logs, like
 # 'dcl php' to get the logs of the php container
 alias dcls="docker-compose logs"
 alias dcl="docker logs -f $1"
+#https://www.baeldung.com/ops/docker-list-containers
+alias dclsf="docker container -ls --format \"table {{.ID}}\\t{{.Image}}\\t{{.Names}}\\t{{.Ports}}\""
 
 # Quickly run the docker exec command like this: 'dex container-name bash'
 alias dex="docker exec -it $1 /bin/bash"
