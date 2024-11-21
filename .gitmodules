@@ -1,15 +1,15 @@
-[submodule "extras/.tmux-git"]
-	path = extras/.tmux-git
-	url = git://github.com/drmad/tmux-git.git
-[submodule "extras/.tmux-gitbar"]
-	path = extras/.tmux-gitbar
-	url = git://github.com/arl/tmux-gitbar.git
-[submodule "extras/extras/lzd"]
-	path = extras/extras/lzd
-	url = https://github.com/jesseduffield/lazydocker
-[submodule "extras/extras/bat"]
-	path = extras/extras/bat
-	url = https://github.com/sharkdp/bat
-#[submodule "extras/lzd"]
-#	path = extras/lzd
-#	url = https://github.com/jesseduffield/lazydocker
+[submodule "extras/tmux-git"]
+	path = extras/tmux-git
+	url = https://github.com/drmad/tmux-git.git
+[submodule "extras/tmux-gitbar"]
+	path = extras/tmux-gitbar
+	url = https://github.com/arl/tmux-gitbar.git
+[submodule "extras/bat"]
+	path = extras/bat
+	url = https://github.com/sharkdp/bat/
+[submodule "prettyping"]
+	path = prettyping
+	url = https://github.com/denilsonsa/prettyping.git
+[submodule "extras/lzd"]
+	path = extras/lzd
+	url = https://github.com/jesseduffield/lazydocker.git
