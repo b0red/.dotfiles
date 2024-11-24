@@ -205,6 +205,7 @@ alias big-files='ls -1Rhs | sed -e "s/^ *//" | grep "^[0-9]" | sort -hr | head -
 ###		ip
 #
 alias ip="ip -br -c a"
+alias myip='wget http://ipinfo.io/ip -qO -'
 
 ###		check the status of any system service:
 #

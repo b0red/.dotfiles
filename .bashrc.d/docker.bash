@@ -2,11 +2,11 @@
 #
 
 # Start the docker-compose stack in the current directory
-alias dcp="docker-compose -f ~/docker/compose/docker-compose.yml"
-alias dci="cd ~/docker/compose; docker-compose images"
+alias dcp="docker compose -f ~/docker/compose/compose.yml"
+alias dci="cd ~/docker/compose; docker compose images"
 
 # Start the docker-compose stack in the current directory and rebuild the images
-alias dcub="~/docker/compose/docker-compose up -d --build"
+alias dcub="~/docker/compose/compose up -d --build"
 
 # Stop, delete (down) or restart the docker-compose stack in the current directory
 alias dcs="docker-compose stop $1"
@@ -39,8 +39,8 @@ alias drm="docker stop $1; docker rm $1; docker image prune -a"
 
 ###     Docker commands
 #
-alias dcpull="docker-compose -f ~/docker/compose/docker-compose.yml pull --parallel"
-alias dclogs='docker-compose -f ~/docker/compose/docker-compose.yml logs -tf --tail="50" '
+alias dcpull="docker compose -f ~/docker/compose/compose.yml pull --parallel"
+alias dclogs='docker compose -f ~/docker/compose/compose.yml logs -tf --tail="50" '
 alias dtail='docker logs -tf --tail="50" "$@"'
 alias dclean="docker run --rm -v /var/run/docker.sock:/var/run/docker.sock zzrot/docker-clean"
 
