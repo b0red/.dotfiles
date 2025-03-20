@@ -1,39 +1,27 @@
-# Trying to do the dotfiles again, and keeping them in sync..
+# My latest to do the dotfiles, and keeping them in sync..
 
-## Install some software first:
-tmux git vim 
-
-
-### To install, clone this repo and symlink 2 files (for now, there might be a script to automate this)
-
+## Install git first:
 ```
-git clone --recurse-submodules git@bitbucket.org:b0red/dotfiles.git ~/dotfiles; cd ~/dotfiles
-```
-
-& then (backup the 2 old files, .bashrc & .profile) and symlink the two files.
-
-```
-mv ~/.profile ~/.profile.old; mv ~/.bashrc ~/.bashrc.old; ln -s ~/dotfiles/.bashrc ~/.bashrc; ln -s ~/dotfiles/.profile ~/.profile 
-
-(Not necessary if using ' --recurse-submodules ')
-git submodule init && git submodule update
+sudo apt install git
 ```
 ## 2 ways to install the dotfiles
-
+### Automated install __*On Your own risk*__!!!
+```
+* Download the repo as usual:
+# git clone git@bitbucket.org:b0red/dotfiles.git ~/dotfiles; cd ~/dotfiles; sudo chmod +x RunMe.sh; ./RunMe.sh
+The script wont break anything, but it might not work as intended :(
+```
 ### Steps for manual installation
-1. install git, vim, tmux (check your distro how to do this)
-2. git clone git@bitbucket.org:b0red/dotfiles.git ~/dotfiles
-3. mv ~/.profile ~/.profile.old; mv ~/.bashrc ~/.bashrc.old; ln -s ~/dotfiles/.bashrc ~/.bashrc; ln -s ~/dotfiles/.profile ~/.profile 
+```
+1. Install git, vim, tmux (check your distro how to do this)
+2. git clone --recurse-submodules git@bitbucket.org:b0red/dotfiles.git ~/dotfiles; cd ~/dotfiles
+3. mv ~/.profile ~/.profile.old; mv ~/.bashrc ~/.bashrc.old; \ 
+ln -s ~/dotfiles/.bashrc ~/.bashrc; ln -s ~/dotfiles/.profile ~/.profile
 4. git submodule init && git submodule update
 5. sudo apt install htop ncdu pydf tree mc
 6. (update submodules)
-  * git submodule foreach git pull origin master
-
-### Automated install __*On Your own risk*__!!!
-* Download the repo as usual git clone ...
-* sudo chmod +x RunMe.sh; ./RunMe.sh  
-* Running the 'RunMe.sh' script
-* the script wont break anything, but it might not work as intended :(
+  * git submodule foreach git pull origin master (Not necessary if using ' --recurse-submodules ')
+```
 
 ### Other stuff thats nice to have
 * htop ncdu pydf tree mc 
