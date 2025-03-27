@@ -18,7 +18,7 @@ export DISPLAY=:0.0
 ##          The following needs to be installed manually, if you want them,
 ##          bat (optional), prettyping (optional)
 ##
-##          v3.0
+##          v3.1
 ##
 ##          ref:
 ##          https://stackoverflow.com/questions/394230/how-to-detect-the-os-from-a-bash-script
@@ -27,8 +27,9 @@ export DISPLAY=:0.0
 ##          https://www.oracle.com/technetwork/articles/servers-storage-admin/o11-083-ips-basics-523756.html
 ##          https://git-scm.com/book/en/v2/Git-Tools-Submodules
 ##          
-##          https://github.com/sharkdp/bat/releases/download/v0.10.0/bat_0.10.0_amd64.deb; sudo dpkg -i bat_0.10.0_amd64.deb; rm -f bat*
+##          software installs:
 ##          curl -O https://raw.githubusercontent.com/denilsonsa/prettyping/master/prettyping; chmod +x prettyping; mv prettyping ~/bin
+##          curl https://gitlab.com/volian/volian-archive/-/raw/main/install-nala.sh | bash
 ##
 ###################################################################################################################
 clear
@@ -39,8 +40,8 @@ clear
 
 ###     Debug on/off  - Change for debugging purposes
 #
-debug=0                                             # Debug 1 = echo to screen / 0 = echo to logfile
-trace_debug=0
+debug=1                                             # Debug 1 = echo to screen / 0 = echo to logfile
+trace_debug=1                                       # Tracedebug
 SLEEP=2                                             # Sleeptimer
 
 ###     Settings - Change if you need to
@@ -55,8 +56,8 @@ FILE="$HOSTNAME-$DATE.zip"                          # Filename
 
 ###     Software array
 #
-APPARRAY=(curl htop ncdu pydf tree tmux vim mc fd-find)     # Apps to be installed - add if you like
-DOTARRAY=(~/.profile ~/.bashrc ~/.bash_profile ~/.inputrc)                         # old dotfiles
+APPARRAY=(curl htop ncdu pydf tree tmux vim mc fd-find git bat deborphan)           # Apps to be installed - add if you like
+DOTARRAY=(~/.profile ~/.bashrc ~/.bash_profile ~/.inputrc)                          # old dotfiles
 OLDFILEARRAY=(~/.bashrc ~/.profile ~/.bash_profile ~/.inputrc ~/.cshrc ~/.login)
 #SUBMODULES=(https://github.com/denilsonsa/prettyping.git https://github.com/tlatsas/bash-spinner.git) #s submodules for git repos
 
@@ -106,10 +107,11 @@ fi
 
 function install_stuff {
     cd ~/temp;
-    curl -O https://raw.githubusercontent.com/denilsonsa/prettyping; 
-    chmod +x prettyping; mv prettyping
+    curl -O https://raw.githubusercontent.com/denilsonsa/prettyping/master/prettyping; 
+    chmod +x prettyping; mv prettyping ~
 
 }
+
 function init() {
     if [ $# -gt 0 ]; then
         case "$1" in
@@ -126,7 +128,7 @@ function init() {
 }
 
 function check_for_line(){
-     #grep -qxF "#All your base are belong to ${DistroBasedOn^}" ~/.bashrc
+    #grep -qxF "#All your base are belong to ${DistroBasedOn^}" ~/.bashrc
     grep -E "#All your base are belong to ${DistroBasedOn^}" ~/.bashrc
     if [ $? -ne 0 ]; then
         echo "#All your base are belong to ${DistroBasedOn^}" >> ~/.bashrc

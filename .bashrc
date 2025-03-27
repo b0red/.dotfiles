@@ -92,7 +92,7 @@ export PAGER='less'
 
 ###     Load tmux as soon as we login to shell, logout when exit tmux       
 #           this fucks up tmux, can't save tmux panes layouts
-if [[ $(uname -n) = 'dellubuntu' ]]; then 
+if [[ $(uname -n) = 'litebook' ]]; then 
     #echo "tmux loaded"
     if [[ -n "$PS1" ]] && [[ -z "$TMUX" ]] && [[ -n "$SSH_CONNECTION" ]]; then
         tmux attach-session -t ssh_tmux || tmux new-session -s ssh_tmux
@@ -150,7 +150,4 @@ echo "Done!"; sleep 1; clear
 
 
 #https://github.com/dylanaraps/neofetch/wiki/Customizing-Info#adding-custom-info
-
-#All your base are belong to Debian
-
 #All your base are belong to Debian
