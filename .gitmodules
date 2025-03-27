@@ -13,3 +13,6 @@
 [submodule "extras/lzd"]
 	path = extras/lzd
 	url = https://github.com/jesseduffield/lazydocker.git
+[submodule "extras/prettyping"]
+	path = extras/prettyping
+	url = https://github.com/denilsonsa/prettyping.git
