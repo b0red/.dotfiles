@@ -69,7 +69,7 @@ alias x="exit"
 # 
 alias clr="clear;pwd;ls"
 alias cls="clear"
-alias lsd"=ls -alF |grep /$" 	## Might be wrong
+alias lsd="ls -alF |grep /$" 	## Might be wrong
 alias back="cd $OLDPWD"
 
 ###	Rootstuf
@@ -104,7 +104,7 @@ alias lf="ls -l | egrep -v '^d'"
 alias ldir="ls -l | egrep '^d'"
 #alias clean="sudo apt y"
 
-###     Enable colorsupport of ls and add hanndy aliases
+###     Enable colorsupport of ls and add handy aliases
 #
 if [[ -x /usr/bin/dircolors ]]; then
     test -r ~/.dircolors && eval "$(dircolors -b ~/.dircolors)"||eval "$(dircolors -b)"
@@ -235,10 +235,6 @@ alias ports='sudo netstat -tulanp'
 #
 alias treels="find . -type d |sed 's:[^-][^/]*/:--:g; s:^-: |:'"
 
-###     Lazydocker
-#
-if command_check lazydocker; then alias lzd="lazydocker"; fi
-
 ###     fd instead of find
 #	https://github.com/sharkdp/fd
 #
@@ -256,7 +252,6 @@ fi
 ###     update aliases
 #
 alias dotupdate='cd ~/dotfiles  && git pull && source ~/.bashrc'
-
 alias binupdate="cd ~/bin && git pull origin master"
 
 ###     Crontab safety
@@ -272,7 +267,11 @@ alias youtube="/usr/bin/python3 /usr/local/bin/youtube-dl" $1
 alias wg_up="sudo wg-quick up ~/wireguard/conf/SeStockholm.conf"
 alias wg_down="sudo wg-quick down ~/wireguard/conf/SeStockholm.conf"
 
-# alias cdir='source cdir.sh'
+###     DOCKER
+#
+###     Lazydocker
+#
+if command_check lazydocker; then alias lzd="lazydocker"; fi
 alias lzd='docker run --rm -it -v /var/run/docker.sock:/var/run/docker.sock -v ~/docker/lazydocker/config:/.config/jesseduffield/lazydocker lazyteam/lazydocker'
 
 ###     Scan open ports

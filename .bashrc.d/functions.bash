@@ -690,7 +690,7 @@ sudo() {
   fi
 }
 
-KillZombie() {
+function killzombie() {
     pid=$(ps -A -ostat,ppid | awk '/[zZ]/ && !a[$2]++ {print $2}');
     if [ "$pid" = "" ]; then
         echo "No zombie processes found.";
@@ -704,6 +704,29 @@ KillZombie() {
     fi
 }
 
+function rmdoc() {
+  local container_name="€0.90"
+
+  if [ -z "$container_name" ]; then
+    echo "Usage: restart_dcp <container_name>"
+    return 1
+  fi
+
+  # Check if the container is running
+  if docker ps -q --filter "name=^/${container_name}$" | grep -q .; then
+    echo "Stopping container: $container_name"
+    docker stop "$container_name"
+  fi
+
+  # Check if the container exists (running or stopped)
+  if docker ps -a -q --filter "name=^/${container_name}$" | grep -q .; then
+    echo "Removing container: $container_name"
+    docker rm "$container_name"
+  fi
+
+  echo "Starting containers with 'dcp up -d'"
+  dcp up -d
+}
 ###     Just to check if loaded
 #
 # echo ${file##*/}
