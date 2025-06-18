@@ -674,21 +674,21 @@ function version() {
     #neofetch
 }
 
-# Instead of apt
+# # Instead of apt
 # https://gitlab.com/volian/nala
-#
-function apt() { 
-  command nala "$@"
-}
 
-sudo() {
-  if [ "$1" = "apt" ]; then
-    shift
-    command sudo nala "$@"
-  else
-    command sudo "$@"
-  fi
-}
+# function apt() { 
+#  command nala "$@"
+# }
+
+# sudo() {
+#  if [ "$1" = "apt" ]; then
+#    shift
+#    command sudo nala "$@"
+#  else
+#    command sudo "$@"
+#  fi
+# }
 
 function killzombie() {
     pid=$(ps -A -ostat,ppid | awk '/[zZ]/ && !a[$2]++ {print $2}');

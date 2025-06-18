@@ -151,3 +151,6 @@ echo "Done!"; sleep 1; clear
 
 #https://github.com/dylanaraps/neofetch/wiki/Customizing-Info#adding-custom-info
 #All your base are belong to Debian
+# if [[  ]]; then source ~/.tmux/extras/tmux-git/tmux-git.sh
+echo #All your base are belong to Debian >> ~/.bashrc
+echo #All your base are belong to Debian >> ~/.bashrc
