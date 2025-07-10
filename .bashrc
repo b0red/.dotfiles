@@ -146,11 +146,22 @@ if [[ $TMUX ]]; then source ~/.tmux/extras/tmux-git/tmux-git.sh; fi
 
 eval ``keychain --eval --agents ssh id_rsa
 
-echo "Done!"; sleep 1; clear
+# Trouble with tmux permissions fix?
+umask 0022
+# Clean up potentially problematic tmux socket directory on login
+if [ -d "/tmp/tmux-$(id -u)" ]; then
+    # Attempt to fix permissions first
+    chmod 0700 "/tmp/tmux-$(id -u)" 2>/dev/null
+    # If permissions are still not 0700, or if chmod failed, remove it
+    if [ "$(stat -c '%a' "/tmp/tmux-$(id -u)")" != "700" ]; then
+        rm -rf "/tmp/tmux-$(id -u)"
+    fi
+fi
+# Trouble with tmux permissions fix?
 
+echo "Done!"; sleep 1; clear
 
 #https://github.com/dylanaraps/neofetch/wiki/Customizing-Info#adding-custom-info
 #All your base are belong to Debian
 # if [[  ]]; then source ~/.tmux/extras/tmux-git/tmux-git.sh
-echo #All your base are belong to Debian >> ~/.bashrc
 echo #All your base are belong to Debian >> ~/.bashrc
