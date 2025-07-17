@@ -26,8 +26,7 @@ export PATH=$PATH:/snap/bin
 # See bash(1) for more options.
 #	(IGNORESPACE AND IGNOREDUPE)
 #
-export HISTCONTROL="ignoredups"
-HISTCONTROL=ignoreboth
+export HISTCONTROL=ignoreboth:erasedups
 
 ###	Ignore certain commands in histor
 #
@@ -47,8 +46,8 @@ TIMEFORMAT='real:%lR user:%lU sys:%lS'
 # shells instead of the default "last window closed" history
 export PROMPT_COMMAND="history -a; $PROMPT_COMMAND"
 
-###	Don't clear the screen after quitting a manual page
-export MANPAGER="less -X"
+# ###	Don't clear the screen after quitting a manual page
+# export MANPAGER="less -X"
 
 ### Colorize manpages 
 export pager="most"

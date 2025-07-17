@@ -104,6 +104,10 @@ alias lf="ls -l | egrep -v '^d'"
 alias ldir="ls -l | egrep '^d'"
 #alias clean="sudo apt y"
 
+### Shorts
+#
+alias h="history | grep -n $1"
+
 ###     Enable colorsupport of ls and add handy aliases
 #
 if [[ -x /usr/bin/dircolors ]]; then
