@@ -136,16 +136,6 @@ fi
 get_os
 setting_standard_commands
 
-###     Load tmux on start  
-if [[ -n "$PS1"  ]] && [[ -z "$TMUX"  ]] && [[ -n "$SSH_CONNECTION"  ]]; then
-      tmux attach-session -t ssh_tmux || tmux new-session -s ssh_tmux
-fi
-###     For getting gitstatus in tmux
-#       stolen from https://github.com/drmad/tmux-git
-if [[ $TMUX ]]; then source ~/.tmux/extras/tmux-git/tmux-git.sh; fi
-
-eval ``keychain --eval --agents ssh id_rsa
-
 # Trouble with tmux permissions fix?
 umask 0022
 # Clean up potentially problematic tmux socket directory on login
@@ -159,9 +149,33 @@ if [ -d "/tmp/tmux-$(id -u)" ]; then
 fi
 # Trouble with tmux permissions fix?
 
+###     Load tmux on start  
+# if [[ -n "$PS1"  ]] && [[ -z "$TMUX"  ]] && [[ -n "$SSH_CONNECTION"  ]]; then
+#       tmux attach-session -t ssh_tmux || tmux new-session -s ssh_tmux
+# fi
+if [[ -z "$TMUX" ]]; then                                                               # New tmux session
+    # Create or attach to a session named 'main'
+    # 'main' is a placeholder, you can use any name
+    tmux new-session -A -s main
+fi
+
+###     For getting gitstatus in tmux
+#       stolen from https://github.com/drmad/tmux-git
+if [[ $TMUX ]]; then source ~/.tmux/extras/tmux-git/tmux-git.sh; fi
+
+####   Set tmux panes
+#
+if [[ -z "$TMUX" ]]; then
+    ~/bin/start_tmux.sh
+fi
+
+eval ``keychain --eval --agents ssh id_rsa
+
 echo "Done!"; sleep 1; clear
 
 #https://github.com/dylanaraps/neofetch/wiki/Customizing-Info#adding-custom-info
 #All your base are belong to Debian
 # if [[  ]]; then source ~/.tmux/extras/tmux-git/tmux-git.sh
 #echo #All your base are belong to Debian >> ~/.bashrc
+export LANG="en_US.UTF-8"
+export LC_ALL="en_US.UTF-8"
