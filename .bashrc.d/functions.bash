@@ -727,6 +727,68 @@ function rmdoc() {
   echo "Starting containers with 'dcp up -d'"
   dcp up -d
 }
+
+# Search TV folders by name (case-insensitive) with spinner feedback
+tvfind() {
+  local base="${TVFIND_DIR:-/media/TV}"
+  local OPTIND opt
+  while getopts ":d:h" opt; do
+    case "$opt" in
+      d) base="$OPTARG" ;;
+      h)
+        echo "Usage: tvfind [-d DIR] <name...>"
+        echo "Searches directories under DIR (default: ${TVFIND_DIR:-/media/TV})."
+        echo "Shows a spinner while searching, prints parent folder(s) if found."
+        return 0
+        ;;
+      \?) echo "tvfind: unknown option -- $OPTARG" >&2; return 2 ;;
+      :)  echo "tvfind: option -$OPTARG requires an argument" >&2; return 2 ;;
+    esac
+  done
+  shift $((OPTIND-1))
+
+  if [ $# -lt 1 ]; then
+    echo "Usage: tvfind [-d DIR] <name...>" >&2
+    return 1
+  fi
+  if [ ! -d "$base" ]; then
+    echo "tvfind: base directory not found: $base" >&2
+    return 1
+  fi
+
+  local query="$*"
+  local tmp; tmp=$(mktemp -t tvfind.XXXXXX)
+
+  # Run find in background, capture results
+  ( find "$base" -type d -iname "*${query}*" 2>/dev/null >"$tmp" ) &
+  local pid=$!
+
+  # Spinner
+  local spin='|/-\' i=0 msg="Searching in $base..."
+  printf "%s " "$msg"
+  while kill -0 "$pid" 2>/dev/null; do
+    printf "\r%s %s" "$msg" "${spin:i++%${#spin}:1}"
+    sleep 0.1
+  done
+  wait "$pid" 2>/dev/null
+  # Clear spinner line
+  printf "\r%*s\r" $(( ${#msg} + 2 )) ""
+
+  # Load results
+  mapfile -t results < "$tmp"
+  rm -f "$tmp"
+
+  if [ ${#results[@]} -eq 0 ]; then
+    echo "Nothing found"
+    return 1
+  fi
+
+  echo "Found ${#results[@]} match(es). Parent folder(s):"
+  printf '%s\n' "${results[@]}" \
+    | while IFS= read -r path; do dirname "$path"; done \
+    | sort -u
+}
+
 ###     Just to check if loaded
 #
 # echo ${file##*/}
