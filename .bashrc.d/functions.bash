@@ -728,17 +728,30 @@ function rmdoc() {
   dcp up -d
 }
 
-# Search TV folders by name (case-insensitive) with spinner feedback
+# Faster TV folder search with spinner + clear output
 tvfind() {
   local base="${TVFIND_DIR:-/media/TV}"
+  local use_index=1 maxdepth="" single_fs=0
   local OPTIND opt
-  while getopts ":d:h" opt; do
+  while getopts ":d:m:XNh" opt; do
     case "$opt" in
       d) base="$OPTARG" ;;
+      m) maxdepth="$OPTARG" ;;            # limit depth for speed (e.g., -m 3)
+      X) single_fs=1 ;;                   # stay on one filesystem (-xdev)
+      N) use_index=0 ;;                   # force no index (always use walker)
       h)
-        echo "Usage: tvfind [-d DIR] <name...>"
-        echo "Searches directories under DIR (default: ${TVFIND_DIR:-/media/TV})."
-        echo "Shows a spinner while searching, prints parent folder(s) if found."
+        cat <<EOF
+Usage: tvfind [-d DIR] [-m MAXDEPTH] [-X] [-N] <name...>
+Searches directory names under DIR (default: ${TVFIND_DIR:-/media/TV}):
+
+  -d DIR       Base directory
+  -m N         Max depth (speeds up deep trees)
+  -X           Stay on one filesystem (skip submounts)
+  -N           Don't use locate/plocate index even if available
+  -h           Show this help
+
+Prints unique parent folder(s) of matches. Shows a spinner while working.
+EOF
         return 0
         ;;
       \?) echo "tvfind: unknown option -- $OPTARG" >&2; return 2 ;;
@@ -748,7 +761,7 @@ tvfind() {
   shift $((OPTIND-1))
 
   if [ $# -lt 1 ]; then
-    echo "Usage: tvfind [-d DIR] <name...>" >&2
+    echo "Usage: tvfind [-d DIR] [-m MAXDEPTH] [-X] [-N] <name...>" >&2
     return 1
   fi
   if [ ! -d "$base" ]; then
@@ -757,36 +770,76 @@ tvfind() {
   fi
 
   local query="$*"
+  local engine="find"
+  if (( use_index )); then
+    if command -v plocate >/dev/null 2>&1; then engine="plocate"
+    elif command -v locate >/dev/null 2>&1; then engine="locate"
+    fi
+  fi
+  # If no indexer, try fd (very fast walker); else fall back to find
+  if [ "$engine" = "find" ] && command -v fd >/dev/null 2>&1; then
+    engine="fd"
+  fi
+
   local tmp; tmp=$(mktemp -t tvfind.XXXXXX)
 
-  # Run find in background, capture results
-  ( find "$base" -type d -iname "*${query}*" 2>/dev/null >"$tmp" ) &
+  # Kick off the search in the background and capture parent dirs as NUL-separated
+  case "$engine" in
+    plocate|locate)
+      # -b = basename match; -i = case-insensitive; -0 = NUL delim (if supported)
+      # Filter to within $base and to directories only, then emit parent dirs.
+      if $engine -h 2>&1 | grep -qE '(^|[[:space:]])-0([[:space:]]|,|$)'; then
+        ( $engine -i -b -0 -- "*$query*" \
+          | while IFS= read -r -d '' p; do
+              [[ $p == "$base"/* && -d "$p" ]] && printf '%s\0' "$(dirname "$p")"
+            done >"$tmp" ) &
+      else
+        ( $engine -i -b -- "*$query*" \
+          | while IFS= read -r p; do
+              [[ $p == "$base"/* && -d "$p" ]] && printf '%s\0' "$(dirname "$p")"
+            done >"$tmp" ) &
+      fi
+      ;;
+    fd)
+      # -H include hidden, -I ignore .gitignore, -t d dirs only, -i case-insensitive, -0 NUL delim
+      ( fd -HI -t d -i "$query" "$base" ${maxdepth:+-d "$maxdepth"} -0 \
+        | xargs -0 -I{} dirname "{}" -z >"$tmp" ) &
+      ;;
+    find)
+      # Prune common heavy dirs; use -printf to avoid spawning dirname per result
+      ( find "$base" \
+          $([ "$single_fs" -eq 1 ] && echo -xdev) \
+          \( -type d \( -name '.git' -o -name 'node_modules' -o -name '@eaDir' -o -name '.cache' \) -prune \) -o \
+          \( -type d ${maxdepth:+-maxdepth "$maxdepth"} -iname "*$query*" -printf '%h\0' \) 2>/dev/null \
+        >"$tmp" ) &
+      ;;
+  esac
   local pid=$!
 
   # Spinner
-  local spin='|/-\' i=0 msg="Searching in $base..."
+  local spin='|/-\' i=0 msg="Searching ($engine) in $base..."
   printf "%s " "$msg"
   while kill -0 "$pid" 2>/dev/null; do
     printf "\r%s %s" "$msg" "${spin:i++%${#spin}:1}"
     sleep 0.1
   done
   wait "$pid" 2>/dev/null
-  # Clear spinner line
   printf "\r%*s\r" $(( ${#msg} + 2 )) ""
 
-  # Load results
-  mapfile -t results < "$tmp"
-  rm -f "$tmp"
-
-  if [ ${#results[@]} -eq 0 ]; then
+  # Output unique parent folders or "Nothing found"
+  if [ -s "$tmp" ]; then
+    # unique + print
+    sort -zu "$tmp" | tr '\0' '\n'
+    local count
+    count="$(tr '\0' '\n' <"$tmp" | sort -u | wc -l | awk '{print $1}')"
+    echo "Found $count parent folder(s)."
+    rm -f "$tmp"
+    return 0
+  else
     echo "Nothing found"
+    rm -f "$tmp"
     return 1
   fi
-
-  echo "Found ${#results[@]} match(es). Parent folder(s):"
-  printf '%s\n' "${results[@]}" \
-    | while IFS= read -r path; do dirname "$path"; done \
-    | sort -u
 }
 
 ###     Just to check if loaded
