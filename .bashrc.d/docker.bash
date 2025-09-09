@@ -111,3 +111,54 @@ function dclean() {
     docker rmi $(docker images -q -f dangling=true);
     docker volume rm $(docker volume ls -qf dangling=true)
 }
+
+
+#!/bin/bash
+function dport() {
+# find_docker_by_port()
+#
+# A bash function that searches for a Docker container
+# running on a specified port.
+#
+# Arguments:
+#   $1 - The port number to search for.
+#
+# Usage:
+#   To use this function, first source the file in your terminal:
+#   $ source ./docker_port_scanner.sh
+#
+#   Then, you can run the function:
+#   $ find_docker_by_port 8080
+    if [ -z "$1" ]; then
+        echo "Error: Please provide a port number to search for."
+        echo "Usage: find_docker_by_port <port>"
+        return 1
+    fi
+
+    local port_to_find="$1"
+
+    # Use 'docker ps' to get a list of running containers with their IDs, names, and ports.
+    # The --format flag ensures the output is predictable and easy to parse.
+    # The output is then piped to 'grep' to find the line containing the specified port.
+    local result=$(docker ps --format "{{.ID}}\t{{.Names}}\t{{.Ports}}" | grep "$port_to_find")
+
+    # Check if the grep command found any containers
+    if [ -z "$result" ]; then
+        echo "No running container found on port $port_to_find."
+        return 1
+    fi
+
+    # Extract and display the relevant information
+    local container_id=$(echo "$result" | awk -F'\t' '{print $1}')
+    local container_name=$(echo "$result" | awk -F'\t' '{print $2}')
+    local container_ports=$(echo "$result" | awk -F'\t' '{print $3}')
+
+    echo "Found container for port $port_to_find:"
+    echo "----------------------------------------"
+    echo "Container ID:   $container_id"
+    echo "Container Name: $container_name"
+    echo "Ports:          $container_ports"
+
+    return 0
+}
+

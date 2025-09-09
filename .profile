@@ -40,6 +40,11 @@ if [ -d "$HOME"/.cargo ]; then
 	export PATH="$HOME/.cargo/bin:$PATH"
 fi
 
+###	Check if go exists
+export PATH=$PATH:/usr/local/go/bin
+
+
+
 # turns off the binding of Ctrl-S and gets rid of any XOFF onscreen messages when pressing Ctrl-S.
 # bind -r '\C-s'
 # stty -ixon
