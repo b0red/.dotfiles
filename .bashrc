@@ -159,9 +159,9 @@ if [[ -z "$TMUX" ]]; then                                                       
     tmux new-session -A -s main
 fi
 
-###     For getting gitstatus in tmux
-#       stolen from https://github.com/drmad/tmux-git
-if [[ $TMUX ]]; then source ~/.tmux/extras/tmux-git/tmux-git.sh; fi
+# ###     For getting gitstatus in tmux
+# #       stolen from https://github.com/drmad/tmux-git
+if [[ $TMUX ]]; then source ~/.tmux-git/tmux-git.sh; fi
 
 ####   Set tmux panes
 #
@@ -179,3 +179,4 @@ echo "Done!"; sleep 1; clear
 #echo #All your base are belong to Debian >> ~/.bashrc
 export LANG="en_US.UTF-8"
 export LC_ALL="en_US.UTF-8"
+

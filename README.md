@@ -21,6 +21,14 @@ ln -s ~/dotfiles/.bashrc ~/.bashrc; ln -s ~/dotfiles/.profile ~/.profile
 5. sudo apt install htop ncdu pydf tree mc
 6. (update submodules)
   * git submodule foreach git pull origin master (Not necessary if using ' --recurse-submodules ')
+
+To clone this:  git clone https://github.com/your/repo.git
+cd repo
+git submodule update --init --recursive
+Or clone + init in one go:
+
+git clone --recurse-submodules https://github.com/your/repo.git
+
 ```
 
 ### Other stuff thats nice to have
