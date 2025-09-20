@@ -1,181 +1,155 @@
 # ~/.bashrc: executed by bash(1) for non-login shells.
-# see /usr/share/doc/bash/examples/startup-files (in the package bash-doc)
-# for examples
+# See /usr/share/doc/bash/examples/startup-files for examples
 
-###     Determine within a startup script whether Bash is running interactively or not.
-#
-
-if [ ! -z "$PS1" ]; then
-    :
-    # echo " .bashrc loaded, running interactively."
+### Determine if Bash is running interactively
+if [ -n "$PS1" ]; then
+    :  # Interactive shell detected - do nothing here
 else
-    # If not running interactively, don't do anything
-    [ -z "$PS1" ] && return
-    :
-    #echo ".bashrc loaded, not running interactively"
+    # If not running interactively, exit early
+    return
 fi
 
-# Clear away all aliases; we do this here rather than in the $ENV file shared
-# between POSIX shells, because ksh relies on aliases to implement certain
-# POSIX utilities, like fc(1) and type(1)
-#[[ $debug -eq 1 ]] && echo Unaliasing here!; sleep 1
+# Clear all previously defined aliases to avoid conflicts
+# This is done here rather than in $ENV file because ksh uses aliases for POSIX utilities
 unalias -a
 
-# If ENV is set, source it to get all the POSIX-compatible interactive stuff;
-# we should be able to do this even if we're running a truly ancient Bash
+# Source the ENV variable's file if set, to load POSIX-compatible interactive features
 [ -n "$ENV" ] && . "$ENV"
 
-###     Clear away command_not_found_handle if a system bashrc file set it up
-#
+# Remove any function 'command_not_found_handle' if defined (some system bashrc defines it)
 unset -f command_not_found_handle
 
+# Set up colors for 'ls' and other coreutils if /usr/bin/dircolors is available
 if [ -x /usr/bin/dircolors ]; then
-    test -r ~/.dircolors && eval "$(dircolors -b ~/.dircolors)" || eval "$(dircolors -b)"
+    if [ -r ~/.dircolors ]; then
+        eval "$(dircolors -b ~/.dircolors)"
+    else
+        eval "$(dircolors -b)"
+    fi
 fi
 
-#   If not running interactively, don't do anything
+# If the shell is not interactive (does not have 'i' in $-), exit here to avoid further loading
 case $- in
-    *i*) ;;
+    *i*) ;;  # Interactive shell continues
     *) return;;
 esac
 
-
-###     Set a fancy prompt (non-color, unless we know we "want" color)
-#
+### Set up a colorful prompt if the terminal supports color
 case "$TERM" in
     xterm-color|*-256color) color_prompt=yes;;
 esac
 
-
-# enable programmable completion features (you don't need to enable
-# this, if it's already enabled in /etc/bash.bashrc and /etc/profile
-# sources /etc/bash.bashrc).
+# Enable programmable completion features if not in POSIX mode
 if ! shopt -oq posix; then
-  if [ -f /usr/share/bash-completion/bash_completion ]; then
-    . /usr/share/bash-completion/bash_completion
-  elif [ -f /etc/bash_completion ]; then
-    . /etc/bash_completion
-  fi
+    if [ -f /usr/share/bash-completion/bash_completion ]; then
+        . /usr/share/bash-completion/bash_completion
+    elif [ -f /etc/bash_completion ]; then
+        . /etc/bash_completion
+    fi
 fi
 
-
-### If id command returns zero, you have root access.
-#
-if [ $(id -u) -eq 0 ];
-    then # you are root, set red colour prompt
-        PS1='\[\e[1;31m\]\u\[\e[m\]\[\e[0;32m\]@\h: \[\e[m\]\[\e[1;34m\]\w\[\e[m\] \[\e[1;32m\]\$\[\e[m\] \[\e[1;37m\]'
-    else # normal
-  # PS1="[\\u@\\h:\\w] $ "
-        # PROMPT='\[\e[1;32m\]\u \[\e[m\]\[\e[0;32m\]@\[\e[m\]\[\e[1;32m\]\h: \w \$\[\e[m\] '
-  PS1='\[\e[1;32m\]\u\[\e[m\]\[\e[0;32m\]@\h: \[\e[m\]\[\e[1;34m\]\w\[\e[m\] \[\e[1;32m\]\$\[\e[m\] \[\e[1;37m\]'
+### Set prompt style based on user id (color red for root)
+if [ "$(id -u)" -eq 0 ]; then
+    # Root user prompt: bold red username, green host, blue working dir, green dollar sign
+    PS1='\[\e[1;31m\]\u\[\e[m\]\[\e[0;32m\]@\h: \[\e[m\]\[\e[1;34m\]\w\[\e[m\] \[\e[1;32m\]\$\[\e[m\] \[\e[1;37m\]'
+else
+    # Normal user prompt: green username, green host, blue working dir, green dollar sign
+    PS1='\[\e[1;32m\]\u\[\e[m\]\[\e[0;32m\]@\h: \[\e[m\]\[\e[1;34m\]\w\[\e[m\] \[\e[1;32m\]\$\[\e[m\] \[\e[1;37m\]'
 fi
 
-###     Color manpages for 'less'
-#
-export LESS_TERMCAP_mb=$'\E[1;31m'     # begin bold
-export LESS_TERMCAP_md=$'\E[1;36m'     # begin blink
-export LESS_TERMCAP_me=$'\E[0m'        # reset bold/blink
-export LESS_TERMCAP_so=$'\E[01;44;33m' # begin reverse video
-export LESS_TERMCAP_se=$'\E[0m'        # reset reverse video
-export LESS_TERMCAP_us=$'\E[1;32m'     # begin underline
-export LESS_TERMCAP_ue=$'\E[0m'        # reset underline
-export GROFF_NO_SGR=1                  # for konsole and gnome-terminal
-export PAGER='less'
+### Color settings for manpages viewed with less
+export LESS_TERMCAP_mb=$'\E[1;31m'    # begin bold
+export LESS_TERMCAP_md=$'\E[1;36m'    # begin blink (light cyan)
+export LESS_TERMCAP_me=$'\E[0m'       # reset bold/blink
+export LESS_TERMCAP_so=$'\E[01;44;33m' # begin reverse video (blue and yellow)
+export LESS_TERMCAP_se=$'\E[0m'       # reset reverse video
+export LESS_TERMCAP_us=$'\E[1;32m'    # begin underline (green)
+export LESS_TERMCAP_ue=$'\E[0m'       # reset underline
+export GROFF_NO_SGR=1                 # disable SGR in groff for terminals like konsole
+export PAGER='less'                   # specify pager program
 
-###     ssh-agent
-#
-#ssh-add &>/dev/null || eval `ssh-agent` &>/dev/null  # start ssh-agent if not present
-#[ $? -eq 0 ] && {                                     # ssh-agent has started
-#ssh-add ~/.ssh/id_rsa &>/dev/null        # Load key 1
-#ssh-add ~/.ssh/id_dsa &>/dev/null        # Load key 2
-#}
+### ssh-agent initialization (commented out by default)
+# Uncomment and adapt if you want ssh-agent auto start and key add on login
+# ssh-add &>/dev/null || eval `ssh-agent` &>/dev/null
+# [ $? -eq 0 ] && {
+#   ssh-add ~/.ssh/id_rsa &>/dev/null
+#   ssh-add ~/.ssh/id_dsa &>/dev/null
+# }
 
-###     Load tmux as soon as we login to shell, logout when exit tmux       
-#           this fucks up tmux, can't save tmux panes layouts
-if [[ $(uname -n) = 'litebook' ]]; then 
-    #echo "tmux loaded"
+### Load tmux session on login for a specific hostname (litebook in this case)
+if [[ $(uname -n) = 'litebook' ]]; then
     if [[ -n "$PS1" ]] && [[ -z "$TMUX" ]] && [[ -n "$SSH_CONNECTION" ]]; then
+        # Attach to existing ssh_tmux session or create it if none exists
         tmux attach-session -t ssh_tmux || tmux new-session -s ssh_tmux
     fi
 fi
-    
 
-###     Load any supplementary scripts
-#       Stolen from (https://bit.ly/2slDBSV)
-#
-if [ -d "$HOME"/dotfiles/.bashrc.d ]; then
-    for config in $HOME/dotfiles/.bashrc.d/*.bash ;
-        do
-            source "$config"
-            #echo "file $config loaded"; sleep 1
-        done
+### Source supplementary scripts (modular config loading)
+if [ -d "$HOME/dotfiles/.bashrc.d" ]; then
+    for config in "$HOME/dotfiles/.bashrc.d"/*.bash; do
+        # Source each bash config file in .bashrc.d directory
+        source "$config"
+    done
     unset -v config
 fi
 
-if [ -d "$HOME"/dotfiles/.profile.d ]; then
-     for config in $HOME/dotfiles/.profile.d/*.sh;
-     do
-         source "$config"
-         #echo "file $config loaded"; sleep 1
-     done
-     unset -v config
- fi
+if [ -d "$HOME/dotfiles/.profile.d" ]; then
+    for config in "$HOME/dotfiles/.profile.d"/*.sh; do
+        # Source each shell config file in .profile.d directory
+        source "$config"
+    done
+    unset -v config
+fi
 
-###     For getting gitstatus in tmux
-#       stolen from https://github.com/drmad/tmux-git
-if [[ $TMUX ]]; then source ~/.tmux-git/tmux-git.sh; fi
+### Load tmux git status if inside tmux (for a nicer git prompt)
+if [[ $TMUX ]]; then
+    source ~/.tmux-git/tmux-git.sh
+fi
 
+# Add snap to PATH to use snap-installed applications easily
 export PATH=$PATH:/snap/bin
 
-### Source Homeshick
-#
+### Source Homeshick if installed for dotfile management
 if [ -d "$HOME/.homeshick" ]; then
     source "$HOME/.homesick/repos/homeshick/homeshick.sh"
 fi
 
+# These functions seem to be defined elsewhere, presumably in sourced scripts
+# They likely detect OS and set command aliases accordingly
 get_os
 setting_standard_commands
 
-# Trouble with tmux permissions fix?
+### Fix tmux socket permission issues on login
 umask 0022
-# Clean up potentially problematic tmux socket directory on login
 if [ -d "/tmp/tmux-$(id -u)" ]; then
-    # Attempt to fix permissions first
+    # Try to fix permissions on tmux socket directory
     chmod 0700 "/tmp/tmux-$(id -u)" 2>/dev/null
-    # If permissions are still not 0700, or if chmod failed, remove it
+    # If permissions still wrong, remove problematic socket directory
     if [ "$(stat -c '%a' "/tmp/tmux-$(id -u)")" != "700" ]; then
         rm -rf "/tmp/tmux-$(id -u)"
     fi
 fi
-# Trouble with tmux permissions fix?
 
-###     Load tmux on start  
-# if [[ -n "$PS1"  ]] && [[ -z "$TMUX"  ]] && [[ -n "$SSH_CONNECTION"  ]]; then
-#       tmux attach-session -t ssh_tmux || tmux new-session -s ssh_tmux
-# fi
-if [[ -z "$TMUX" ]]; then                                                               # New tmux session
-    # Create or attach to a session named 'main'
-    # 'main' is a placeholder, you can use any name
+### Load tmux session if none active
+if [[ -z "$TMUX" ]]; then
+    # Attach or create a session named 'main' on login
     tmux new-session -A -s main
 fi
 
-# # ###     For getting gitstatus in tmux
-# # #       stolen from https://github.com/drmad/tmux-git
-# if [[ $TMUX ]]; then source ~/.tmux-git/tmux-git.sh; fi
-
-####   Set tmux panes
-#
+### Run custom tmux panes initialization script if not in tmux
 if [[ -z "$TMUX" ]]; then
     ~/bin/start_tmux.sh
 fi
 
-eval ``keychain --eval --agents ssh id_rsa
+# Evaluate keychain for managing ssh-agent keys (ensure backticks are correct)
+# Original seemed to use double backticks which may cause syntax errors, changed to single:
+eval $(keychain --eval --agents ssh id_rsa)
 
-echo "Done!"; sleep 1; clear
+# Final messages: done, then sleep and clear screen
+echo "Done!"
+sleep 1
+clear
 
-#https://github.com/dylanaraps/neofetch/wiki/Customizing-Info#adding-custom-info
-#All your base are belong to Debian
-
+# System locale settings for utf8 environment
 export LANG="en_US.UTF-8"
 export LC_ALL="en_US.UTF-8"
-
