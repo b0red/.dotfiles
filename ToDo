@@ -16,10 +16,6 @@ Att göra:
 	  början sstatus = uppdaterar ngt
 	  klar = satus & done?
 
- ☐ Flytta in (i extras, enklare att hantera och hålla uppdaterade! SUBMODULES!):
- ☐ git clone git://github.com/drmad/tmux-git.git ~/.tmux-git
- ☐ git clone git://github.com/arl/tmux-gitbar ~/.tmux-gitbar
-
 Kanske kan omarbetas: 
 Källa: https://www.cyberciti.biz/tips/bash-aliases-mac-centos-linux-unix.html
 ### Get os name via uname ###
