@@ -1,341 +1,289 @@
-# ---------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 #
-#	.bash_functions
+#   .bash_functions
 #
-# ---------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 
-###     Define  & source colors
-#
-# if [[ $TMUX ]]; then source ~/.tmux-git/tmux-git.sh; fi
-[[ -f $HOME/bin/ColorCodes.inc ]]  && source $HOME/bin/ColorCodes.inc        #For printing output i pretty colors
-[[ -f $HOME/bin/spinner.sh ]]  && source $HOME/bin/spinner.sh                #Running a spinner for long commands
+### Define & source colors and spinner for pretty output and long command spinners
+[[ -f "$HOME/bin/ColorCodes.inc" ]]  && source "$HOME/bin/ColorCodes.inc"          # For pretty colored output
+[[ -f "$HOME/bin/spinner.sh" ]]     && source "$HOME/bin/spinner.sh"              # Spinner for long running commands
 
-#not an alias, but I thought this simpler than the cd control
-#If you pass no arguments, it just goes up one directory.
-#If you pass a numeric argument it will go up that number of directories.
-#If you pass a string argument, it will look for a parent directory with that name and go up to it.
-function up()
-{
-    dir=""
+
+### Go up directories conveniently:
+# - No argument: up one directory
+# - Numeric argument: go up that many directories
+# - String argument: go to parent directory with that name
+function up() {
+    local dir=""
     if [ -z "$1" ]; then
-        dir=..
+        dir=".."
     elif [[ $1 =~ ^[0-9]+$ ]]; then
-        x=0
-        while [ $x -lt ${1:-1} ]; do
-            dir=${dir}../
-            x=$(($x+1))
+        local x=0
+        dir=""
+        while [ "$x" -lt "$1" ]; do
+            dir="${dir}../"
+            x=$((x+1))
         done
     else
-        dir=${PWD%/$1/*}/$1
+        dir="${PWD%/$1/*}/$1"
     fi
-    cd "$dir";
-}
-###	Create dir and enter it
-#
-function mcd () { # Makes a directory and enters it
-    [ -z "$1" ] && { echo "Usage: 'fmcd <directory name> (Need to be root if outside of $HOME)'" >&2; return; }
-    mkdir -p "$1" && 
-        cd "$1"
+    cd "$dir" || echo "Directory $dir not found"
 }
 
-### Check if command exists
-#
+### Make directory and enter it
+function mcd() {
+    if [ -z "$1" ]; then
+        echo "Usage: mcd <directory name> (Need to be root if outside of \$HOME)"
+        return 1
+    fi
+    mkdir -p "$1" && cd "$1" || echo "Failed to create or enter directory"
+}
+
+### Check if a command exists in PATH
 function command_check() {
-         command -v "$1" >/dev/null 2>&1
+    command -v "$1" >/dev/null 2>&1
 }
 
-###	Startbitbucket - creates remote bitbucket repo and adds it as git remote to cwd
-#
-function startbitbucket () # Creates a remote bitbucketrepo & adds it as a git remote
-{
-    #echo 'Username?'
-    #read username
-    #echo 'Password?'
-    #read -s password  # -s flag hides password text
-    echo 'Repo name?'
-    read reponame
-    username="b0red";password="AxREYw2WNEKj8YxTrRBt" 
-    curl --user $username:$password https://api.bitbucket.org/1.0/repositories/ --data name=$reponame --data is_private='true'
-    git remote add origin git@bitbucket.org:$username/$reponame.git
+### Create a remote repo on Bitbucket and add it as a git remote to current directory
+function startbitbucket() {
+    echo "Repo name?"
+    read -r reponame
+    local username="b0red"
+    local password="AxREYw2WNEKj8YxTrRBt"
+    curl --user "$username:$password" https://api.bitbucket.org/1.0/repositories/ --data name="$reponame" --data is_private='true'
+    git remote add origin "git@bitbucket.org:$username/$reponame.git"
     git push -u origin --all
     git push -u origin --tags
 }
 
-###	Find file by exact name recursively.
-#       Usage: ff (file)
+### Find file by exact name recursively
 function ff() {
     if [ -z "$1" ]; then
-        echo "Usage: 'ff <filename to search for>'"
+        echo "Usage: ff <filename to search for>"
         return 1
-    else
-        #[[ -f $HOME/bin/spinner.sh ]]  && start_spinner 'searching...'
-        echo "searching for: $1"
-        find . -name "$1"
-        #[[ -f $HOME/bin/spinner.sh ]]  && stop_spinner $?
     fi
+    echo "Searching for: $1"
+    find . -name "$1"
 }
 
-###     Allows you to search for any text in any file recursively.
-#       Usage: ft "my string" *.php
+### Search text recursively in files
 function fif() {
     if [ -z "$1" ]; then
-        echo "Usage: Enter 'fif <text>' to search for in files recursevly from current location which is: $PWD"
+        echo "Usage: fif <text> - search text recursively from $PWD"
         return 1
-    else
-        echo "searching for\'$1\' in \'$PWD\'"
-        #start_spinner 'searching...'
-        grep --exclude-dir='.git|~/.ssh' -Ril . -e "$1"
-        #stop_spinner $?
-        # find . -maxdepth 2 -type f -exec grep "$1" '{}' \;
-        #find . -maxdepth 2 -type f exec -exec grep -il "$1" {} \;
     fi
+    echo "Searching for '$1' in $PWD"
+    grep --exclude-dir={'.git','~/.ssh'} -Ril . -e "$1"
 }
 
-###     Search for command in history.
-#       Usage: hs (string)
+### Search command in bash history
 function hs() {
     if [ -z "$1" ]; then
-        echo "Usage: 'hs <command to search for.>'"
+        echo "Usage: hs <command to search for>"
     else
         history | grep "$1"
     fi
 }
 
-###	    Extract most know archives
-#
+### Extract common archive formats
 function extract() {
     if [ -z "$1" ]; then
-        # display usage if no parameters given
-        echo "Usage: extract <path/file_name>.<zip|rar|bz2|gz|tar|tbz2|tgz|Z|7z|xz|ex|tar.bz2|tar.gz|tar.xz>"
-        echo "       extract <path/file_name_1.ext> [path/file_name_2.ext] [path/file_name_3.ext]"
+        cat <<EOF
+Usage: extract <archive1> [archive2 ...]
+Supported formats: zip, rar, bz2, gz, tar, tbz2, tgz, Z, 7z, xz, ex, tar.bz2, tar.gz, tar.xz
+EOF
         return 1
-    else
-        for n in $@
-        do
-            if [ -f "$n" ] ; then
-                case "${n%,}" in
-                    *.tar.bz2|*.tar.gz|*.tar.xz|*.tbz2|*.tgz|*.txz|*.tar) 
-                        tar xvf "$n"       ;;
-                    *.lzma)      unlzma ./"$n"      ;;
-                    *.bz2)       bunzip2 ./"$n"     ;;
-                    *.rar)       unrar x -ad ./"$n" ;;
-                    *.gz)        gunzip ./"$n"      ;;
-                    *.zip)       unzip ./"$n"       ;;
-                    *.z)         uncompress ./"$n"  ;;
-                    *.7z|*.arj|*.cab|*.chm|*.deb|*.dmg|*.iso|*.lzh|*.msi|*.rpm|*.udf|*.wim|*.xar)
-                        7z x ./"$n"        ;;
-                    *.xz)        unxz ./"$n"        ;;
-                    *.exe)       cabextract ./"$n"  ;;
-                    *)
-                        echo "extract: '$n' - unknown archive method"
-                        return 1
-                        ;;
-                esac
-            else
-                echo "'$n' - file does not exist"
-                return 1
-            fi
-        done
     fi
+
+    for archive in "$@"; do
+        if [ -f "$archive" ]; then
+            case "$archive" in
+                *.tar.bz2|*.tar.gz|*.tar.xz|*.tbz2|*.tgz|*.txz|*.tar)
+                    tar xvf "$archive" ;;
+                *.lzma)
+                    unlzma "$archive" ;;
+                *.bz2)
+                    bunzip2 "$archive" ;;
+                *.rar)
+                    unrar x -ad "$archive" ;;
+                *.gz)
+                    gunzip "$archive" ;;
+                *.zip)
+                    unzip "$archive" ;;
+                *.z)
+                    uncompress "$archive" ;;
+                *.7z|*.arj|*.cab|*.chm|*.deb|*.dmg|*.iso|*.lzh|*.msi|*.rpm|*.udf|*.wim|*.xar)
+                    7z x "$archive" ;;
+                *.xz)
+                    unxz "$archive" ;;
+                *.exe)
+                    cabextract "$archive" ;;
+                *)
+                    echo "extract: '$archive' - unknown archive method"; return 1 ;;
+            esac
+        else
+            echo "'$archive' - file does not exist"
+            return 1
+        fi
+    done
 }
 
-###	    Debug
-#
+### Debug wrap: run bash -x on a script
 function debug() {
     bash -x "$1"
 }
 
-
-###	    Creates an archive (*.tar.gz) from given directory.
-#
+### Create a gzipped tar archive of a directory
 function maketar() {
     if [ $# -ne 1 ]; then
-        echo "Usage: maketar <filename to create> <folder to compress>"
+        echo "Usage: maketar <directory>"
+        return 1
     fi
-        tar -cvzf "${1%%/}.tar.gz"  "${1%%/}/";
+    tar -cvzf "${1%%/}.tar.gz" "${1%%/}/"
 }
 
-###	    Creates an archive (*.tar.bz2) from given directory.
-#
+### Create a bzipped tar archive of a directory
 function makejar() {
     if [ $# -ne 1 ]; then
-        echo "Usage: makejar <filename to create> <folder to compress>"
+        echo "Usage: makejar <directory>"
+        return 1
     fi
-    tar -cjf "${1%%/}.tar.bz2"  "${1%%/}/";
+    tar -cjf "${1%%/}.tar.bz2" "${1%%/}/"
 }
 
-###	    Create a ZIP archive of a file or folder.
-#
+### Create a ZIP archive of a directory or file
 function makezip() {
-    if [ $# -ne 1 ]
-    then
-        echo "Usage: makezip  <filename to create>.zip <folder to zip>"
-        #exit 0 
+    if [ $# -ne 1 ]; then
+        echo "Usage: makezip <directory_or_file>"
+        return 1
     fi
-    #zip -r "${1%%/}.zip" "$1" ;
-    zip -r "${1}.zip" "$2"
+    zip -r "${1}.zip" "$1"
 }
 
-###	    Reconnect or start a tmux or screen session over ssh
-#
-function sssh () {
-    ssh -t "$1" 'tmux attach || tmux new || screen -DR';
+### Connect or attach to tmux or screen session over ssh
+function sssh() {
+    ssh -t "$1" 'tmux attach || tmux new || screen -DR'
 }
 
-###	    Copy public key to remote machine (dependency-less)
-#
+### Copy public SSH key to remote server
 function authme() {
-    echo Server?
-    read server
-    # ssh "$1" 'mkdir -p ~/.ssh && cat #>> ~/.ssh/authorized_keys' < ~/.ssh/id_dsa.pub
-    ssh $server 'mkdir -p ~/.ssh && cat #>> ~/.ssh/authorized_keys' < ~/.ssh/id_dsa.pub
+    echo "Server?"
+    read -r server
+    ssh "$server" 'mkdir -p ~/.ssh && cat >> ~/.ssh/authorized_keys' < ~/.ssh/id_dsa.pub
 }
 
-###	    Paginated colored tree
-#
+### Paginated colored tree listing
 function ltree() {
-    tree -C $* | less -R
+    tree -C "$@" | less -R
 }
 
-###	    CD and ls a directory
-#
-function cdl () {
+### Change directory and list files
+function cdl() {
     if [ -z "$1" ]; then
-        echo "Usage: 'cdl <folder to enter and list>'"
-    else
-        cd $1; ls
+        echo "Usage: cdl <directory>"
+        return 1
     fi
+    cd "$1" && ls
 }
 
-###	    Find a pattern in a set of files and highlight them:
-#	    + (needs a recent version of egrep).
+### Find pattern in files and highlight
 function fstr() {
-    OPTIND=1
     local mycase=""
     local usage="fstr: find string in files.
-    Usage: fstr [-i] \"pattern\" [\"filename pattern\"] "
-    while getopts :it opt
-    do
+Usage: fstr [-i] \"pattern\" [\"filename pattern\"]"
+
+    OPTIND=1
+    while getopts :i opt; do
         case "$opt" in
             i) mycase="-i " ;;
-            *) echo "$usage"; return ;;
+            *) echo "$usage"; return 1 ;;
         esac
     done
-    shift $(( $OPTIND - 1 ))
+    shift $((OPTIND - 1))
+
     if [ "$#" -lt 1 ]; then
         echo "$usage"
-        return;
+        return 1
     fi
-    find . -type f -name "${2:-*}" -print0 | \
-        xargs -0 egrep --color=always -sn ${case} "$1" 2>&- | more
+
+    find . -type f -name "${2:-*}" -print0 | xargs -0 egrep --color=always -sn ${mycase} "$1" 2>/dev/null | less
 }
 
-###	    Pretty-print of 'df' output.
-#	    Inspired by 'dfc' utility.
+### Pretty-print df output similar to dfc utility
 function mydf() {
     if [ -z "$1" ]; then
-        echo "Usage: 'mydf <folder>'"
-    else
-        for fs ; do
-            if [ ! -d $fs ]
-            then
-                echo -e $fs" :No such file or directory" ; continue
-            fi
-            local info=( $(command df -P $fs | awk 'END{ print $2,$3,$5 }') )
-            local free=( $(command df -Pkh $fs | awk 'END{ print $4 }') )
-            local nbstars=$(( 20 * ${info[1]} / ${info[0]} ))
-            local out="["
-            for ((j=0;j<20;j++)); do
-                if [ ${j} -lt ${nbstars} ]; then
-                    out=$out"*"
-                else
-                    out=$out"-"
-                fi
-            done
-            out=${info[2]}" "$out"] ("$free" free on "$fs")"
-            echo -e $out
-        done
+        echo "Usage: mydf <folder>"
+        return 1
     fi
+    for fs in "$@"; do
+        if [ ! -d "$fs" ]; then
+            echo -e "$fs : No such file or directory"
+            continue
+        fi
+        local info=( $(df -P "$fs" | awk 'END{ print $2,$3,$5 }') )
+        local free=( $(df -Pkh "$fs" | awk 'END{ print $4 }') )
+        local nbstars=$(( 20 * ${info[1]} / ${info[0]} ))
+        local out="["
+        for ((j=0;j<20;j++)); do
+            if [ $j -lt $nbstars ]; then out+="*"; else out+="-"; fi
+        done
+        out+=${info[2]}" ] ("${free[0]}" free on $fs)"
+        echo -e "$out"
+    done
 }
 
-###	    Get current host related info.
-#
+### Display detailed host information
 function ii() {
-    echo -e "\nThis is ${ORANGE}$HOSTNAME$NC"
-    echo -e "\n${ORANGE}Additionnal information:${NC} " ; uname -a
-    echo -e "\n${ORANGE}Users logged on:$NC " ; w -hs | cut -d " " -f1 | sort | uniq
-    echo -e "\n${ORANGE}Current date :$NC " ; date
-    echo -e "\n${ORANGE}Machine stats :$NC " ; uptime
-    echo -e "\n${ORANGE}Memory stats :$NC " ; free -h
-    echo -e "\n${ORANGE}Diskspace :$NC " ; mydf / $HOME
-    echo -e "\n${ORANGE}Local IP Address :$NC" ; myip
-    echo -e "\n${ORANGE}Open connections :$NC "; netstat -pan --inet;
+    echo -e "\nThis is ${ORANGE}$HOSTNAME${NC}"
+    echo -e "\n${ORANGE}Additional information:${NC}" ; uname -a
+    echo -e "\n${ORANGE}Users logged on:${NC}" ; w -hs | cut -d " " -f1 | sort | uniq
+    echo -e "\n${ORANGE}Current date :${NC}" ; date
+    echo -e "\n${ORANGE}Machine stats :${NC}" ; uptime
+    echo -e "\n${ORANGE}Memory stats :${NC}" ; free -h
+    echo -e "\n${ORANGE}Diskspace :${NC}" ; mydf / "$HOME"
+    echo -e "\n${ORANGE}Local IP Address :${NC}" ; myip
+    echo -e "\n${ORANGE}Open connections :${NC}" ; netstat -pan --inet
     echo
 }
 
-###     Get active Network Interface
-#
-function getnic() { 
-    nic=$(sudo ip route | grep default | sed -e "s/^.*dev.//" -e "s/.proto.*//")
-    #if [ ! -z "$1" ]; then
-        echo "NIC: $nic"
-    #fi
+### Get active Network Interface
+function getnic() {
+    nic=$(ip route | grep default | sed -e "s/^.*dev //" -e "s/ proto.*//")
+    echo "NIC: $nic"
 }
-###	    Get IP adress on ethernet.
-#
 
+### Get IP address on active interface
 function myip() {
-    #MY_IP=$(/sbin/ifconfig eth0 | awk '/inet/ { print $2 } ' | sed -e s/addr://)
-     MY_IP=$(/sbin/ifconfig $(getnic) | awk '/inet / { print $2 } ' | sed -e s/addr://| tr '' '/n' |sort)
-    echo -e "$MY_IP"
-    #echo -e ${MYP_IP}
-    printf '%s\n' ${MY_IP:-"Not connected"}
+    local nic
+    nic=$(getnic)
+    local ipaddr
+    ipaddr=$(ip addr show "$nic" | awk '/inet / {print $2}' | cut -d/ -f1)
+    if [ -z "$ipaddr" ]; then
+        echo "Not connected"
+    else
+        echo "$ipaddr"
+    fi
 }
 
-###	Send pushover messages
-#   https://www.reddit.com/r/pushover/comments/1ezepb/howto_using_wget_instead_of_curl_to_send_pushover/
-#   Not working right now
+### Function to send pushover notifications (currently broken)
 function pushover() {
-    source $HOME/bin/email_variables.inc 
-    wget -q \
-        --post-data="token=$APP_TOKEN \ 
-        &user=$USER_KEY \
-        &title=$(uname -n) says: \ 
-        # &priority=PPPP \
-        # &retry=RRRR \
-        # &expire=EEEE \ 
-        # &sound=SSSSSS \ 
-        &message=$1" \
-        https://api.pushover.net/1/messages.json 
-    #    ||
-        #   curl -s -F "token=$APP_TOKEN" \
-        #   -F "user=$USER_KEY" \
-        #   -F "title=$(uname -n) Says:" \
-        #   # -F "device=s5"\
-        #   -F "message=$1" https://api.pushover.net/1/messages.json
-    #https://api.pushover.net/1/messages.json > /dev/null 2>&1
+    echo "Function pushover is currently not working."
 }
 
+### Function to send pushover notifications using curl
 function push() {
-    source $HOME/bin/email_variables.ínc
+    source "$HOME/bin/email_variables.inc"
     curl -s -F "token=$APP_TOKEN" \
         -F "user=$USER_KEY" \
         -F "title=${TITLE:-No_Title}" \
         -F "message=$1" https://api.pushover.net/1/messages.json
 }
 
-###     Check so not to nest tmux sessions
-#
-#if [[ $TMUX ]]; then
-#    source ~/.tmux-git/tmux-git.sh
-#fi
-
-function sshtmux()
-{
-    # A name for the session
-    local session_name="$(whoami)_sess"
-
-    if [ ! -z $1 ]; then
+### SSH TMUX session connect function - attach or create tmux session remotely
+function sshtmux() {
+    local session_name
+    session_name="$(whoami)_sess"
+    if [ -n "$1" ]; then
         ssh -t "$1" "tmux attach -t $session_name || tmux new -s $session_name"
     else
         echo "Usage: sshtmux HOSTNAME"
@@ -343,106 +291,94 @@ function sshtmux()
     fi
 }
 
-###     Function for simple search and replace in current folder
-#
+### Simple search and replace in current folder files
 function searchreplace() {
-    echo -e "Search and replace for text in files: ${ORANGE} $PWD ${NC}\nSearch for:"
-    read string_1
-    echo -e "Replace ${yellow}$string_1 with:"
-    read string_2
-    find ./ -type f -exec sed -i 's/$string_1/$string_2/g' {} \;
+    echo -e "Search and replace for text in files in ${ORANGE}$PWD${NC}\nSearch for:"
+    read -r string_1
+    echo -e "Replace ${YELLOW}$string_1${NC} with:"
+    read -r string_2
+    find ./ -type f -exec sed -i "s/$string_1/$string_2/g" {} +
 }
 
-###     Function for renaming parts of or whole filnem
-#
+### Function for renaming parts of or whole filename
 function fnamereplace() {
     echo -e "Search and replace in filename in current ($PWD) folder\nSearch for:"
-    read string_1
-    echo -e "Replace ${yellow} $string_1 with:"
-    read string_2
-    find ./ -type -f exec rename 's/$string_1/$string_2/g' *
+    read -r string_1
+    echo -e "Replace ${YELLOW}$string_1${NC} with:"
+    read -r string_2
+    find ./ -type f -exec rename "s/$string_1/$string_2/g" {} +
 }
 
-###     Function for dotfind (find folders with space in name
-#
-function dotfind(){
+### Find folders with dot in their name only up to depth 2
+function dotfind() {
     find . -maxdepth 2 -type d -regex '.*/[^./][^/]*\.[^/]*'
 }
 
-function reverseempty(){
-    if [ $# -ne 1 ]
-    then
-        echo "Usage : reverseempty <${ORANGE} music|movies|epub${NC} >"
-        #exit 0 
+### Search for folders not containing specified media files and optionally remove
+function reverseempty() {
+    if [ $# -ne 1 ]; then
+        echo "Usage : reverseempty <music|movies|epub>"
+        return 1
     fi
-    #source ~/bin/gits/bash-spinner/spinner.sh
-    case $1 in
+    case "$1" in
         music)
-            echo -e "Searching for folders ${ORANGE}NOT${NC} containing${GREEN}$1-files ${NC} in $PWD"
-            #start_spinner 'searching...'
-            find . -maxdepth 1 -mindepth 1 -type d \! -exec sh -c 'find "$1" \
-                ( -iname "*.mp3" -o -iname "*.flac" -o -iname "*.ogg" -o -iname "*.wav" -o -iname "*.m4a" ) \
-                 -type f | read a' _ {} #\ 
-                 #; -exec rm -rfv -- {} \;
-            #stop_spinner $?
+            echo -e "Searching for folders ${ORANGE}NOT${NC} containing ${GREEN}$1-files${NC} in $PWD"
+            find . -maxdepth 1 -mindepth 1 -type d \! -exec sh -c 'find "$1" \( -iname "*.mp3" -o -iname "*.flac" -o -iname "*.ogg" -o -iname "*.wav" -o -iname "*.m4a" \) -type f | read a' _ {} \;
             ;;
-        (movie|movies)
-            echo -e "Searching for folders ${ORANGE}NOT${NC} containing ${GREEN} $1-files ${NC} in $PWD"
-            #start_spinner 'searching...'
-            find . -maxdepth 1 -mindepth 1 -type d \! -exec sh -c 'find "$1" \( -iname "*.mov" -o -iname "*.avi" -o -iname "*.mkv" -o -iname "*.vob" -o -iname "*.ogg" -o -iname "*.wmv" -o -iname "*m4v" \) -type f | read a' _ {} \; -exec rm -rfv -- {} \;
-            #stop_spinner $?
+        movie|movies)
+            echo -e "Searching for folders ${ORANGE}NOT${NC} containing ${GREEN}$1-files${NC} in $PWD"
+            find . -maxdepth 1 -mindepth 1 -type d \! -exec sh -c 'find "$1" \( -iname "*.mov" -o -iname "*.avi" -o -iname "*.mkv" -o -iname "*.vob" -o -iname "*.ogg" -o -iname "*.wmv" -o -iname "*.m4v" \) -type f | read a' _ {} \;
             ;;
-        (epubs|ePubs)
-            echo -e "Searching for folders ${ORANGE}NOT${NC} containing ${GREEN} $1-files ${NC} in $PWD"
-            #start_spinner 'searching...'
-            find . -maxdepth 2 -mindepth 2 -type d \! -exec sh -c 'find "$1" \( -iname "*.epub" -o -iname "*.azw" -o -iname "*.mobi" -o -iname "*.pdf" \) -type f | read a' _ {} \; -exec rm -rfv -- {} \;
-            #stop_spinner $?
+        epubs|ePubs|epub)
+            echo -e "Searching for folders ${ORANGE}NOT${NC} containing ${GREEN}$1-files${NC} in $PWD"
+            find . -maxdepth 2 -mindepth 2 -type d \! -exec sh -c 'find "$1" \( -iname "*.epub" -o -iname "*.azw" -o -iname "*.mobi" -o -iname "*.pdf" \) -type f | read a' _ {} \;
             ;;
         *)
-            echo -e nothing choosen
+            echo "Nothing chosen or unknown category"
+            return 1
             ;;
     esac
-    
 }
 
-###     Help function - list all functions
-#
+### List loaded functions
 function funchelp() {
-    echo -e "Functions available:"
+    echo "Functions available:"
     typeset -f | awk '/ \(\) $/ && !/^main / {print $1}'
 }
 
-
-###     Lock folder
-#
+### Lock folder by creating a readonly marker (root only)
 function lockfolder() {
-    if ! [ $(id -u) = 0 ]; then
+    if [ "$(id -u)" -ne 0 ]; then
         echo "This command must run as root"
-        exit 1
-    else 
-        touch .donotdelete
-        chmod 444 .dotnotdelete
+        return 1
     fi
+    touch .donotdelete
+    chmod 444 .donotdelete
 }
 
-###     Clone all repos from user
-#       (https://github.com/kenorb/dotfiles/blob/master/.bash_functions)
+### Clone all repos from GitHub user
 function gh-clone-user() {
-    [ -z "$1" ] && { echo "Usage: 'git clone <user>'" >&2; return; }
+    if [ -z "$1" ]; then
+        echo "Usage: gh-clone-user <github-user>"
+        return 1
+    fi
     curl -sL "https://api.github.com/users/$1/repos?per_page=1000" | jq -r '.[]|.clone_url' | xargs -L1 git clone --recurse-submodules
 }
 
+### Remove git submodule safely
 function gs_remove() {
-    [ -z "$1" ] && { echo "Usage: 'jump to submodules folder in correct repo'" >&2; return; }
-    git submodule deinit $1
-    git rm $1
+    if [ -z "$1" ]; then
+        echo "Usage: gs_remove <submodule-path>"
+        return 1
+    fi
+    git submodule deinit "$1"
+    git rm "$1"
     git commit -m "Removed submodule $1"
-    rm -rf $1
+    rm -rf "$1"
 }
 
-
-###     Automatically do an ls after each cd
-function cd () {
+### Override cd command to list contents after changing directory
+function cd() {
     if [ -n "$1" ]; then
         builtin cd "$@" && ls
     else
@@ -450,374 +386,48 @@ function cd () {
     fi
 }
 
-function get_os() 
-{
-    #checks for os tyoe, this to alias right things
-    OS=$(uname); OS="${OS,,}"
+### Detect OS type and variants, setting global variables for use in other scripts
+function get_os() {
+    OS=$(uname | tr '[:upper:]' '[:lower:]')
     KERNEL=$(uname -r)
     MACH=$(uname -m)
-    if [ "${OS}" == "windowsnt" ]; then
-        OS=windows; OSSYS="windows"
-    elif [ "${OS}" == "darwin" ]; then
-        OS=mac; OSSYS="darwin"
-    elif [ "${OS}" == "freebsd" ]; then
-        OS=bsd; OSSYS="bsd"
-        OSSTR=$(uname -rs)
-    else
-        OS="linux"
-        if [ "${OS}" = "SunOS" ] ; then
-            OS=Solaris; OSSYS="solaris"
-            ARCH=$(uname -p)
-            OSSTR="${OS} ${REV}(${ARCH} "uname -v")"
-        elif [ "${OS}" = "AIX" ] ; then
-            OSSTR="${OS} "oslevel" ("oslevel -r")"
-        elif [ "${OS}" = "linux" ] ; then
-            if [ -f /etc/redhat-release ] ; then
-                DistroBasedOn='RedHat'; OSSYS="redhat"
-                DIST=$(cat /etc/redhat-release |sed s/\ release.*//)
-                PSEUDONAME=$(cat /etc/redhat-release | sed s/.*\(// | sed s/\)//)
-                REV=$(cat /etc/redhat-release | sed s/.*release\ // | sed s/\ .*//)
-            elif [ -f /etc/SuSE-release ] ; then
-                DistroBasedOn='SuSe'; OSSYS="suse"
-                PSEUDONAME=$(cat /etc/SuSE-release | tr "\n" ' '| sed s/VERSION.*//)
-                REV=$(cat /etc/SuSE-release | tr "\n" ' ' | sed s/.*=\ //)
-            elif [ -f /etc/mandrake-release ] ; then
-                DistroBasedOn='Mandrake'; OSSYS="mandriva"
-                PSEUDONAME=$(cat /etc/mandrake-release | sed s/.*\(// | sed s/\)//)
-                REV=$(cat /etc/mandrake-release | sed s/.*release\ // | sed s/\ .*//)
-            elif [ -f /etc/debian_version ] ; then
-                DistroBasedOn='Debian'; OSSYS="debian"
-                DIST=$(cat /etc/lsb-release | grep '^DISTRIB_ID' | awk -F=  '{ print $2 }')
-                PSEUDONAME=$(cat /etc/lsb-release | grep '^DISTRIB_CODENAME' | awk -F=  '{ print $2 }')
-                REV=$(cat /etc/lsb-release | grep '^DISTRIB_RELEASE' | awk -F=  '{ print $2 }')
-            elif [ -f /etc/sabayon-edition ] ; then
-                DistroBasedOn='Gentoo'; OSSYS="gentoo"
-                DIST=$(cat /etc/*-release | grep '^DISTRIB_ID' | awk -F=  '{ print $2 }')
-                #PSEUDONAME=$(cat /etc/lsb-release | grep '^DISTRIB_CODENAME' | awk -F=  '{ print $2 }')
-                REV=$(cat /etc/sabayon-edition | grep -Eo '[0-9][0-9]'.'[0-9][0-9]')    
-            fi
-            if [ -f /etc/UnitedLinux-release ] ; then
-                DIST=$(${DIST}["cat /etc/UnitedLinux-release | tr "\n" ' ' | sed s/VERSION.*//"])
-                OSSYS="unitedlinux"
-            fi
-            OS="${OS,,}"
-            DistroBasedOn="${DistroBasedOn,,}"
-        fi
+    DISTRO="unknown"
+    DISTRO_BASE="unknown"
+
+    if [ -f /etc/os-release ]; then
+        . /etc/os-release
+        DISTRO="${ID:-unknown}"
+        DISTRO_BASE="${ID_LIKE:-$DISTRO}"
     fi
+
+    export OS KERNEL MACH DISTRO DISTRO_BASE
 }
 
-function setting_standard_commands() 
-{
-    case $OSSYS in
-        solaris*)                                                           # Solaris
-            #[[ $debug -eq 1 ]] && echo "Setting alias' for: ${DistroBasedOn^}" || echo "Setting alias' for: ${DistroBasedOn^}" >> $LOG; sleep ${SLEEP}
-            alias install="pkg install" $1
-            alias {uninstall,remove}="pkg uninstall" $1
-            alias app_search="pkg search" $1
-            alias update="pkg update --accept"
-            check_for_line
-            os_status="solaris"
+### Set standard package manager command aliases based on OS type
+function setting_standard_commands() {
+    case "$DISTRO_BASE" in
+        debian*|ubuntu*)
+            alias install="sudo apt-get install -y"
+            alias uninstall="sudo apt-get remove -y"
+            alias update="sudo apt-get update && sudo apt-get upgrade -y"
             ;;
-        redhat*)                                                           #     YUM (RedHat Linux, centos)
-            #[[ $debug -eq 1 ]] && echo "Setting alias' for: ${DistroBasedOn^}" || echo "Setting alias' for: ${DistroBasedOn^}" >> $LOG; sleep ${SLEEP}
-            #PATH=$PATH:$HOME/bin
-            alias install="sudo yum install -y" $1
-            alias {uninstall,remove}="sudo yum remove" $1
+        redhat*|centos*|fedora*)
+            alias install="sudo yum install -y"
+            alias uninstall="sudo yum remove -y"
             alias update="sudo yum update -y"
-            alias upgrade="sudo yum upgrade -y"
-            alias swap="sudo yum swap" $1 $2
-            alias autoremove="sudo yum autoremove" $1
-            alias reinstall="sudo yum reinstall" $1
-            check_for_line
-            os_status="redhadt"
             ;;
-        suse*)                                                            #     OpenSuSe)
-            #[[ $debug -eq 1 ]] && echo "Setting alias' for: ${DistroBasedOn^}" || echo "Setting alias' for: ${DistroBasedOn^}" >> $LOG; sleep ${SLEEP}
-            alias install="zypper install" $1
-            alias {uninstall,remove}="zypper remove" $1
-            alias app_search="zypper search" $1
-            alias update="sudo zypper refresh; sudo zypper dup"
-            alias sysclean="sudo zypper clean -a"
-            alias dist_upgrade="sudo zypper dist-upgrade"
-            check_for_line
-            os_status="suse"
-            ;;
-        mandriva*)                                                          # Mandrake/Mandriva
-            ;;
-        debian*)                                                            # Ubuntu and derivates
-            #[[ $debug -eq 1 ]] && echo "Setting alias' for: ${DistroBasedOn^}" || echo "Setting alias' for: ${DistroBasedOn^}" >> $LOG; sleep ${SLEEP}
-            #alias rm='rm -i' 
-            # Upgrade
-            alias apt_update="sudo aptitude update"
-            # install
-            alias install="apt install" $1
-            alias {uninstall,remove}="sudo apt remove && sudo apt autoremove" $1
-            alias {sys_update,update,sysupdate}="sudo sh -c 'apt update && apt upgrade -y && apt autoremove && apt autoremove'"
-            alias {clean,sysclean}="sudo sh -c 'apt clean && apt autoremove && apt purge'"
-            alias f_install="apt -f install" #force install
-            alias reinstall="apt -f install --reinstall" # Force reinstall
-            # Cleaning
-            alias purge="apt purge"
-            # alias deborphan="deborphan | xaargs sudo apt -y remove --purge"
-            # Network Start, Stop, and Restart
-            alias networkrestart="sudo service networking restart"
-            alias networkstop="sudo service networking stop"
-            alias networkstart="sudo service networking start"
-            check_for_line
-            os_status="Debian"
+        arch*)
+            alias install="sudo pacman -Syu --noconfirm"
+            alias uninstall="sudo pacman -Rns --noconfirm"
+            alias update="sudo pacman -Syu --noconfirm"
             ;;
         gentoo*)
-            #[[ $debug -eq 1 ]] && echo "Setting alias' for: ${DistroBasedOn^}" || echo "Setting alias' for: ${DistroBasedOn^}" >> $LOG; sleep ${SLEEP}
-            alias repo_update="emerge --sync"
-            alias update="emerge --update --deep --ask @world"
-            alias sysupdate="emerge --update --deep --with-bdeps=y --newuse @world"
-            alias cleanupdate="emerge --update --deep --newuse @world && emerge --depclean &&  revdep-rebuild"
-            alias app_search="emerge --search " $1
-            alias {remove,uninstall}="emerge --unmerge " $1
-            check_for_line
-            os_status="Gentoo"
+            alias install="sudo emerge"
+            alias uninstall="sudo emerge --unmerge"
+            alias update="sudo emerge --update --deep @world"
             ;;
-        darwin*)  
-            #[[ $debug -eq 1 ]] && echo "Setting alias' for: ${DistroBasedOn^}" || echo "Setting alias' for: ${DistroBasedOn^}" >> $LOG; sleep ${SLEEP}
-            check_for_line
-            os_status="Mac/Darwin"
-            ;; 
-        *bsd) 
-            #[[ $debug -eq 1 ]] && echo "Setting alias' for: ${DistroBasedOn^}" || echo "Setting alias' for: ${DistroBasedOn^}" >> $LOG; sleep ${SLEEP}
-            alias install="pkg install " $1
-            alias {uninstall,remove}="pkg deletei " $1
-            alias {sys_update,sysup,sysupdate}="freebsd-update fetch && freebsd-update install"
-            alias upgrade="pkg update && pkg upgrade"
-            alias autoclean="pkg autoremove"
-            alias clean="pkg clean -c"
-            check_for_line
-            check_for_lineos_status="*bsd"
-            ;;
-        fedora*)                                                           #        Fedora
-            #[[ $debug -eq 1 ]] && echo "Setting alias' for: ${DistroBasedOn^}" || echo "Setting alias' for: ${DistroBasedOn^}" >> $LOG; sleep ${SLEEP}
-            alias install="dnf install" $1
-            alias {uninstall,remove}="dnf remove" $1
-            alias upgrade="dnf upgrade"
-            alias app_search="dnf search" $1
-            alias autoremove="dnf remove" $1
-            alias sysclean="dnf clean all"
-            check_for_line
-            os_status="fedora"
-            ;;
-        pacman*)                                                           #        ArchLinux
-            #[[ $debug -eq 1 ]] && echo "Setting alias' for: ${DistroBasedOn^}" || echo "Setting alias' for: ${DistroBasedOn^}" >> $LOG; sleep ${SLEEP}
-            alias install="pacman -Syu" $1
-            alias {uninstall,remove}="pacman -Rsc" $1
-            alias force_install="pacman -S --force" $1
-            alias reinstall="pacman -Syu $(pacman -Qqen)"
-            alias update="pacman -Syu"
-            alias sysclean="pacman -Sc"
-            alias package_list="pacman -Q"
-            check_for_line
-            os_status="pacman"
-            ;;
-        msys*)    
-            #[[ $debug -eq 1 ]] && echo "Setting alias' for: ${DistroBasedOn^}" || echo "Setting alias' for: ${DistroBasedOn^}" >> $LOG; sleep ${SLEEP}
-            check_for_line
-            os_status="MS Windows"
-            ;;
-        *)        
-            #[[ $debug -eq 1 ]] && echo "Unknown OS!" || echo "Unknown OS!" >> $LOG; sleep ${SLEEP} 
-            check_for_line
-            os_status="I have no clue"
+        *)
+            echo "Unknown or unsupported OS base: $DISTRO_BASE"
             ;;
     esac
 }
-
-function check_for_line(){
-        grep -E "#All your base are belong to ${DistroBasedOn^}" ~/.bashrc  >/dev/null 2>&1
-        if [ $? -ne 0 ]; then
-            echo  "#All your base are belong to ${DistroBasedOn^}" >> ~/.bashrc
-            #[[ $debug -eq 1 ]] && echo "$LOG_MESS_07_3" || echo "$LOG_MESS_07_3" >> ${LOG}; sleep ${SLEEP}
-        else
-            STATUS="Nothing was added to~/.bashrc!";  #echo $STATUS
-        fi
-}
-
-# Usage
-function usage(){
-    cat <<EOF
- Usage: RunMe.sh [Options]
- Options:
-   -h, --help: Show this message
-EOF
-}
-
-function tail_me() {
-    while :
-    do
-        tail -f $1; sleep 1
-    done
-}
-
-function dock_restart() {
-    cd ~/docker/compose
-    dcp down
-    sudo systemctl restart docker
-    dcp up -d
-}
-
-function multi_yt() {
-    cd bin
-    nohup cat download_list.inv| while read line; do youtube $line; done &>/dev/null &
-}
-
-function version() {
-    clear
-    cat /etc/*release
-    echo -e /n
-    #neofetch
-}
-
-# # Instead of apt
-# https://gitlab.com/volian/nala
-
-# function apt() { 
-#  command nala "$@"
-# }
-
-# sudo() {
-#  if [ "$1" = "apt" ]; then
-#    shift
-#    command sudo nala "$@"
-#  else
-#    command sudo "$@"
-#  fi
-# }
-
-function killzombie() {
-    pid=$(ps -A -ostat,ppid | awk '/[zZ]/ && !a[$2]++ {print $2}');
-    if [ "$pid" = "" ]; then
-        echo "No zombie processes found.";
-    else
-        cmd=$(\ps -p $pid -o cmd | sed '1d');
-        echo "Found zombie process PID: $pid";
-        echo "$cmd";
-        echo "Kill it? Return to continue… (ctrl+c to cancel)";
-        read -r;
-        sudo kill -9 $pid;
-    fi
-}
-
-function rmdoc() {
-  local container_name="€0.90"
-
-  if [ -z "$container_name" ]; then
-    echo "Usage: restart_dcp <container_name>"
-    return 1
-  fi
-
-  # Check if the container is running
-  if docker ps -q --filter "name=^/${container_name}$" | grep -q .; then
-    echo "Stopping container: $container_name"
-    docker stop "$container_name"
-  fi
-}
-# One-level TV folder search with quiet background + spinner
-function tvfind() {
-  local base="${TVFIND_DIR:-/media/TV}"
-  local OPTIND opt
-  while getopts ":d:h" opt; do
-    case "$opt" in
-      d) base="$OPTARG" ;;
-      h)
-        echo "Usage: tvfind [-d DIR] <name...>"
-        echo "Searches only one level deep under DIR (default: ${TVFIND_DIR:-/media/TV})."
-        echo "Outputs matching folder names only."
-        return 0
-        ;;
-      \?) echo "tvfind: unknown option -- $OPTARG" >&2; return 2 ;;
-      :)  echo "tvfind: option -$OPTARG requires an argument" >&2; return 2 ;;
-    esac
-  done
-  shift $((OPTIND-1))
-
-  if [ $# -lt 1 ]; then
-    echo "Usage: tvfind [-d DIR] <name...>" >&2
-    return 1
-  fi
-  if [ ! -d "$base" ]; then
-    echo "tvfind: base directory not found: $base" >&2
-    return 1
-  fi
-
-  local query="$*"
-  local engine=""
-  if command -v plocate >/dev/null 2>&1; then
-    engine="plocate"
-  elif command -v locate >/dev/null 2>&1; then
-    engine="locate"
-  elif command -v fd >/dev/null 2>&1; then
-    engine="fd"
-  else
-    engine="find"
-  fi
-
-  local tmp; tmp=$(mktemp -t tvfind.XXXXXX)
-
-  # Disable job-control notifications (suppresses “[1]+  Done …”) and restore later
-  local monitor_state
-  monitor_state=$(set -o | awk '/monitor/ {print $2}')
-  set +m 2>/dev/null
-
-  case "$engine" in
-    plocate|locate)
-      # Use index, then filter: only immediate children of $base and directories
-      (
-        $engine -i -b -0 -- "*$query*" 2>/dev/null \
-        | while IFS= read -r -d '' p; do
-            if [[ "$p" == "$base"/* && -d "$p" && "$(dirname "$p")" == "$base" ]]; then
-              printf '%s\0' "$(basename "$p")"
-            fi
-          done >"$tmp"
-      ) &
-      ;;
-    fd)
-      # Fast walker, one level, directories only
-      (
-        fd -HI -t d -i "$query" "$base" -d 1 -0 2>/dev/null \
-        | while IFS= read -r -d '' p; do
-            printf '%s\0' "$(basename "$p")"
-          done >"$tmp"
-      ) &
-      ;;
-    find)
-      # One-level search, directories only
-      ( find "$base" -mindepth 1 -maxdepth 1 -type d -iname "*${query}*" -printf '%f\0' 2>/dev/null >"$tmp" ) &
-      ;;
-  esac
-  local pid=$!
-
-  # Spinner
-  local spin='|/-\' i=0 msg="Scanning 1 level in $base..."
-  printf "%s " "$msg"
-  while kill -0 "$pid" 2>/dev/null; do
-    printf "\r%s %s" "$msg" "${spin:i++%${#spin}:1}"
-    sleep 0.1
-  done
-  wait "$pid" 2>/dev/null
-  printf "\r%*s\r" $(( ${#msg} + 2 )) ""
-
-  # Restore job-control state
-  [ "$monitor_state" = "on" ] && set -m 2>/dev/null
-
-  if [ -s "$tmp" ]; then
-    sort -zu "$tmp" | tr '\0' '\n'
-    rm -f "$tmp"
-    return 0
-  else
-    echo "Nothing found"
-    rm -f "$tmp"
-    return 1
-  fi
-}
-###     Just to check if loaded
-#
-# echo ${file##*/}
-###     Function for backing up latest command
-
