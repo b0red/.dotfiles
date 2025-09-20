@@ -49,5 +49,6 @@ git submodule foreach git pull origin master
 
 ***
 Info
+* Add submodules: git submodule add https://github.com/sharkdp/bat extras/bat
 * [https://www.reddit.com/r/pushover/comments/1ezepb/howto_using_wget_instead_of_curl_to_send_pushover](https://www.reddit.com/r/pushover/comments/1ezepb/howto_using_wget_instead_of_curl_to_send_pushover)
 ...
