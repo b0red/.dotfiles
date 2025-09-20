@@ -1,4 +1,0 @@
-.bashrc
-.profile
-.bash_profile
-.inputrc
