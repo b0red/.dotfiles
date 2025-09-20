@@ -1,89 +1,59 @@
 # ------------------------------------------------------------------------
-#
-#	.bash_environment settings
-#
-#       Pacman: https://wiki.manjaro.org/index.php?title=Pacman_Tips
-#
-#  -----------------------------------------------------------------------
+#   env.bash
+#   .bash_environment settings
+#   POSIX compatible settings for interactive bash and ksh shells
+# ------------------------------------------------------------------------
 
-# check the window size after each command and, if necessary,
-# update the values of LINES and COLUMNS.
-#
+# Check window size after each command and update LINES and COLUMNS if needed
 shopt -s checkwinsize
 
-###	One command per line n history
-#
+# Save multi-line commands in history as a single entry
 shopt -s cmdhist
 
-# If set, the pattern "**" used in a pathname expansion context will
-# match all files and zero or more directories and subdirectories.
-#shopt -s globstar
-
-###	Append to the history file, don't overwrite it
-#
+# Enable appending history instead of overwriting
 shopt -s histappend
 
-### Ignore stuff in history file
-#
-HISTIGNORE="pwd:clear:cls:cd:ls:kk:man:history"
+# Ignore common trivial commands in history
+export HISTIGNORE="pwd:clear:cls:cd:ls:kk:man:history"
 
-################################################################################
-#
-#		Ubuntu (debian specific?)
-#
-################################################################################
-
-
-###	Set a fancy prompt (non-color, unless we know we "want" color)
-#
+# Set colored prompt support for xterm-color terminals
 case "$TERM" in
-    xterm-color) color_prompt=yes;;
+    xterm-color) color_prompt=yes ;;
+    *) color_prompt= ;;
 esac
 
-###	Make less more friendly for non-text input files, see lesspipe(1)
-#
+# Enable lesspipe for friendly less behavior if available
 [[ -x /usr/bin/lesspipe ]] && eval "$(SHELL=/bin/sh lesspipe)"
 
-####	If not running interactively, don't do anything
-#
+# Return if not an interactive shell
 case $- in
-	*i*) ;;
-    *) return;;
+    *i*) ;;
+    *) return ;;
 esac
 
-# Uncomment for a colored prompt, if the terminal has the capability; turned
-# off by default to not distract the user: the focus in a terminal window
-# should be on the output of commands, not on the prompt
-#
+# Force colored prompt unless terminal lacks support
 force_color_prompt=yes
 
-if [ -n "$force_color_prompt" ]; then
-    if [ -x /usr/bin/tput ] && tput setaf 1 >&/dev/null; then
-        # We have color support; assume it's compliant with Ecma-48
-        # (ISO/IEC-6429). (Lack of such support is extremely rare, and such
-        # a case would tend to support setf rather than setaf.)
-        color_prompt=yes
-    else
-        color_prompt=
-    fi
+if [[ -n "$force_color_prompt" ]] && command -v tput >/dev/null 2>&1 && tput setaf 1 >&/dev/null; then
+    color_prompt=yes
+else
+    color_prompt=
 fi
 
-if [ "$color_prompt" = yes ]; then
+# Set PS1 prompt string with or without colors accordingly
+if [[ "$color_prompt" == yes ]]; then
     PS1='${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ '
 else
     PS1='${debian_chroot:+($debian_chroot)}\u@\h:\w\$ '
 fi
 unset color_prompt force_color_prompt
 
-# If this is an xterm set the title to user@host:dir
+# Set xterm title to user@host:dir if supported
 case "$TERM" in
-	xterm*|rxvt*)
-    PS1="\[\e]0;${debian_chroot:+($debian_chroot)}\u@\h: \w\a\]$PS1"
-    ;;
-*)
-    ;;
+    xterm*|rxvt*)
+        PS1="\[\e]0;${debian_chroot:+($debian_chroot)}\u@\h: \w\a\]$PS1"
+        ;;
 esac
 
-###     Just to check if loaded
-#
+# Debugging aid: uncomment to check if this file is loaded
 # echo ${file##*/}
