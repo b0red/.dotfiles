@@ -1,8 +1,5 @@
-#!/usr/bin/env bash 
-SHELL=/bin/bash
-PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
-export TERM=${TERM:-dumb}
-export DISPLAY=:0.0
+#!/usr/bin/env bash
+
 ###################################################################################################################
 ##
 ##                   W A R N I N G !  - You ar running this at your own risk -  W A R N I N G ! 
@@ -18,7 +15,7 @@ export DISPLAY=:0.0
 ##          The following needs to be installed manually, if you want them,
 ##          bat (optional), prettyping (optional)
 ##
-##          v3.1
+##          v4.5
 ##
 ##          ref:
 ##          https://stackoverflow.com/questions/394230/how-to-detect-the-os-from-a-bash-script
@@ -32,553 +29,255 @@ export DISPLAY=:0.0
 ##          curl https://gitlab.com/volian/volian-archive/-/raw/main/install-nala.sh | bash
 ##
 ###################################################################################################################
-clear
 
-#
-# +-+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--++--+--+--+--+--++--+--+--+--+--+
-#
+set -euo pipefail
 
-###     Debug on/off  - Change for debugging purposes
-#
-debug=1                                             # Debug 1 = echo to screen / 0 = echo to logfile
-trace_debug=1                                       # Tracedebug
-SLEEP=2                                             # Sleeptimer
+DEBUG=1
+TRACE_DEBUG=0
+SLEEP=2
+DIR="$HOME/dotfiles/oldfiles"
+LOG="$DIR/dotfiles_install.log"
+DATE=$(date +"%Y-%m-%d_%H-%M-%S")
+TITLE="Dotfiles Installer Script"
+FILE="$HOSTNAME-$DATE.zip"
+APP_ARRAY=(curl htop ncdu pydf tree tmux vim mc fd-find git bat deborphan)
+DOT_ARRAY=("$HOME/.profile" "$HOME/.bashrc" "$HOME/.bash_profile" "$HOME/.inputrc")
+OLD_FILE_ARRAY=("$HOME/.bashrc" "$HOME/.profile" "$HOME/.bash_profile" "$HOME/.inputrc" "$HOME/.cshrc" "$HOME/.login")
+ACTIONS=() # Will collect steps/actions for summary at end
 
-###     Settings - Change if you need to
-#
-DIR=~/dotfiles/oldfiles                             # Where to store old backuped files
-OLDFILES=oldfiles.txt                               # Filelist - not in use right now
-ARCHIVE="$FILE"                                     # Arhchive name
-LOG=~/dotfiles/oldfiles/dotfiles_install.log        # Installation prograss log
-DATE=$(date +"%Y-%m-%d %H:%M:%S")                   # Date - for zipfile
-TITLE="Dotfiles Installer Script"                   # scriptname
-FILE="$HOSTNAME-$DATE.zip"                          # Filename
+SHORT_HELP="Usage: $(basename "$0") [-?|-h|--help|-r|--revert]
+Try $(basename "$0") -h or --help for more information."
 
-###     Software array
-#
-APPARRAY=(curl htop ncdu pydf tree tmux vim mc fd-find git bat deborphan)           # Apps to be installed - add if you like
-DOTARRAY=(~/.profile ~/.bashrc ~/.bash_profile ~/.inputrc)                          # old dotfiles
-OLDFILEARRAY=(~/.bashrc ~/.profile ~/.bash_profile ~/.inputrc ~/.cshrc ~/.login)
-#SUBMODULES=(https://github.com/denilsonsa/prettyping.git https://github.com/tlatsas/bash-spinner.git) #s submodules for git repos
+show_help() {
+    cat <<EOF
+Dotfiles Installer Script
 
-###     LogMessages
-#
-LOG_MESS_001="Done unaliasing!"
-LOG_MESS_01="Ran function date_it."
-LOG_MESS_01_1="Checking for OS type and found:"
-LOG_MESS_02="Setting appropriate aliases for this system." 
-LOG_MESS_03="Created backup dir: "
-LOG_MESS_04="Ran function 'app_installer'"
-LOG_MESS_05="Symlinked the new dotfiles!"
-LOG_MESS_06="Ran function 'archive_it'"
-LOG_MESS_07="Cloning TMUX and submodules"
-LOG_MESS_07_1="Cloning additional TMUX stuff"
-LOG_MESS_07_1_a="Not adding/updating submodules"
-LOG_MESS_07_1_b="Submodules added/updated!"
-LOG_MESS_07_2="gvimrc doesn't exist"
-LOG_MESS_07_3="Added line for .tmux-git to .bashrc"
-LOG_MESS_08="Cloning VÍM and submodules"
-LOG_MESS_09="Done setting up ~/dotfiles"
-LOG_MESS_091_a="Files compressed ok!"
-LOG_MESS_091_b="Files not compressed!"
-LOG_MESS_092="File or directory empty. Nothing to archive!"
+Usage:
+  $(basename "$0")                Run standard install process
+  $(basename "$0") -?             Show short description
+  $(basename "$0") -h, --help     Show detailed help and exit
+  $(basename "$0") -r, --revert   Revert changes and restore backups
 
-# +-+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--++--+--+--+--+--++--+--+--+--+--+
-###     ^NO Editing below this line ^
+Features:
+  • Backs up existing dotfiles to \$HOME/dotfiles/oldfiles/\$HOSTNAME
+  • Symlinks new dotfiles from your dotfiles repository
+  • Installs a suite of standard terminal utilities
+  • Updates git submodules and optionally clones related repos
 
-###    Tracedebug
-#
-if [ $trace_debug -eq 1 ]; then
+Revert:
+  The -r/--revert flag will:
+  1. Restore any dotfiles previously backed up in \$DIR
+  2. Remove corresponding symlinks from your home directory
+
+For questions, see the REAME.md provided with your dotfiles.
+EOF
+}
+
+log() {
+    echo "$*" | tee -a "$LOG"
+    ACTIONS+=("$*")
+    sleep "$SLEEP"
+}
+logfile_init() {
+    mkdir -p "$DIR"
+    : > "$LOG"
+    log "$TITLE - $DATE"
+}
+
+if [[ "$TRACE_DEBUG" -eq 1 ]]; then
     set -x
-    trap read debug
+    trap read DEBUG
 fi
 
-#[[ $debug -eq 1 ]] && echo "$LOG_MESS_001" || echo "$LOG_MESS_001" >> ${LOG}; sleep ${SLEEP}
-
-## #     Ensure script is not being run with root privileges
-#
-if [ $EUID -eq 0 ]; then
-    echo "Please don't run this script with root privileges!"
+if [[ "$EUID" -eq 0 ]]; then
+    echo "Please don't run this script as root!"
     exit 1
 fi
-#
-# +-+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--++--+--+--+--+--++--+--+--+--+--+
-#:
 
-function install_stuff {
-    cd ~/temp;
-    curl -O https://raw.githubusercontent.com/denilsonsa/prettyping/master/prettyping; 
-    chmod +x prettyping; mv prettyping ~
-
-}
-
-function init() {
-    if [ $# -gt 0 ]; then
-        case "$1" in
-            -h|--help)
-                usage
-                exit 1
-                ;;
-            *)
-                echo -e "ERROR: Unrecognized parameter: '${1}'\nSee usage (--help) for options..." 1>&2
-                exit 1
-                ;;
-        esac
-    fi
-}
-
-function check_for_line(){
-    #grep -qxF "#All your base are belong to ${DistroBasedOn^}" ~/.bashrc
-    grep -E "#All your base are belong to ${DistroBasedOn^}" ~/.bashrc
-    if [ $? -ne 0 ]; then
-        echo "#All your base are belong to ${DistroBasedOn^}" >> ~/.bashrc
-        STATUS="Added to ~/.bashrc!"
+check_or_add_line() {
+    local line="$1" file="$2"
+    if grep -qxF "$line" "$file"; then
+        log "Line already exists in $file: $line"
     else
-        STATUS="Was not added to ~/.bashrc!";  
+        echo "$line" >> "$file"
+        log "Added line to $file: $line"
     fi
 }
 
-function date_it() {
-    ###     Delete old log and create new
-    rm -f ${LOG}; touch ${LOG}
-    [[ $debug -eq 1 ]] && printf "\n$TITLE - $DATE\n" || printf "\n$TITLE - $DATE\n" >> $LOG; sleep ${SLEEP}
-    [[ $debug -eq 1 ]] && echo "$LOG_MESS_01" || echo "$LOG_MESS_01" >> ${LOG}; sleep ${SLEEP}
-}
+get_os_info() {
+    local os kernel mach
+    os="$(uname -s | tr '[:upper:]' '[:lower:]')"
+    kernel="$(uname -r)"
+    mach="$(uname -m)"
+    DISTRO="unknown"
+    DISTRO_BASE="unknown"
 
-###     Function for updating submodules
-#
-function submodules_init() {
-    git submodule init && git submodule update
-}
-
-function submodules_update() {
-    git submodule foreach git pull origin master
-}
-
-function app_installer() {
-    # Installs apps/software
-    for APP in "${APPARRAY[@]}"
-    do
-        #echo $APP
-        if command -v $APP >/dev/null 2>&1 ; then
-            STATUS="$APP already installed!"
-        elif ! [ -x command -v $APP >/dev/null 2>&1 ]; then
-            install $APP
-            STATUS="Installing $APP"
-        else
-            STATUS="$APP failed to install!"
-        fi
-        [[ $debug -eq 1 ]] && echo "$STATUS"  || echo "$STATUS" >> $LOG; sleep ${SLEEP}
-    done 
-}
-
-function copy_old_files() {
-    # copies old dotfiles to backup folder
-    if [ ! -d $DIR ]; then 
-        ###     Create backup dir
-        mkdir $DIR 2> /dev/null
-        [[ $debug -eq 1 ]] && echo "$LOG_MESS_03 $DIR" || echo "$LOG_MESS_03 $DIR" >> ${LOG} ; sleep ${SLEEP}
+    if [[ -f /etc/os-release ]]; then
+        . /etc/os-release
+        DISTRO="${ID:-unknown}"
+        DISTRO_BASE="${ID_LIKE:-$DISTRO}"
     fi
-    for OLDFILE in "${OLDFILEARRAY[@]}"
-    do
-        if [ -f $OLDFILE ]; then
-            cp ~/."$OLDFILE" "$OLDFILE".bak
-            #mv ~/"$OLDFILE" $DIR/ 2>/dev/null
-            [[ $debug -eq 1 ]] && echo "$OLDFILE backed up and moved to $DIR" || echo "$OLDFILE backed up and moved to $DIR" \ 
-            >> ${LOG} ; sleep ${SLEEP}
-        fi
-    done
+
+    export OS="$os" KERNEL="$kernel" MACH="$mach" DISTRO DISTRO_BASE
+    log "Detected OS: $OS, Distro: $DISTRO, Base: $DISTRO_BASE"
 }
 
-function symlink_us(){
-    # Symlink files
-    ln -sf ~/dotfiles/.bashrc ~/.bashrc; ln -sf ~/dotfiles/.profile ~/.profile
-    [[ $debug -eq 1 ]] && echo "$LOG_MESS_05" || echo -e "\n$LOG_MESS_05" >> ${LOG}; sleep ${SLEEP}
-}
-
-function archive_it() {
-    ### Archive the old files if there are any
-    if [ -n "$(find ${DIR} -prune -empty 2>/dev/null)" ]; then
-        FILE_STATUS="$LOG_MESS_092"
-    else
-        zip -r -q -u -m $DIR/"$FILE" $DIR -x "*.zip" && FILE_STATUS="$LOG_MESS_091_a" || FILE_STATUS="$LOG_MESS_091_b"
-    fi
-    [[ $debug -eq 1 ]] && echo "$LOG_MESS_06" || echo "$LOG_MESS_06" >> ${LOG}; sleep ${SLEEP}
-    [[ $debug -eq 1 ]] && echo "$FILE_STATUS" || echo "$FILE_STATUS" >> ${LOG} ; sleep ${SLEEP}
-    [[ $debug -eq 1 ]] && echo "Created $FILE" || echo -e "Created $FILE\n" >> ${LOG} ; sleep ${SLEEP}    
-}
-
-function sym_link_check() {
-    ###     Check for old (sym)links
-    for LINK in "${DOTARRAY[@]}"
-    do
-        ###     Test if files are symlimked or not
-        if [ -L "${LINK}" ] ; then
-            if [ -e "${LINK}" ] ; then
-                ### Found link
-                LINK_STATUS="removing $LINK" 
-                rm -f "$LINK" 
-            else
-                ### Broken link
-                LINK_STATUS="Broken link: $LINK, removing it!"
-                rm -f "$LINK"
-            fi
-        elif [ -e "${LINK}" ] ; then
-            ### Broken link
-            LINK_STATUS="$LINK is not a symlink. Moving it" 
-            mv "$LINK" $DIR
-        else
-            ### Missing link
-            LINK_STATUS="Missing: $LINK. Symlinking it!"
-            ln -sf ~/dotfiles/"$LINK" ~/
-            #[[ $debug -eq 1 ]] && echo "updating submodules" || echo "updating submodules"; sleep ${SLEEP}
-        fi
-        [[ $debug -eq 1 ]] && echo "$LINK_STATUS" || echo "$LINK_STATUS" >> ${LOG} ; sleep ${SLEEP}
-    done
-}
-
-
-function get_repos() {
-    ###     Ask confirmation for github
-    #
-    #read -p "Update all repos (y/n)?" 
-    #if [ "$x" = "yes"  ]; then
-        ###     Clone tmux repo
-        #
-        git clone --recurse-submodules git@bitbucket.org:b0red/tmux.git ~/.tmux; cd ~/.tmux
-        ln -sf ~/.tmux/.tmux.conf ~/.tmux.conf
-        submodules_init; submodules_update
-        [[ $debug -eq 1 ]] && echo "$LOG_MESS_07" || echo "$LOG_MESS_07" >> ${LOG}; sleep ${SLEEP}
-
-        ###     Clone .vim repo
-        #
-        git clone --recurse-submodules git@bitbucket.org:b0red/.vim.git ~/.vim; cd ~/.vim
-        [[ $debug -eq 1 ]] && echo "$LOG_MESS_07_1_a" || submodules_update; echo "$LOG_MESS_07_1_b" >> ${LOG}
-        ln -sf ~/.vim/vimrc ~/vimrc 
-        if [ -f ~/.vim/gvimrc ]; then
-            ln -sf ~/.vim/gvimrc ~/gvimrc
-        fi
-        submodules_init; submodules_update
-        [[ $debug -eq 1 ]] && echo "$LOG_MESS_08" || echo "$LOG_MESS_08" >> ${LOG}; sleep ${SLEEP}
-            
-        ln -sf ~/dotfiles/extras/tmux-git.git ~/.tmux-git
-        #ln -sf ~/dotfiles/extras/tmux-gitbar ~/.tmux-gitbar
-
-    #fi
-}
-
-function add_line(){
-        ###     Check if line exists in file .bashrc, if not copy it
-        grep -qxF "if [[ $TMUX ]]; then source ~/.tmux/extras/tmux-git/tmux-git.sh; fi" ~/.bashrc
-        if [ $? -ne 0 ]; then
-            echo "if [[ $TMUX ]]; then source ~/.tmux/extras/tmux-git/tmux-git.sh" >> ~/.bashrc
-            [[ $debug -eq 1 ]] && echo "$LOG_MESS_07_3" || echo "$LOG_MESS_07_3" >> ${LOG}; sleep ${SLEEP}
-        else
-            STATUS="Line '~/.tmux-git/tmux-git.sh' was not added to ~/.bashrc!";  echo $STATUS
-        fi
-}
-
-function check_for_line(){
-        grep -qxF "#All your base" ~/.bashrc
-        if [ $? -ne 0 ]; then
-            echo "echo "#All your base are belong to ${DistroBasedOn^}" >> ~/.bashrc" >> ~/.bashrc
-            [[ $debug -eq 1 ]] && echo "$LOG_MESS_07_3" || echo "$LOG_MESS_07_3" >> ${LOG}; sleep ${SLEEP}
-        else
-            STATUS="Was not added to~/.bashrc!";  echo $STATUS
-        fi
-}
-
-function get_os() 
-{
-    #checks for os tyoe, this to alias right things
-    OS=$(uname); OS="${OS,,}"
-    KERNEL=$(uname -r)
-    MACH=$(uname -m)
-    if [ "${OS}" == "windowsnt" ]; then
-        OS=windows; OSSYS="windows"
-    elif [ "${OS}" == "darwin" ]; then
-        OS=mac; OSSYS="darwin"
-    elif [ "${OS}" == "freebsd" ]; then
-        OS=bsd; OSSYS="bsd"
-        OSSTR=$(uname -rs)
-    else
-        OS="linux"
-        if [ "${OS}" = "SunOS" ] ; then
-            OS=Solaris; OSSYS="solaris"
-            ARCH=$(uname -p)
-            OSSTR="${OS} ${REV}(${ARCH} "uname -v")"
-        elif [ "${OS}" = "AIX" ] ; then
-            OSSTR="${OS} "oslevel" ("oslevel -r")"
-        elif [ "${OS}" = "linux" ] ; then
-            if [ -f /etc/redhat-release ] ; then
-                DistroBasedOn='RedHat'; OSSYS="redhat"
-                DIST=$(cat /etc/redhat-release |sed s/\ release.*//)
-                PSEUDONAME=$(cat /etc/redhat-release | sed s/.*\(// | sed s/\)//)
-                REV=$(cat /etc/redhat-release | sed s/.*release\ // | sed s/\ .*//)
-            elif [ -f /etc/SuSE-release ] ; then
-                DistroBasedOn='SuSe'; OSSYS="suse"
-                PSEUDONAME=$(cat /etc/SuSE-release | tr "\n" ' '| sed s/VERSION.*//)
-                REV=$(cat /etc/SuSE-release | tr "\n" ' ' | sed s/.*=\ //)
-            elif [ -f /etc/mandrake-release ] ; then
-                DistroBasedOn='Mandrake'; OSSYS="mandriva"
-                PSEUDONAME=$(cat /etc/mandrake-release | sed s/.*\(// | sed s/\)//)
-                REV=$(cat /etc/mandrake-release | sed s/.*release\ // | sed s/\ .*//)
-            elif [ -f /etc/debian_version ] ; then
-                DistroBasedOn='Debian'; OSSYS="debian"
-                DIST=$(cat /etc/lsb-release | grep '^DISTRIB_ID' | awk -F=  '{ print $2 }')
-                PSEUDONAME=$(cat /etc/lsb-release | grep '^DISTRIB_CODENAME' | awk -F=  '{ print $2 }')
-                REV=$(cat /etc/lsb-release | grep '^DISTRIB_RELEASE' | awk -F=  '{ print $2 }')
-            elif [ -f /etc/sabayon-edition ] ; then
-                DistroBasedOn='Gentoo'; OSSYS="gentoo"
-                DIST=$(cat /etc/*-release | grep '^DISTRIB_ID' | awk -F=  '{ print $2 }')
-                #PSEUDONAME=$(cat /etc/lsb-release | grep '^DISTRIB_CODENAME' | awk -F=  '{ print $2 }')
-                REV=$(cat /etc/sabayon-edition | grep -Eo '[0-9][0-9]'.'[0-9][0-9]')    
-            fi
-            if [ -f /etc/UnitedLinux-release ] ; then
-                DIST=$(${DIST}["cat /etc/UnitedLinux-release | tr "\n" ' ' | sed s/VERSION.*//"])
-                OSSYS="unitedlinux"
-            fi
-            OS="${OS,,}"
-            DistroBasedOn="${DistroBasedOn,,}"
-            #readnly make varaible readonly
-            # readonly OS
-            # readonly DIST
-            # readonly DistroBasedOn
-            # readonly PSEUDONAME
-            # readonly REV
-            # readonly KERNEL
-            # readonly MACH
-            # readonly OSSYS
-            ###     export variables
-            # export OS
-            # export DIST
-            # export DistroBasedOn
-            # export PSEUDONAME
-            # export REV
-            # export KERNEL
-            # export MACH
-        fi
-    fi
-}
-
-function setting_standard_commands() 
-{
-    case $OSSYS in
-        solaris*)                                                           # Solaris
-            [[ $debug -eq 1 ]] && echo "Setting alias' for: ${DistroBasedOn^}" || echo "Setting alias' for: ${DistroBasedOn^}" >> $LOG; sleep ${SLEEP}
-            alias install="pkg install" $1
-            alias {uninstall,remove}="pkg uninstall" $1
-            alias app_search="pkg search" $1
-            alias update="pkg update --accept"
-            check_for_line
-            os_status="solaris"
+set_package_aliases() {
+    case "$DISTRO_BASE" in
+        debian*|ubuntu*)
+            alias install='sudo apt-get install -y'
+            alias remove='sudo apt-get remove -y'
+            alias update='sudo apt-get update && sudo apt-get upgrade -y'
             ;;
-        redhat*)                                                           #     YUM (RedHat Linux, centos)
-            [[ $debug -eq 1 ]] && echo "Setting alias' for: ${DistroBasedOn^}" || echo "Setting alias' for: ${DistroBasedOn^}" >> $LOG; sleep ${SLEEP}
-            #PATH=$PATH:$HOME/bin
-            alias install="sudo yum install -y" $1
-            alias {uninstall,remove}="sudo yum remove" $1
-            alias update="sudo yum update -y"
-            alias upgrade="sudo yum upgrade -y"
-            alias swap="sudo yum swap" $1 $2
-            alias autoremove="sudo yum autoremove" $1
-            alias reinstall="sudo yum reinstall" $1
-            check_for_line
-            os_status="redhadt"
+        redhat*|centos*|fedora*)
+            alias install='sudo yum install -y'
+            alias remove='sudo yum remove -y'
+            alias update='sudo yum update -y'
             ;;
-        suse*)                                                            #     OpenSuSe)
-            [[ $debug -eq 1 ]] && echo "Setting alias' for: ${DistroBasedOn^}" || echo "Setting alias' for: ${DistroBasedOn^}" >> $LOG; sleep ${SLEEP}
-            alias install="zypper install" $1
-            alias {uninstall,remove}="zypper remove" $1
-            alias app_search="zypper search" $1
-            alias update="sudo zypper refresh; sudo zypper dup"
-            alias sysclean="sudo zypper clean -a"
-            alias dist_upgrade="sudo zypper dist-upgrade"
-            check_for_line
-            os_status="suse"
-            ;;
-        mandriva*)                                                          # Mandrake/Mandriva
-            ;;
-        debian*)                                                            # Ubuntu and derivates
-            [[ $debug -eq 1 ]] && echo "Setting alias' for: ${DistroBasedOn^}" || echo "Setting alias' for: ${DistroBasedOn^}" >> $LOG; sleep ${SLEEP}
-            #alias rm='rm -i' 
-            # Upgrade
-            alias apt_update="sudo aptitude update"
-            # install
-            alias install="apt install" $1
-            alias {uninstall,remove}="sudo apt remove && sudo apt autoremove" $1
-            alias {sys_update,update,sysupdate}="sudo sh -c 'apt update && apt upgrade -y && apt autoremove && apt autoremove'"
-            alias {clean,sysclean}="sudo sh -c 'apt clean && apt autoremove && apt purge'"
-            alias installf="apt -f install" #force install
-            alias reinstall="apt -f install --reinstall" # Force reinstall
-            # Cleaning
-            alias purge="apt purge"
-            # alias deborphan="deborphan | xaargs sudo apt -y remove --purge"
-            # Network Start, Stop, and Restart
-            alias networkrestart="sudo service networking restart"
-            alias networkstop="sudo service networking stop"
-            alias networkstart="sudo service networking start"
-            check_for_line
-            os_status="Debian"
+        arch*)
+            alias install='sudo pacman -Syu --noconfirm'
+            alias remove='sudo pacman -Rns --noconfirm'
+            alias update='sudo pacman -Syu --noconfirm'
             ;;
         gentoo*)
-            [[ $debug -eq 1 ]] && echo "Setting alias' for: ${DistroBasedOn^}" || echo "Setting alias' for: ${DistroBasedOn^}" >> $LOG; sleep ${SLEEP}
-            alias repo_update="emerge --sync"
-            alias update="emerge --update --deep --ask @world"
-            alias sysupdate="emerge --update --deep --with-bdeps=y --newuse @world"
-            alias cleanupdate="emerge --update --deep --newuse @world && emerge --depclean &&  revdep-rebuild"
-            alias app_search="emerge --search " $1
-            alias {remove,uninstall}="emerge --unmerge " $1
-            check_for_line
-            os_status="Gentoo"
+            alias install='sudo emerge'
+            alias remove='sudo emerge --unmerge'
+            alias update='sudo emerge --update --deep @world'
             ;;
-        darwin*)  
-            [[ $debug -eq 1 ]] && echo "Setting alias' for: ${DistroBasedOn^}" || echo "Setting alias' for: ${DistroBasedOn^}" >> $LOG; sleep ${SLEEP}
-            check_for_line
-            os_status="Mac/Darwin"
-            ;; 
-        *bsd) 
-            [[ $debug -eq 1 ]] && echo "Setting alias' for: ${DistroBasedOn^}" || echo "Setting alias' for: ${DistroBasedOn^}" >> $LOG; sleep ${SLEEP}
-            alias install="pkg install " $1
-            alias {uninstall,remove}="pkg deletei " $1
-            alias {sys_update,sysup,sysupdate}="freebsd-update fetch && freebsd-update install"
-            alias upgrade="pkg update && pkg upgrade"
-            alias autoclean="pkg autoremove"
-            alias clean="pkg clean -c"
-            check_for_line
-            check_for_lineos_status="*bsd"
-            ;;
-        fedora*)                                                           #        Fedora
-            [[ $debug -eq 1 ]] && echo "Setting alias' for: ${DistroBasedOn^}" || echo "Setting alias' for: ${DistroBasedOn^}" >> $LOG; sleep ${SLEEP}
-            alias install="dnf install" $1
-            alias {uninstall,remove}="dnf remove" $1
-            alias upgrade="dnf upgrade"
-            alias app_search="dnf search" $1
-            alias autoremove="dnf remove" $1
-            alias sysclean="dnf clean all"
-            check_for_line
-            os_status="fedora"
-            ;;
-        pacman*)                                                           #        ArchLinux
-            [[ $debug -eq 1 ]] && echo "Setting alias' for: ${DistroBasedOn^}" || echo "Setting alias' for: ${DistroBasedOn^}" >> $LOG; sleep ${SLEEP}
-            alias install="pacman -Syu" $1
-            alias {uninstall,remove}="pacman -Rsc" $1
-            alias force_install="pacman -S --force" $1
-            alias reinstall="pacman -Syu $(pacman -Qqen)"
-            alias update="pacman -Syu"
-            alias sysclean="pacman -Sc"
-            alias package_list="pacman -Q"
-            check_for_line
-            os_status="pacman"
-            ;;
-        msys*)    
-            [[ $debug -eq 1 ]] && echo "Setting alias' for: ${DistroBasedOn^}" || echo "Setting alias' for: ${DistroBasedOn^}" >> $LOG; sleep ${SLEEP}
-            check_for_line
-            os_status="MS Windows"
-            ;;
-        *)        
-            [[ $debug -eq 1 ]] && echo "Unknown OS!" || echo "Unknown OS!" >> $LOG; sleep ${SLEEP} 
-            check_for_line
-            os_status="I have no clue"
+        *)
+            log "No supported package manager aliases for base: $DISTRO_BASE"
             ;;
     esac
 }
 
-function show_summary() {
-    sleep 5
-    printf "\n====== Summary ======\nResult of $TITLE"
-    cat ${LOG}
-    sleep ${SLEEP}
-#[[ ! $debug -eq 1 ]] && exit 0
+install_apps() {
+    for app in "${APP_ARRAY[@]}"; do
+        if ! command -v "$app" &>/dev/null; then
+            log "Installing $app"
+            install "$app" || log "Failed to install $app"
+        else
+            log "$app already installed"
+        fi
+    done
 }
-# --+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--++--+--+--+--+--++--+--+--+--+--+
 
-###     On first run. This is a quick and dirty script, no backups or questions asked!
+backup_dotfiles() {
+    for f in "${OLD_FILE_ARRAY[@]}"; do
+        if [[ -f "$f" ]]; then
+            cp -p "$f" "$DIR/"
+            log "Backed up $f to $DIR/"
+        fi
+    done
+}
 
-###     Create  logfile
-#
-date_it
+cleanup_symlinks() {
+    for file in "${DOT_ARRAY[@]}"; do
+        if [[ -L "$file" && ! -e "$file" ]]; then
+            rm -f "$file"
+            log "Removed broken symlink: $file"
+        elif [[ -e "$file" && ! -L "$file" ]]; then
+            mv "$file" "$DIR/"
+            log "Moved existing file $file to $DIR/"
+        fi
+    done
+}
 
-###     Moving/Copying old files
-#
-copy_old_files
+symlink_dotfiles() {
+    for src in "${DOT_ARRAY[@]}"; do
+        target="$HOME/dotfiles/$(basename "$src")"
+        ln -sf "$target" "$src"
+        log "Symlinked $target -> $src"
+    done
+}
 
-###     Delete old symlinks
-#
-sym_link_check
+archive_backup() {
+    local archived="$DIR/$FILE"
+    if compgen -G "$DIR/*" > /dev/null; then
+        zip -r -q "$archived" "$DIR"/*.*
+        log "Archived old dotfiles into $archived"
+    else
+        log "No files to archive"
+    fi
+}
 
-###     Symlink new files
-#
-symlink_us
+update_submodules() {
+    git submodule update --init --recursive
+    git submodule foreach git pull origin master || :
+    log "Updated all submodules"
+}
 
-###     Check what os this is running on
-#
-get_os
+clone_repos() {
+    cd "$HOME" || return
+    log "Cloning tmux and vim repos..."
+    git clone --recurse-submodules git@bitbucket.org:b0red/tmux.git .tmux || log "tmux repo clone failed"
+    git clone --recurse-submodules git@bitbucket.org:b0red/.vim.git .vim || log ".vim repo clone failed"
+}
 
-###     Check for apps, install if not found
-#
-app_installer
+add_tmux_line() {
+    check_or_add_line "if [[ \$TMUX ]]; then source ~/.tmux/extras/tmux-git/tmux-git.sh; fi" "$HOME/.bashrc"
+}
 
-###     Archive old files 
-#
-archive_it
+# --- Revert functionality ---
+revert_changes() {
+    log "Reverting changes..."
+    # Restore files
+    if [[ -d "$DIR" ]]; then
+        for f in "$DIR"/*; do
+            [ -f "$f" ] && cp -pf "$f" "$HOME/$(basename "$f")" && log "Restored $(basename "$f") from backup"
+        done
+    fi
+    # Remove symlinks
+    for src in "${DOT_ARRAY[@]}"; do
+        if [[ -L "$src" ]]; then
+            rm -f "$src"
+            log "Removed symlink $src during revert"
+        fi
+    done
+    log "Revert step completed."
+    log ""
+    echo "==== Revert Summary ===="
+    printf '%s\n' "${ACTIONS[@]}"
+    echo "Log file: $LOG"
+}
 
-###     Get subrepos
-#
-get_repos
+main() {
+    logfile_init
+    get_os_info
+    set_package_aliases
+    backup_dotfiles
+    cleanup_symlinks
+    symlink_dotfiles
+    install_apps
+    archive_backup
+    update_submodules
+    clone_repos
+    add_tmux_line
+    source "$HOME/.bashrc"
+    log "All steps completed for $TITLE"
+    log ""
+    echo "==== Install Summary ===="
+    printf '%s\n' "${ACTIONS[@]}"
+    echo "Log file: $LOG"
+}
 
-###     Add line about tmux to ~/.bashrc
-#
-add_line
+# --- Argument Parsing ---
+case "${1:-}" in
+    -\?|-\h|--help)
+        [[ "$1" == "-?" ]] && { echo "$SHORT_HELP"; exit 0; }
+        show_help; exit 0
+        ;;
+    -r|--revert)
+        logfile_init
+        revert_changes; exit 0
+        ;;
+    "")
+        main "$@"
+        ;;
+    *)
+        echo "Unknown option: $1"
+        echo "$SHORT_HELP"
+        exit 1
+        ;;
+esac
 
-###     Source .bashrc
-#
-source  ~/.bashrc
-
-###     Setting up aliases for specific os
-#
-setting_standard_commands
-
-###     Run shit here
-#init "$@"
-#sanity
-#install
-
-echo "$LOG_MESS_09"
-
-# --+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--++--+--+--+--+--++--+--+--+--+--+
-
-###     Show summary of what was done
-#
-show_summary
-
-## -+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--++--+--+--+--+--++--+--+--+--+--+
-###     Debuginfo - just printing  values to screen
-#
-if [ $debug -eq 1 ]; then
-    clear
-    printf "\n$TITLE"
-    printf "\nOutput from:${ORANGE} ${0##*/} ${NC} \n"
-    printf "Hostname:          $HOSTNAME\n"
-    printf "BackupDIR:         $DIR"
-    printf "Oldfiles:          $OLDFILES"
-    printf "File:              $FILE"
-    printf "Folderpath:        $DIR/$HOSTNAME\n"
-    printf "Archive status:    $FILE_STATUS"
-    printf "Archive name:      $ARCHIVE"
-    printf "Logfile:           ${LOG}"
-    printf "Date:              $DATE\n"
-    printf "DistroBasedOn:     $DistroBasedOn"
-
-    echo "function: get_os"; get_os
-    echo "function: standard_commands"; setting_standard_commands
-
-    echo -e "\nOS:                   ${OS^} "
-    echo -e "DistroBased on:       ${DistroBasedOn^}"
-
-    echo "Dist:                 ${DIST^}"
-    echo "Rev:                  ${REV^}"
-    echo "PSEUDONAME:           ${PSEUDONAME^}"
-    echo "os_status:            $os_status"
-fi
 exit 0
