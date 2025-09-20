@@ -1,83 +1,115 @@
 # ------------------------------------------------------------------------
 #
-#	.bash_exports
+#   .bash_exports
 #
 # ------------------------------------------------------------------------
 
 ## ~/.bash_exports
-# Define Bash exports.
-# Invoked by .bashrc file.
+# Defines environment variables and exports used by Bash.
+# Typically invoked by .bashrc.
 
-###	Hosts
-#	puts a list of remote hosts in ~/.hosts
-export HOSTFILE=$HOME/.hosts
+### Hosts
+# File listing known remote hosts for convenience
+export HOSTFILE="$HOME/.hosts"
 
-# export LS_OPTIONS=' --color=auto'
-eval "`dircolors`"
+### Enable color support for 'ls' and similar utilities if available
+if command -v dircolors >/dev/null 2>&1; then
+    eval "$(dircolors -b)"
+else
+    export LS_COLORS=""
+fi
 
-# Editor.
-export EDITOR='vim'
+### Default editor for command-line text editing (fallback for GUI aware editors)
+export VISUAL="${VISUAL:-vim}"
+export EDITOR="${EDITOR:-$VISUAL}"
 
-# Path.
-export PATH="$HOME/bin:$HOME/binfiles:/usr/local/sbin:/usr/local/bin:$PATH"
-export PATH=$PATH:/snap/bin
+### Set up PATH with personal bin directories and common system paths
+# Add $HOME/bin if not already in PATH
+case ":$PATH:" in
+    *":$HOME/bin:"*) ;;
+    *) PATH="$HOME/bin:$PATH" ;;
+esac
 
-# Don't put duplicate lines or lines starting with space in the history.
-# See bash(1) for more options.
-#	(IGNORESPACE AND IGNOREDUPE)
-#
-export HISTCONTROL=ignoreboth:erasedups
+# Add $HOME/binfiles if not already in PATH
+case ":$PATH:" in
+    *":$HOME/binfiles:"*) ;;
+    *) PATH="$HOME/binfiles:$PATH" ;;
+esac
 
-###	Ignore certain commands in histor
-#
-HISTIGNORE='ls:bg:fg:history:exit:clear:cls:q:pwd:* --help'
+# Add common system sbin and bin directories if not already present
+common_paths=(/usr/local/sbin /usr/local/bin /snap/bin)
+for p in "${common_paths[@]}"; do
+    case ":$PATH:" in
+        *":$p:"*) ;;
+        *) PATH="$PATH:$p" ;;
+    esac
+done
+export PATH
 
-# For setting history length see HISTSIZE and HISTFILESIZE in bash(1).
+### Bash history behavior and size settings
+export HISTCONTROL="ignoreboth:erasedups"  # Ignore duplicate entries and commands starting with space
+export HISTIGNORE='ls:bg:fg:history:exit:clear:cls:q:pwd:* --help'  # Ignore common trivial commands
 export HISTSIZE=100000
 export HISTFILESIZE=100000
 
-# Keep the times of the commands in history
+# Append history immediately and reload before each prompt,
+# ensures history is shared across multiple shell sessions
+shopt -s histappend
+PROMPT_COMMAND="${PROMPT_COMMAND:+$PROMPT_COMMAND ;} history -a; history -c; history -r"
+
+# Timestamp format for history entries
 export HISTTIMEFORMAT="%d/%m/%y %T "
 
-# Use a more compact format for the 'time' builtin's output.
+### Use compact format for bash 'time' builtin output
 TIMEFORMAT='real:%lR user:%lU sys:%lS'
 
-# Make new shells get the history lines from all previous
-# shells instead of the default "last window closed" history
-export PROMPT_COMMAND="history -a; $PROMPT_COMMAND"
+### Pager and manpage coloring
+export PAGER="most"  # 'most' pager (may need installation)
 
-# ###	Don't clear the screen after quitting a manual page
-# export MANPAGER="less -X"
+# Colorize section titles in manpages (depends on color variable set externally)
+export LESS_TERMCAP_md="${yellow:-}"
 
-### Colorize manpages 
-export pager="most"
+### Default blocksize for utilities like du, df
+export BLOCKSIZE="M"
 
-# Highlight section titles in manual pages.
-export LESS_TERMCAP_md="${yellow}";
+### Enable color output in supported environments
+export CLICOLOR=1
 
-BLOCKSIZE=M
-export BLOCKSIZE
-CLICOLOR=1
-
-### 	Perl 5.
-if [ -d ~/perl5 ]; then
-  export PERL_LOCAL_LIB_ROOT="$PERL_LOCAL_LIB_ROOT:$HOME/perl5"
-  export PERL_MB_OPT="--install_base $HOME/perl5"
-  export PERL_MM_OPT="INSTALL_BASE=$HOME/perl5"
-  export PERL5LIB="$HOME/perl5/lib/perl5:$PERL5LIB"
-  export PATH="$PATH:$HOME/perl5/bin"
+### Perl 5 local library paths setup if perl5 local install exists
+if [ -d "$HOME/perl5" ]; then
+    export PERL_LOCAL_LIB_ROOT="$PERL_LOCAL_LIB_ROOT:$HOME/perl5"
+    export PERL_MB_OPT="--install_base $HOME/perl5"
+    export PERL_MM_OPT="INSTALL_BASE=$HOME/perl5"
+    export PERL5LIB="$HOME/perl5/lib/perl5:$PERL5LIB"
+    export PATH="$PATH:$HOME/perl5/bin"
 fi
 
-###	Prefer US English and use UTF_8 encoding
-export LANG="en_US"
-export LC_ALL="en_US.UTF-8"
+### Locale settings for US English UTF-8 with unset LC_ALL
+export LANG="en_US.UTF-8"
+export LC_CTYPE="en_US.UTF-8"
+unset LC_ALL
 
-###     For tldr
-#       https://github.com/raylee/tldr
-if [ -f "~/bin/tldr" ]; then
+### For tldr pager colors, if tldr installed under ~/bin
+if [ -x "$HOME/bin/tldr" ]; then
     export TLDR_HEADER='magenta bold underline'
     export TLDR_QUOTE='italic'
     export TLDR_DESCRIPTION='green'
     export TLDR_CODE='red'
     export TLDR_PARAM='blue'
 fi
+
+### Environment Cleanup
+# Clear deprecated or problematic options
+export GREP_OPTIONS=""
+
+### Set safer default options for utilities
+export MKDIR_P_OPTS="-p"
+
+### Extra environment variables for better coloring in macOS and others
+export LSCOLORS="GxFxCxDxBxegedabagaced"
+export TMUX_TMPDIR="/tmp/tmux-$UID"
+
+readonly HOSTFILE PATH HISTCONTROL HISTIGNORE HISTSIZE HISTFILESIZE HISTTIMEFORMAT TIMEFORMAT \
+         PAGER LESS_TERMCAP_md BLOCKSIZE CLICOLOR PERL_LOCAL_LIB_ROOT PERL_MB_OPT \
+         PERL_MM_OPT PERL5LIB LANG LC_CTYPE TLDR_HEADER TLDR_QUOTE TLDR_DESCRIPTION \
+         TLDR_CODE TLDR_PARAM GREP_OPTIONS MKDIR_P_OPTS LSCOLORS TMUX_TMPDIR

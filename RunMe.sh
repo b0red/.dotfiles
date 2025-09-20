@@ -1,34 +1,7 @@
 #!/usr/bin/env bash
 
-###################################################################################################################
-##
-##                   W A R N I N G !  - You ar running this at your own risk -  W A R N I N G ! 
-##
-##
-##      Script for installing dotfiles. It will copy and backup old dotfiles to location under 
-##          ~/dotfiles/oldfiles/$HOSTNAME
-##          
-##          Dependencies: Git installed
-##
-##          Requirements (These will be installed automatically):
-##          zip, htop, tree, ncdu, pydf, 
-##          The following needs to be installed manually, if you want them,
-##          bat (optional), prettyping (optional)
-##
-##          v4.5
-##
-##          ref:
-##          https://stackoverflow.com/questions/394230/how-to-detect-the-os-from-a-bash-script
-##          https://stackoverflow.com/questions/3557037/appending-a-line-to-a-file-only-if-it-does-not-already-exist
-##          https://cromwell-intl.com/open-source/package-management.html
-##          https://www.oracle.com/technetwork/articles/servers-storage-admin/o11-083-ips-basics-523756.html
-##          https://git-scm.com/book/en/v2/Git-Tools-Submodules
-##          
-##          software installs:
-##          curl -O https://raw.githubusercontent.com/denilsonsa/prettyping/master/prettyping; chmod +x prettyping; mv prettyping ~/bin
-##          curl https://gitlab.com/volian/volian-archive/-/raw/main/install-nala.sh | bash
-##
-###################################################################################################################
+# Dotfiles Installer Script
+# Backups old dotfiles, creates symlinks, installs apps, manages submodules
 
 set -euo pipefail
 
@@ -36,42 +9,14 @@ DEBUG=1
 TRACE_DEBUG=0
 SLEEP=2
 DIR="$HOME/dotfiles/oldfiles"
-LOG="$DIR/dotfiles_install.log"
+LOG="$DIR/dotfile_install_$(date +%Y-%m-%d).log"
 DATE=$(date +"%Y-%m-%d_%H-%M-%S")
 TITLE="Dotfiles Installer Script"
 FILE="$HOSTNAME-$DATE.zip"
 APP_ARRAY=(curl htop ncdu pydf tree tmux vim mc fd-find git bat deborphan)
 DOT_ARRAY=("$HOME/.profile" "$HOME/.bashrc" "$HOME/.bash_profile" "$HOME/.inputrc")
 OLD_FILE_ARRAY=("$HOME/.bashrc" "$HOME/.profile" "$HOME/.bash_profile" "$HOME/.inputrc" "$HOME/.cshrc" "$HOME/.login")
-ACTIONS=() # Will collect steps/actions for summary at end
-
-SHORT_HELP="Usage: $(basename "$0") [-?|-h|--help|-r|--revert]
-Try $(basename "$0") -h or --help for more information."
-
-show_help() {
-    cat <<EOF
-Dotfiles Installer Script
-
-Usage:
-  $(basename "$0")                Run standard install process
-  $(basename "$0") -?             Show short description
-  $(basename "$0") -h, --help     Show detailed help and exit
-  $(basename "$0") -r, --revert   Revert changes and restore backups
-
-Features:
-  • Backs up existing dotfiles to \$HOME/dotfiles/oldfiles/\$HOSTNAME
-  • Symlinks new dotfiles from your dotfiles repository
-  • Installs a suite of standard terminal utilities
-  • Updates git submodules and optionally clones related repos
-
-Revert:
-  The -r/--revert flag will:
-  1. Restore any dotfiles previously backed up in \$DIR
-  2. Remove corresponding symlinks from your home directory
-
-For questions, see the REAME.md provided with your dotfiles.
-EOF
-}
+ACTIONS=()
 
 log() {
     echo "$*" | tee -a "$LOG"
@@ -217,16 +162,13 @@ add_tmux_line() {
     check_or_add_line "if [[ \$TMUX ]]; then source ~/.tmux/extras/tmux-git/tmux-git.sh; fi" "$HOME/.bashrc"
 }
 
-# --- Revert functionality ---
 revert_changes() {
     log "Reverting changes..."
-    # Restore files
     if [[ -d "$DIR" ]]; then
         for f in "$DIR"/*; do
             [ -f "$f" ] && cp -pf "$f" "$HOME/$(basename "$f")" && log "Restored $(basename "$f") from backup"
         done
     fi
-    # Remove symlinks
     for src in "${DOT_ARRAY[@]}"; do
         if [[ -L "$src" ]]; then
             rm -f "$src"
@@ -260,22 +202,35 @@ main() {
     echo "Log file: $LOG"
 }
 
-# --- Argument Parsing ---
 case "${1:-}" in
     -\?|-\h|--help)
-        [[ "$1" == "-?" ]] && { echo "$SHORT_HELP"; exit 0; }
-        show_help; exit 0
+        [[ "$1" == "-?" ]] && { echo "Usage: RunMe.sh [-?, -h, --help, -r, --revert]"; exit 0; }
+        cat <<EOF
+RunMe.sh - Dotfiles installer script
+
+Options:
+  -?            Show short usage
+  -h, --help    Show this help message
+  -r, --revert  Restore backup dotfiles and remove symlinks
+
+Description:
+This script backs up existing dotfiles, creates symlinks to the new dotfiles,
+installs common packages, and manages git submodules.
+
+EOF
+        exit 0
         ;;
     -r|--revert)
         logfile_init
-        revert_changes; exit 0
+        revert_changes
+        exit 0
         ;;
     "")
         main "$@"
         ;;
     *)
         echo "Unknown option: $1"
-        echo "$SHORT_HELP"
+        echo "Usage: RunMe.sh [-?, -h, --help, -r, --revert]"
         exit 1
         ;;
 esac

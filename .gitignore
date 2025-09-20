@@ -7,8 +7,5 @@ oldfiles/*
 firstrun
 symlinks.sh
 a.txt
-dotfiles.sublime-project
-dotfiles.sublime.*
-dotfiles_install.*	
 .gitsecret/keys/random_seed
 !*.secret
