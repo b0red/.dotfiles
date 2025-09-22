@@ -13,8 +13,12 @@ shopt -s cmdhist
 # Enable appending history instead of overwriting
 shopt -s histappend
 
+# HISTIGNORE is often readonly, so we avoid setting it.
 # Ignore common trivial commands in history
-export HISTIGNORE="pwd:clear:cls:cd:ls:kk:man:history"
+
+# Ignore commands starting with space, and duplicates
+HISTCONTROL='ignoreboth'
+HISTIGNORE="exit:history:l:l[1als]:lla:+(.):ls:bg:fg:h:q:pwd:clear:cls:cd:kk:man"
 
 # Set colored prompt support for xterm-color terminals
 case "$TERM" in

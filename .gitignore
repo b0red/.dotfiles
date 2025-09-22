@@ -1,11 +1,11 @@
 .bashrc.d/local_alias.bash
-oldfiles/*
 #Ignore logs
 **/logs
 *.log
 *.swp
-firstrun
-symlinks.sh
 a.txt
 .gitsecret/keys/random_seed
 !*.secret
+# Ignore folders
+extras/
+oldfiles/

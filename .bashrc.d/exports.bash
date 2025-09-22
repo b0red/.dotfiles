@@ -2,80 +2,80 @@
 #
 #   .bash_exports
 #
+# Environment variable exports with protections against readonly errors.
+# This file defines shell environment variables only.
+#
+# Export only if not already declared or readonly to avoid errors when re-sourcing.
 # ------------------------------------------------------------------------
 
-## ~/.bash_exports
-# Defines environment variables and exports used by Bash.
-# Typically invoked by .bashrc.
+# Helper function to export variables safely
+export_if_unset() {
+    local var_name="$1"
+    local var_value="$2"
+    
+    # Check if variable is already declared and not readonly
+    if ! declare -p "$var_name" &>/dev/null || ! declare -p "$var_name" | grep -q "^declare -r"; then
+        export "$var_name=$var_value"
+    fi
+}
 
-### Hosts
-# File listing known remote hosts for convenience
-export HOSTFILE="$HOME/.hosts"
+# Hosts file used by some scripts for easy hostname lookup
+export_if_unset HOSTFILE "$HOME/.hosts"
 
-### Enable color support for 'ls' and similar utilities if available
+# Enable color support for 'ls' and other commands with dircolors
 if command -v dircolors >/dev/null 2>&1; then
     eval "$(dircolors -b)"
 else
     export LS_COLORS=""
 fi
 
-### Default editor for command-line text editing (fallback for GUI aware editors)
-export VISUAL="${VISUAL:-vim}"
-export EDITOR="${EDITOR:-$VISUAL}"
+# Default editor for command line use
+export_if_unset VISUAL "${VISUAL:-vim}"
+export_if_unset EDITOR "${VISUAL:-vim}"
 
-### Set up PATH with personal bin directories and common system paths
-# Add $HOME/bin if not already in PATH
+# Add user bin directories to PATH if not already present
 case ":$PATH:" in
     *":$HOME/bin:"*) ;;
-    *) PATH="$HOME/bin:$PATH" ;;
+    *) export PATH="$HOME/bin:$PATH" ;;
 esac
-
-# Add $HOME/binfiles if not already in PATH
 case ":$PATH:" in
     *":$HOME/binfiles:"*) ;;
-    *) PATH="$HOME/binfiles:$PATH" ;;
+    *) export PATH="$HOME/binfiles:$PATH" ;;
 esac
 
-# Add common system sbin and bin directories if not already present
+# Add common system paths to PATH if missing
 common_paths=(/usr/local/sbin /usr/local/bin /snap/bin)
 for p in "${common_paths[@]}"; do
     case ":$PATH:" in
         *":$p:"*) ;;
-        *) PATH="$PATH:$p" ;;
+        *) export PATH="$PATH:$p" ;;
     esac
 done
-export PATH
 
-### Bash history behavior and size settings
-export HISTCONTROL="ignoreboth:erasedups"  # Ignore duplicate entries and commands starting with space
-export HISTIGNORE='ls:bg:fg:history:exit:clear:cls:q:pwd:* --help'  # Ignore common trivial commands
-export HISTSIZE=100000
-export HISTFILESIZE=100000
+# Large shell history size
+export_if_unset HISTSIZE 100000
+export_if_unset HISTFILESIZE 100000
 
-# Append history immediately and reload before each prompt,
-# ensures history is shared across multiple shell sessions
+# Immediate history append and reload for shared shell history
 shopt -s histappend
 PROMPT_COMMAND="${PROMPT_COMMAND:+$PROMPT_COMMAND ;} history -a; history -c; history -r"
 
-# Timestamp format for history entries
-export HISTTIMEFORMAT="%d/%m/%y %T "
+# Time format for history entries
+export_if_unset HISTTIMEFORMAT "%d/%m/%y %T "
 
-### Use compact format for bash 'time' builtin output
-TIMEFORMAT='real:%lR user:%lU sys:%lS'
+# Compact timing format for bash builtin time
+export_if_unset TIMEFORMAT 'real:%lR user:%lU sys:%lS'
 
-### Pager and manpage coloring
-export PAGER="most"  # 'most' pager (may need installation)
+# LESS pager coloring (bold)
+export_if_unset LESS_TERMCAP_md $'\E[1;36m'
 
-# Colorize section titles in manpages (depends on color variable set externally)
-export LESS_TERMCAP_md="${yellow:-}"
+# Utilities block size unit (Mega)
+export_if_unset BLOCKSIZE "M"
 
-### Default blocksize for utilities like du, df
-export BLOCKSIZE="M"
+# Enable color output for commands supporting it
+export_if_unset CLICOLOR 1
 
-### Enable color output in supported environments
-export CLICOLOR=1
-
-### Perl 5 local library paths setup if perl5 local install exists
+# Perl local library paths in case of custom perl installs
 if [ -d "$HOME/perl5" ]; then
     export PERL_LOCAL_LIB_ROOT="$PERL_LOCAL_LIB_ROOT:$HOME/perl5"
     export PERL_MB_OPT="--install_base $HOME/perl5"
@@ -84,32 +84,26 @@ if [ -d "$HOME/perl5" ]; then
     export PATH="$PATH:$HOME/perl5/bin"
 fi
 
-### Locale settings for US English UTF-8 with unset LC_ALL
-export LANG="en_US.UTF-8"
-export LC_CTYPE="en_US.UTF-8"
+# Locale settings for consistent UTF-8 environment
+export_if_unset LANG "en_US.UTF-8"
+# LC_CTYPE is often readonly, so we avoid setting it.
+# export_if_unset LC_CTYPE "en_US.UTF-8"
 unset LC_ALL
 
-### For tldr pager colors, if tldr installed under ~/bin
+# TLDR colors for pretty man-like output, if tldr installed
 if [ -x "$HOME/bin/tldr" ]; then
-    export TLDR_HEADER='magenta bold underline'
-    export TLDR_QUOTE='italic'
-    export TLDR_DESCRIPTION='green'
-    export TLDR_CODE='red'
-    export TLDR_PARAM='blue'
+    export_if_unset TLDR_HEADER 'magenta bold underline'
+    export_if_unset TLDR_QUOTE 'italic'
+    export_if_unset TLDR_DESCRIPTION 'green'
+    export_if_unset TLDR_CODE 'red'
+    export_if_unset TLDR_PARAM 'blue'
 fi
 
-### Environment Cleanup
-# Clear deprecated or problematic options
-export GREP_OPTIONS=""
+# Options for mkdir default -p behavior
+export_if_unset MKDIR_P_OPTS "-p"
 
-### Set safer default options for utilities
-export MKDIR_P_OPTS="-p"
+# Colors for macOS and similar systems
+export_if_unset LSCOLORS "GxFxCxDxBxegedabagaced"
 
-### Extra environment variables for better coloring in macOS and others
-export LSCOLORS="GxFxCxDxBxegedabagaced"
-export TMUX_TMPDIR="/tmp/tmux-$UID"
-
-readonly HOSTFILE PATH HISTCONTROL HISTIGNORE HISTSIZE HISTFILESIZE HISTTIMEFORMAT TIMEFORMAT \
-         PAGER LESS_TERMCAP_md BLOCKSIZE CLICOLOR PERL_LOCAL_LIB_ROOT PERL_MB_OPT \
-         PERL_MM_OPT PERL5LIB LANG LC_CTYPE TLDR_HEADER TLDR_QUOTE TLDR_DESCRIPTION \
-         TLDR_CODE TLDR_PARAM GREP_OPTIONS MKDIR_P_OPTS LSCOLORS TMUX_TMPDIR
+# Tmp directory for tmux sockets, unique per user
+export_if_unset TMUX_TMPDIR "/tmp/tmux-$UID"

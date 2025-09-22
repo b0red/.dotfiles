@@ -4,15 +4,15 @@
 #
 # -----------------------------------------------------------------------------
 
-### Define & source colors and spinner scripts if available
+# Source custom color & spinner scripts if available
 [[ -f $HOME/bin/ColorCodes.inc ]]  && source $HOME/bin/ColorCodes.inc
 [[ -f $HOME/bin/spinner.sh ]]      && source $HOME/bin/spinner.sh
 
-### Navigate Directory Upwards
-# If no argument, go up one directory
-# If numeric argument N, go up N directories
-# If string argument, go to parent directory named that string
 function up() {
+    ### Navigate Directory Upwards
+    # If no argument, go up one directory
+    # If numeric argument N, go up N directories
+    # If string argument, go to parent directory named that string
     local dir=""
     if [ -z "$1" ]; then
         dir=".."
@@ -29,22 +29,22 @@ function up() {
     cd "$dir" || echo "Directory $dir does not exist"
 }
 
-### Make Directory and cd into it
 function mcd() {
+    ### Make Directory and cd into it
     if [ -z "$1" ]; then
-        echo "Usage: mcd <directory name> (may need root if outside $HOME)"
+        echo "Usage: mcd <directory name> (may need root if outside \$HOME)"
         return 1
     fi
     mkdir -p "$1" && cd "$1" || echo "Failed to create or enter directory"
 }
 
-### Check if command exists
 function command_check() {
+    ### Check if command or app exists
     command -v "$1" >/dev/null 2>&1
 }
 
-### Remote Bitbucket repo creation and git remote addition
 function startbitbucket() {
+    ### Remote Bitbucket repo creation and git remote addition
     echo "Repo name?"
     read -r reponame
     username="b0red"
@@ -55,8 +55,8 @@ function startbitbucket() {
     git push -u origin --tags
 }
 
-### Find file recursively by exact name
 function ff() {
+    ### Find file recursively by exact name
     if [ -z "$1" ]; then
         echo "Usage: ff <filename>"
         return 1
@@ -65,8 +65,8 @@ function ff() {
     find . -name "$1"
 }
 
-### Find text recursively in files
 function fif() {
+    ### Find text recursively in files
     if [ -z "$1" ]; then
         echo "Usage: fif <text>"
         return 1
@@ -75,8 +75,8 @@ function fif() {
     grep --exclude-dir={'.git','~/.ssh'} -Ril . -e "$1"
 }
 
-### Search shell history for command pattern
 function hs() {
+    ### Search shell history for command pattern
     if [ -z "$1" ]; then
         echo "Usage: hs <pattern>"
     else
@@ -84,8 +84,8 @@ function hs() {
     fi
 }
 
-### Extract archives (zip, tar, gz, bz2, rar, etc.)
 function extract() {
+    ### Extract archives (zip, tar, gz, bz2, rar, etc.)
     if [ -z "$1" ]; then
         cat <<EOF
 Usage: extract <archive1> [archive2 ...]
@@ -127,13 +127,13 @@ EOF
     done
 }
 
-### Debug wrapper to run bash with -x
 function debug() {
+    ### Debug wrapper to run bash with -x
     bash -x "$1"
 }
 
-### Create tar.gz archive of a directory
 function maketar() {
+    ### Create tar.gz archive of a directory
     if [ $# -ne 1 ]; then
         echo "Usage: maketar <directory>"
         return 1
@@ -141,8 +141,8 @@ function maketar() {
     tar -cvzf "${1%%/}.tar.gz" "${1%%/}/"
 }
 
-### Create tar.bz2 archive of a directory
 function makejar() {
+    ### Create tar.bz2 archive of a directory
     if [ $# -ne 1 ]; then
         echo "Usage: makejar <directory>"
         return 1
@@ -150,8 +150,8 @@ function makejar() {
     tar -cjf "${1%%/}.tar.bz2" "${1%%/}/"
 }
 
-### Create ZIP archive of a directory or file
 function makezip() {
+    ### Create ZIP archive of a directory or file
     if [ $# -ne 1 ]; then
         echo "Usage: makezip <directory_or_file>"
         return 1
@@ -159,25 +159,25 @@ function makezip() {
     zip -r "${1}.zip" "$1"
 }
 
-### ssh over tmux or screen session on remote host
 function sssh() {
+    ### ssh over tmux or screen session on remote host
     ssh -t "$1" 'tmux attach || tmux new || screen -DR'
 }
 
-### Copy SSH public key to remote server
 function authme() {
+    ### Copy SSH public key to remote server
     echo "Server?"
     read -r server
     ssh "$server" 'mkdir -p ~/.ssh && cat >> ~/.ssh/authorized_keys' < ~/.ssh/id_dsa.pub
 }
 
-### Paginated colored tree output
 function ltree() {
+    ### Paginated colored tree output
     tree -C "$@" | less -R
 }
 
-### cd and ls combined helper
 function cdl() {
+    ### cd and ls combined helper
     if [ -z "$1" ]; then
         echo "Usage: cdl <directory>"
         return 1
@@ -185,8 +185,8 @@ function cdl() {
     cd "$1" && ls
 }
 
-### Find and highlight a pattern in files
 function fstr() {
+    ### Find and highlight a pattern in files
     local mycase=""
     local usage="fstr: find string in files.
 Usage: fstr [-i] \"pattern\" [\"filename pattern\"]"
@@ -208,8 +208,8 @@ Usage: fstr [-i] \"pattern\" [\"filename pattern\"]"
     find . -type f -name "${2:-*}" -print0 | xargs -0 egrep --color=always -sn ${mycase} "$1" 2>/dev/null | less
 }
 
-### Pretty-print df output (inspired by dfc)
 function mydf() {
+    ### Pretty-print df output (inspired by dfc)
     if [ -z "$1" ]; then
         echo "Usage: mydf <folder>"
         return 1
@@ -231,8 +231,8 @@ function mydf() {
     done
 }
 
-### Display detailed host info
 function ii() {
+    ### Display detailed host info
     echo -e "\nThis is ${ORANGE}$HOSTNAME${NC}"
     echo -e "\n${ORANGE}Additional information:${NC}" ; uname -a
     echo -e "\n${ORANGE}Users logged on:${NC}" ; w -hs | cut -d " " -f1 | sort | uniq
@@ -245,14 +245,14 @@ function ii() {
     echo
 }
 
-### Get active network interface
 function getnic() {
+    ### Get active network interface
     nic=$(ip route | grep default | sed -e "s/^.*dev //" -e "s/ proto.*//")
     echo "NIC: $nic"
 }
 
-### Get IP address of active interface
 function myip() {
+    ### Get IP address of active interface
     local nic
     nic=$(getnic)
     local ipaddr
@@ -264,13 +264,13 @@ function myip() {
     fi
 }
 
-### Pushover function placeholder (non-working)
 function pushover() {
+    ### Pushover function placeholder (non-working)
     echo "Function pushover is currently not working."
 }
 
-### Pushover notification via curl
 function push() {
+    ### Pushover notification via curl
     source "$HOME/bin/email_variables.inc"
     curl -s -F "token=$APP_TOKEN" \
         -F "user=$USER_KEY" \
@@ -278,8 +278,8 @@ function push() {
         -F "message=$1" https://api.pushover.net/1/messages.json
 }
 
-### SSH and tmux remote session connect
 function sshtmux() {
+    ### SSH and tmux remote session connect
     local session_name
     session_name="$(whoami)_sess"
     if [ -n "$1" ]; then
@@ -290,8 +290,8 @@ function sshtmux() {
     fi
 }
 
-### Search and replace text in files in current folder
 function searchreplace() {
+    ### Search and replace text in files in current folder
     echo -e "Search and replace in files in ${ORANGE}$PWD${NC}\nSearch for:"
     read -r string_1
     echo -e "Replace ${YELLOW}$string_1${NC} with:"
@@ -299,8 +299,8 @@ function searchreplace() {
     find ./ -type f -exec sed -i "s/$string_1/$string_2/g" {} +
 }
 
-### Search and replace in filenames in current folder
 function fnamereplace() {
+    ### Search and replace in filenames in current folder
     echo -e "Search and replace in filename in current ($PWD)\nSearch for:"
     read -r string_1
     echo -e "Replace ${YELLOW}$string_1${NC} with:"
@@ -308,13 +308,13 @@ function fnamereplace() {
     find ./ -type f -exec rename "s/$string_1/$string_2/g" {} +
 }
 
-### Find folders with dots in names up to depth 2
 function dotfind() {
+    ### Find folders with dots in names up to depth 2
     find . -maxdepth 2 -type d -regex '.*/[^./][^/]*\.[^/]*'
 }
 
-### Remove folders that do not contain certain media file types
 function reverseempty() {
+    ### Remove folders that do not contain certain media file types
     if [ $# -ne 1 ]; then
         echo "Usage : reverseempty <music|movies|epub>"
         return 1
@@ -339,14 +339,14 @@ function reverseempty() {
     esac
 }
 
-### List all functions available
 function funchelp() {
+    ### List all functions available
     echo "Functions available:"
     typeset -f | awk '/ \(\) $/ && !/^main / {print $1}'
 }
 
-### Lock folder by making a file readonly (runs as root)
 function lockfolder() {
+    ### Lock folder by making a file readonly (runs as root)
     if [ "$(id -u)" -ne 0 ]; then
         echo "This command must run as root"
         return 1
@@ -355,8 +355,8 @@ function lockfolder() {
     chmod 444 .donotdelete
 }
 
-### Clone all public GitHub repos for a user
 function gh-clone-user() {
+    ### Clone all public GitHub repos for a user
     if [ -z "$1" ]; then
         echo "Usage: gh-clone-user <github-username>"
         return 1
@@ -364,8 +364,8 @@ function gh-clone-user() {
     curl -sL "https://api.github.com/users/$1/repos?per_page=1000" | jq -r '.[]|.clone_url' | xargs -L1 git clone --recurse-submodules
 }
 
-### Remove git submodule safely
 function gs_remove() {
+    ### Remove git submodule safely
     if [ -z "$1" ]; then
         echo "Usage: gs_remove <submodule-path>"
         return 1
@@ -376,8 +376,8 @@ function gs_remove() {
     rm -rf "$1"
 }
 
-### Override cd to show ls after entering directory
 function cd() {
+    ### Override cd to show ls after entering directory
     if [ -n "$1" ]; then
         builtin cd "$@" && ls
     else
@@ -385,8 +385,8 @@ function cd() {
     fi
 }
 
-### OS detection function for alias setup (simplified)
 function get_os() {
+    ### OS detection function for alias setup (simplified)
     OS=$(uname | tr '[:upper:]' '[:lower:]')
     KERNEL=$(uname -r)
     MACH=$(uname -m)
@@ -400,8 +400,8 @@ function get_os() {
     export OS KERNEL MACH DISTRO DISTRO_BASE
 }
 
-### Set standard package manager aliases based on distro
 function setting_standard_commands() {
+    ### Set standard package manager aliases based on distro
     case "$DISTRO_BASE" in
         debian*|ubuntu*)
             alias install="sudo apt-get install -y"
@@ -427,4 +427,19 @@ function setting_standard_commands() {
             echo "Unknown OS base: $DISTRO_BASE"
             ;;
     esac
+}
+
+function functions() {
+    ### get all function names or descriptions with -?
+    if [[ "$1" == "-?" || "$1" == "--help" ]]; then
+        echo "Available functions:"
+        declare -F | awk '{print $3}' | while read -r fn; do
+            # Get first comment line after function declaration for description
+            desc=$(declare -f "$fn" | grep -m1 -E '^\s*#' | sed 's/^\s*#\s*//')
+            printf "%-25s - %s\n" "$fn" "${desc:-No description}"
+        done
+    else
+        # Without -? list all function names
+        declare -F | awk '{print $3}'
+    fi
 }
