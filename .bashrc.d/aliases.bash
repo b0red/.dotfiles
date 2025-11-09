@@ -133,8 +133,8 @@ alias du="ncdu"
 alias df="pydf"
 alias psg="ps aux | grep -v grep | grep -i -e VSZ -e"
 
-###     alias chmod commands
-#:
+###     Alias chmod commands
+#
 alias mx='chmod a+x'
 alias 000='chmod -R 000'
 alias 644='chmod -R 644'
@@ -173,10 +173,6 @@ fi
 #
 if command_check mc; then alias mc="sudo mc"; fi
 
-###     Kill all zombieprocesses
-#
-alias zombiekill="ps axo state,ppid | awk '!/PPID/$1~"Z"{print $2}' | xargs -r kill -9"
-
 ###     Replace cat with bat, nicer output
 #
 if command_check batcat; then alias cat="batcat" ; fi
@@ -200,15 +196,15 @@ alias freq='cut -f1 -d" " ~/.bash_history | sort | uniq -c | sort -nr | head -n 
 #		What's gobbling the memory?
 alias psmem='ps -o time,ppid,pid,nice,pcpu,pmem,user,comm -A | sort -n -k 6 | tail -15'
 # 		Allow to find the biggest file or directory in the current directory.
-alias ds='du -ks *|sort -n'
+alias ds='\du -ks *|sort -n'
 # 		List top ten largest files/directories in current directory
-alias big='du -ah . | sort -rh | head -40'
+alias big='\du -ah . | sort -rh | head -40'
 # 		List top ten largest files in current directory
 alias big-files='ls -1Rhs | sed -e "s/^ *//" | grep "^[0-9]" | sort -hr | head -n40'
 
 ###		ip
 #
-alias ip="ip -br -c a"
+alias ip="\ip -br -c a"
 alias myip='wget http://ipinfo.io/ip -qO -'
 
 ###		check the status of any system service:
@@ -222,10 +218,6 @@ alias srestart="sudo systemctl restart"
 ###		List extensions
 #
 alias list_extensions="find . -type f | perl -ne 'print $1 if m/\.([^.\/]+)$/' | sort -u"
-
-###     Quick linux info
-#
-# alias version="cat /etc/*release"   
 
 ###     Make process table searchable
 #
@@ -244,13 +236,13 @@ alias treels="find . -type d |sed 's:[^-][^/]*/:--:g; s:^-: |:'"
 #
 if command_check fd-find; then alias fd="fdfind"; fi
 
-###     exa
-#       https://the.exa.website/      
-if command_check exa; 
+###     eza instead of ls
+#       https://github.com/eza-community/eza/blob/main/INSTALL.md  
+if command_check eza; 
     then 
-        alias ls="exa"  
-        alias ll="exa -lha" 
-        alias la="exa -lhaa"
+        alias ls="eza"  
+        alias ll="eza -lha" 
+        alias la="eza -lhaa"
 fi
 
 ###     update aliases
