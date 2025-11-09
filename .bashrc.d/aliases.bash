@@ -247,7 +247,7 @@ fi
 
 ###     update aliases
 #
-alias dotupdate='cd ~/dotfiles  && git pull && source ~/.bashrc'
+alias dotupdate="cd ~/dotfiles && git pull && source ~/.bashrc"
 alias binupdate="cd ~/bin && git pull origin master"
 
 ###     Crontab safety
