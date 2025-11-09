@@ -10,7 +10,7 @@
 
 function up() {
     ### Navigate Directory Upwards
-    # If no argument, go up one directory
+    # No argument, go up one directory
     # If numeric argument N, go up N directories
     # If string argument, go to parent directory named that string
     local dir=""
@@ -199,7 +199,7 @@ function fstr() {
     ### Find and highlight a pattern in files
     local mycase=""
     local usage="fstr: find string in files.
-Usage: fstr [-i] \"pattern\" [\"filename pattern\"]"
+    Usage: fstr [-i] \"pattern\" [\"filename pattern\"]"
 
     OPTIND=1
     while getopts :i opt; do
@@ -417,18 +417,27 @@ function cd() {
 }
 
 function get_os() {
-    ### OS detection function for alias setup (simplified)
-    OS=$(uname | tr '[:upper:]' '[:lower:]')
+    ### OS detection function for alias setup
+    OS=$(uname -s | tr '[:upper:]' '[:lower:]')
     KERNEL=$(uname -r)
     MACH=$(uname -m)
     DISTRO="unknown"
     DISTRO_BASE="unknown"
+    
     if [ -f /etc/os-release ]; then
-        . /etc/os-release
+        source /etc/os-release
         DISTRO="${ID:-unknown}"
         DISTRO_BASE="${ID_LIKE:-$DISTRO}"
     fi
+    
     export OS KERNEL MACH DISTRO DISTRO_BASE
+    
+    # Display the values
+    echo "OS: $OS"
+    echo "KERNEL: $KERNEL"
+    echo "MACH: $MACH"
+    echo "DISTRO: $DISTRO"
+    echo "DISTRO_BASE: $DISTRO_BASE"
 }
 
 function setting_standard_commands() {
@@ -461,16 +470,28 @@ function setting_standard_commands() {
 }
 
 function functions() {
-    ### get all function names or descriptions with -?
+    ### Get all function names or descriptions with -?
+    
+    local func_file="$HOME/dotfiles/.bashrc.d/functions.bash"
+    
     if [[ "$1" == "-?" || "$1" == "--help" ]]; then
         echo "Available functions:"
-        declare -F | awk '{print $3}' | while read -r fn; do
-            # Get first comment line after function declaration for description
-            desc=$(declare -f "$fn" | grep -m1 -E '^\s*#' | sed 's/^\s*#\s*//')
-            printf "%-25s - %s\n" "$fn" "${desc:-No description}"
-        done
+        if [ -f "$func_file" ]; then
+            # Extract function names and descriptions from source file
+            awk '/^function [a-zA-Z_][a-zA-Z0-9_]*\(\)/ {
+                fname = $2
+                gsub(/\(\).*/, "", fname)
+                getline
+                if ($0 ~ /###/) {
+                    sub(/.*###[[:space:]]*/, "")
+                    printf "  %-30s %s\n", fname, $0
+                }
+            }' "$func_file"
+        else
+            echo "Could not find function source file: $func_file"
+        fi
     else
-        # Without -? list all function names
-        declare -F | awk '{print $3}'
+        # Without -? list function names, excluding system functions
+        declare -F | awk '{print $3}' | sed 's/^[0-9]*://' | grep -v '^_' | column -c 80
     fi
 }
