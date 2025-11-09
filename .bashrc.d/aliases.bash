@@ -263,17 +263,6 @@ alias youtube="/usr/bin/python3 /usr/local/bin/youtube-dl" $1
 alias wg_up="sudo wg-quick up ~/wireguard/conf/SeStockholm.conf"
 alias wg_down="sudo wg-quick down ~/wireguard/conf/SeStockholm.conf"
 
-###     DOCKER ALIASES
-#
-###     Lazydocker
-#
-if command_check lazydocker; then alias lzd="lazydocker"; fi
-alias lzd='docker run --rm -it -v /var/run/docker.sock:/var/run/docker.sock -v ~/docker/lazydocker/config:/.config/jesseduffield/lazydocker lazyteam/lazydocker'
-
-###	Is container running
-alias drun="docker inspect -f '{{.State.Status}}' $1"
-alias did="docker inspect --format='{{.Name}}' $1 | sed 's/^\/\?//'"
-
 ###     Scan open ports
 #
 #alias portscan="for i in {1..65535}; do (echo < /dev/tcp/127.0.0.1/$i) &>/dev/null && printf "\n[+] Open Port at\n: \t%d\n" "$i" || printf "."; done"
