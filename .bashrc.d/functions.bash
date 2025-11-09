@@ -35,7 +35,7 @@ function mcd() {
         echo "Usage: mcd <directory name> (may need root if outside \$HOME)"
         return 1
     fi
-    mkdir -p "$1" && cd "$1" || echo "Failed to create or enter directory"
+    mkdir -p -- "$1" && cd -P -- "$1" || echo "Failed to create or enter directory"
 }
 
 function command_check() {
@@ -185,6 +185,16 @@ function cdl() {
     cd "$1" && ls
 }
 
+function trim() {
+    ### Trim leading and trailing whitespace from input
+    sed 's/^[ \t]*//;s/[ \t]*$//'
+}
+
+function paths() {
+    ### Print the PATH variable, nicely
+    echo $PATH | tr ':' '\n'
+}
+
 function fstr() {
     ### Find and highlight a pattern in files
     local mycase=""
@@ -239,16 +249,37 @@ function ii() {
     echo -e "\n${ORANGE}Current date :${NC}" ; date
     echo -e "\n${ORANGE}Machine stats :${NC}" ; uptime
     echo -e "\n${ORANGE}Memory stats :${NC}" ; free -h
-    echo -e "\n${ORANGE}Diskspace :${NC}" ; mydf / "$HOME"
-    echo -e "\n${ORANGE}Local IP Address :${NC}" ; myip
-    echo -e "\n${ORANGE}Open connections :${NC}" ; netstat -pan --inet
+    echo -e "\n${ORANGE}Diskspace :${NC}" ; df -h / "$HOME" | tail -n +2
+    echo -e "\n${ORANGE}Internal IP Address(es):${NC}"
+    hostname -I 2>/dev/null | tr ' ' '\n' | grep -v '^$' || ip -4 addr show | grep -oP '(?<=inet\s)\d+(\.\d+){3}' | grep -v '127.0.0.1'
+    echo -e "\n${ORANGE}External IP Address :${NC}"
+    curl -4 -s ifconfig.me || curl -4 -s icanhazip.com || echo "Unable to retrieve external IP"
+    echo -e "\n${ORANGE}Open connections :${NC}"
+    ss -tunap 2>/dev/null || netstat -tunap 2>/dev/null || echo "Unable to retrieve connections (requires root/sudo)"
     echo
 }
 
 function getnic() {
     ### Get active network interface
-    nic=$(ip route | grep default | sed -e "s/^.*dev //" -e "s/ proto.*//")
-    echo "NIC: $nic"
+    # Try using /sbin/ip directly (bypass any alias)
+    nic=$(/sbin/ip route show default 2>/dev/null | awk '{print $5; exit}')
+    
+    if [ -z "$nic" ]; then
+        # Try netstat
+        nic=$(netstat -rn 2>/dev/null | awk '/^0.0.0.0/ {print $NF; exit}')
+    fi
+    
+    if [ -z "$nic" ]; then
+        # Try route command
+        nic=$(route -n 2>/dev/null | awk '/^0.0.0.0/ {print $NF; exit}')
+    fi
+    
+    if [ -z "$nic" ]; then
+        # Try finding interface with an IP that's not localhost
+        nic=$(ip addr 2>/dev/null | awk '/state UP/ {print $2}' | sed 's/:$//' | head -1)
+    fi
+    
+    echo "NIC: ${nic:-none}"
 }
 
 function myip() {
