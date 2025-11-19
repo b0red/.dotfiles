@@ -97,6 +97,7 @@ alias tree1="tree -L 1"
 alias tree2="tree -L 2"
 alias tree3="tree -L 3"
 alias tree4="tree -L 4"
+alias tree="broot"
 
 ###	File related
 #
@@ -128,10 +129,12 @@ alias lll="ls -alFGH --color | less -R"
 
 ###     Replace top, du, df
 #
-alias top="htop"
+alias top="btop"    #old: htop
 alias du="ncdu"
 alias df="pydf"
 alias psg="ps aux | grep -v grep | grep -i -e VSZ -e"
+alias ps="procs"
+alias btm="bottom"
 
 ###     Alias chmod commands
 #
