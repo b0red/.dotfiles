@@ -145,6 +145,10 @@ alias 666='chmod -R 666'
 alias 755='chmod -R 755'
 alias 777='chmod -R 777'
 
+###     Version
+#
+alias version="fastfetch"
+
 ###     TMUX
 #
 alias tm="tmux new -s main \; split-window -h \; split-window -v -p 30 \;"
