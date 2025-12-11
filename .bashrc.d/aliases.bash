@@ -248,7 +248,7 @@ if command_check fd-find; then alias fd="fdfind"; fi
 if command_check eza; 
     then 
         alias ls="eza"  
-        alias ll="eza -lha" 
+        alias ll="eza -lha --group-directories-first" 
         alias la="eza -lhaa"
 fi
 
