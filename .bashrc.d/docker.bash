@@ -4,10 +4,10 @@
 # ------------------------------------------------------------------------
 ###     DOCKER ALIASES
 #
-###     Lazydocker
+###     Lazydocker & Lazyjournal
 #
 if command_check lazydocker; then alias lzd="lazydocker"; fi
-# Removed duplicate lzd alias - keep only one or the other
+if command_check lazyjournal; then alias lzj="lazyjournal"; fi
 
 alias dcp="docker compose -f ~/docker/compose/compose.yml"
 alias dci="cd ~/docker/compose && docker compose images"  # Changed ; to &&
@@ -159,3 +159,37 @@ function dport() {
     echo "Ports:          $container_ports"
     return 0
 }
+
+# function lzj() {
+#     if [ -n "$TMUX" ]; then
+#         tmux new-window -n lazyjournal "lazyjournal"
+#         return
+#     fi
+
+#     if tmux ls >/dev/null 2>&1; then
+#         tmux new-session -d -s lazyjournal-temp "lazyjournal"
+#         tmux new-window -t lazyjournal-temp -n lazyjournal "lazyjournal"
+#         tmux attach-session -t lazyjournal-temp
+#         # Window auto-closes when lazyjournal exits [web:22]
+#         return
+#     fi
+
+#     lazyjournal
+# }
+
+# function lzd() {
+#     if [ -n "$TMUX" ]; then
+#         tmux new-window -n lazydocker "lazydocker"
+#         return
+#     fi
+
+#     if tmux ls >/dev/null 2>&1; then
+#         tmux new-session -d -s lazydocker-temp "lazydocker"
+#         tmux new-window -t lazydocker-temp -n lazydocker "lazydocker"
+#         tmux attach-session -t lazydocker-temp
+#         # Window auto-closes when lazyjournal exits [web:22]
+#         return
+#     fi
+
+#     lazydocker
+# }
