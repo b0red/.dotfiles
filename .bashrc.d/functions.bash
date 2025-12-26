@@ -670,7 +670,7 @@ function get_os() {
 #     echo "MACH: $MACH"
 #     echo "DISTRO: $DISTRO"
 #     echo "DISTRO_BASE: $DISTRO_BASE"
-}
+# }
 
 function setting_standard_commands() {
     ### Set package manager aliases based on distribution
