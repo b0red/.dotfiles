@@ -64,13 +64,20 @@ function ff() {
 }
 
 function fif() {
-    # Find text recursively in files in current folder, or defined folder (rg if available, else grep)
+    # Find text recursively in files (rg preferred, grep fallback)
+    # Supports file or directory targets
+    # Ignore rules configurable via env vars
+
     local search=""
     local target="."
     local ignore_case=false
     local show_lines=false
-    local OPTIND opt
     local backend="grep"
+    local OPTIND opt
+
+    # Defaults (can be overridden via env)
+    local ignore_dirs="${FIF_IGNORE_DIRS:-.git,.svn,node_modules}"
+    local ignore_files="${FIF_IGNORE_FILES:-}"
 
     # Detect backend
     if command -v rg >/dev/null 2>&1; then
@@ -82,13 +89,17 @@ function fif() {
         echo "fif — recursively find text in files"
         echo
         echo "Usage:"
-        echo "  fif <text> [path]"
-        echo "  fif [-i] [-n] <text> [path]"
+        echo "  fif <text> [path|file]"
+        echo "  fif [-i] [-n] <text> [path|file]"
         echo
         echo "Options:"
         echo "  -i    case-insensitive search"
         echo "  -n    show matching lines with line numbers"
         echo "  -?    show this help"
+        echo
+        echo "Environment:"
+        echo "  FIF_IGNORE_DIRS   comma-separated dir names"
+        echo "  FIF_IGNORE_FILES  comma-separated file globs"
         echo
         echo "Backend:"
         echo "  Using: $backend"
@@ -114,30 +125,55 @@ function fif() {
     # Expand ~ safely
     target="${target/#\~/$HOME}"
 
-    # Validate input
+    # Validate search
     if [[ -z "$search" ]]; then
         echo "Error: search text is required"
         return 1
     fi
 
-    if [[ ! -d "$target" ]]; then
-        echo "Error: '$target' is not a directory"
+    # Validate target
+    if [[ ! -e "$target" ]]; then
+        echo "Error: '$target' does not exist"
         return 1
     fi
 
     echo "Searching for '$search' in $target (backend: $backend)"
 
+    # Split ignore lists into arrays
+    IFS=',' read -r -a ignore_dir_arr <<< "$ignore_dirs"
+    IFS=',' read -r -a ignore_file_arr <<< "$ignore_files"
+
     if [[ "$backend" == "rg" ]]; then
+        # -------------------
         # ripgrep path
-        local rg_opts=("--color=auto")
+        # -------------------
+        local rg_opts=(
+            "--color=auto"
+            "--hidden"
+        )
 
         $ignore_case && rg_opts+=("-i")
         $show_lines || rg_opts+=("-l")
 
+        # Disable colors if piped
+        [[ -t 1 ]] || rg_opts+=("--color=never")
+
+        # Apply ignore directories
+        for d in "${ignore_dir_arr[@]}"; do
+            [[ -n "$d" ]] && rg_opts+=("--glob" "!**/$d/**")
+        done
+
+        # Apply ignore files
+        for f in "${ignore_file_arr[@]}"; do
+            [[ -n "$f" ]] && rg_opts+=("--glob" "!$f")
+        done
+
         rg "${rg_opts[@]}" -- "$search" "$target"
 
     else
+        # -------------------
         # grep fallback
+        # -------------------
         local grep_opts=("-R" "--color=auto")
 
         $ignore_case && grep_opts+=("-i")
@@ -147,12 +183,18 @@ function fif() {
             grep_opts+=("-l")
         fi
 
-        grep \
-            "${grep_opts[@]}" \
-            --exclude-dir={.git,.svn,node_modules} \
-            -- "$search" "$target"
+        for d in "${ignore_dir_arr[@]}"; do
+            [[ -n "$d" ]] && grep_opts+=("--exclude-dir=$d")
+        done
+
+        for f in "${ignore_file_arr[@]}"; do
+            [[ -n "$f" ]] && grep_opts+=("--exclude=$f")
+        done
+
+        grep "${grep_opts[@]}" -- "$search" "$target"
     fi
 }
+
 
 function hs() {
     ### Search shell history for command pattern

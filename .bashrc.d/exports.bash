@@ -126,5 +126,10 @@ export_if_unset TMUX_TMPDIR "/tmp/tmux-$UID"
 # Create tmux tmp directory if it doesn't exist
 [[ ! -d "$TMUX_TMPDIR" ]] && mkdir -p "$TMUX_TMPDIR" 2>/dev/null
 
+# Ignore list for fif in functions.bash
+# Comma-separated lists
+export FIF_IGNORE_DIRS=".git,.svn,node_modules,dist,build"
+export FIF_IGNORE_FILES="*.min.js,*.lock"
+
 # Cleanup helper functions
 unset -f export_if_unset add_to_path append_to_path
