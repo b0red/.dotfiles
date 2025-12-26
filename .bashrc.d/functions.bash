@@ -64,13 +64,94 @@ function ff() {
 }
 
 function fif() {
-    ### Find text recursively in files
-    if [ -z "$1" ]; then
-        echo "Usage: fif <text>"
+    # Find text recursively in files in current folder, or defined folder (rg if available, else grep)
+    local search=""
+    local target="."
+    local ignore_case=false
+    local show_lines=false
+    local OPTIND opt
+    local backend="grep"
+
+    # Detect backend
+    if command -v rg >/dev/null 2>&1; then
+        backend="rg"
+    fi
+
+    # Help / short description
+    if [[ "$1" == "-?" || $# -eq 0 ]]; then
+        echo "fif — recursively find text in files"
+        echo
+        echo "Usage:"
+        echo "  fif <text> [path]"
+        echo "  fif [-i] [-n] <text> [path]"
+        echo
+        echo "Options:"
+        echo "  -i    case-insensitive search"
+        echo "  -n    show matching lines with line numbers"
+        echo "  -?    show this help"
+        echo
+        echo "Backend:"
+        echo "  Using: $backend"
+        return 0
+    fi
+
+    # Parse options
+    while getopts ":in" opt; do
+        case "$opt" in
+            i) ignore_case=true ;;
+            n) show_lines=true ;;
+            *)
+                echo "Unknown option: -$OPTARG"
+                return 1
+                ;;
+        esac
+    done
+    shift $((OPTIND - 1))
+
+    search="$1"
+    [[ -n "$2" ]] && target="$2"
+
+    # Expand ~ safely
+    target="${target/#\~/$HOME}"
+
+    # Validate input
+    if [[ -z "$search" ]]; then
+        echo "Error: search text is required"
         return 1
     fi
-    echo "Searching for '$1' in $PWD"
-    grep --exclude-dir={'.git','.svn','node_modules'} -Ril "$1" .
+
+    if [[ ! -d "$target" ]]; then
+        echo "Error: '$target' is not a directory"
+        return 1
+    fi
+
+    echo "Searching for '$search' in $target (backend: $backend)"
+
+    if [[ "$backend" == "rg" ]]; then
+        # ripgrep path
+        local rg_opts=("--color=auto")
+
+        $ignore_case && rg_opts+=("-i")
+        $show_lines || rg_opts+=("-l")
+
+        rg "${rg_opts[@]}" -- "$search" "$target"
+
+    else
+        # grep fallback
+        local grep_opts=("-R" "--color=auto")
+
+        $ignore_case && grep_opts+=("-i")
+        if $show_lines; then
+            grep_opts+=("-n")
+        else
+            grep_opts+=("-l")
+        fi
+
+        grep \
+            "${grep_opts[@]}" \
+            --exclude-dir={.git,.svn,node_modules} \
+            -- "$search" "$target"
+    fi
 }
 
 function hs() {
