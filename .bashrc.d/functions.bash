@@ -1,3 +1,6 @@
+# shellcheck shell=bash
+# shellcheck disable=SC1090
+
 # -----------------------------------------------------------------------------
 #   functions.bash
 #   Custom bash functions for productivity and system management
@@ -37,20 +40,6 @@ function mcd() {
 function command_check() {
     ### Check if command or app exists
     command -v "$1" >/dev/null 2>&1
-}
-
-function startbitbucket() {
-    ### Create remote Bitbucket repo and add git remote
-    # WARNING: Contains hardcoded credentials - consider using git credential helper
-    echo "Repo name?"
-    read -r reponame
-    username="b0red"
-    password="AxREYw2WNEKj8YxTrRBt"  # SECURITY RISK: Move to secure credential storage
-    curl --user "$username:$password" https://api.bitbucket.org/1.0/repositories/ \
-        --data name="$reponame" --data is_private='true'
-    git remote add origin "git@bitbucket.org:$username/$reponame.git"
-    git push -u origin --all
-    git push -u origin --tags
 }
 
 function ff() {
@@ -107,10 +96,11 @@ function fif() {
     fi
 
     # Parse options
-    while getopts ":in" opt; do
+    while getopts ":in?" opt; do
         case "$opt" in
             i) ignore_case=true ;;
             n) show_lines=true ;;
+            ?) fif -?; return 0 ;;
             *)
                 echo "Unknown option: -$OPTARG"
                 return 1
@@ -119,7 +109,7 @@ function fif() {
     done
     shift $((OPTIND - 1))
 
-    search="$1"
+    search=$1
     [[ -n "$2" ]] && target="$2"
 
     # Expand ~ safely
@@ -137,11 +127,15 @@ function fif() {
         return 1
     fi
 
-    echo "Searching for '$search' in $target (backend: $backend)"
+    # Normalize file target → directory
+    if [[ -f "$target" ]]; then
+        target=$(dirname "$target")
+    fi
 
     # Split ignore lists into arrays
-    IFS=',' read -r -a ignore_dir_arr <<< "$ignore_dirs"
-    IFS=',' read -r -a ignore_file_arr <<< "$ignore_files"
+    local IFS=',' 
+    read -r -a ignore_dir_arr <<< "$ignore_dirs"
+    read -r -a ignore_file_arr <<< "$ignore_files"
 
     if [[ "$backend" == "rg" ]]; then
         # -------------------
@@ -158,12 +152,10 @@ function fif() {
         # Disable colors if piped
         [[ -t 1 ]] || rg_opts+=("--color=never")
 
-        # Apply ignore directories
         for d in "${ignore_dir_arr[@]}"; do
             [[ -n "$d" ]] && rg_opts+=("--glob" "!**/$d/**")
         done
 
-        # Apply ignore files
         for f in "${ignore_file_arr[@]}"; do
             [[ -n "$f" ]] && rg_opts+=("--glob" "!$f")
         done
@@ -195,15 +187,15 @@ function fif() {
     fi
 }
 
-
 function hs() {
-    ### Search shell history for command pattern
-    if [ -z "$1" ]; then
-        echo "Usage: hs <pattern>"
-        return 1
+    ### Search bash history for command pattern
+    if [[ -z $1 || $1 == "-?" ]]; then
+        echo "hs <pattern>"
+        return 0
     fi
-    history | grep "$1"
+    history | grep -- "$1"
 }
+
 
 function extract() {
     ### Extract archives (zip, tar, gz, bz2, rar, etc)
@@ -488,54 +480,49 @@ function sshtmux() {
 }
 
 function searchreplace() {
-    ### Search and replace text in files in current folder
-    echo -e "Search and replace in files in ${ORANGE:-}$PWD${NC:-}\nSearch for:"
-    read -r string_1
-    if [ -z "$string_1" ]; then
-        echo "No search string provided"
-        return 1
+    ### Search and replace text in files recursively (safe)
+    if [[ $# -lt 2 || $1 == "-?" ]]; then
+        echo "searchreplace <search> <replace> [path]"
+        return 0
     fi
-    echo -e "Replace ${YELLOW:-}$string_1${NC:-} with:"
-    read -r string_2
-    
-    echo "This will modify files in $PWD. Continue? (y/n)"
-    read -r confirm
-    if [[ "$confirm" != "y" ]]; then
-        echo "Cancelled"
-        return 1
-    fi
-    
-    find . -type f -exec sed -i "s/$string_1/$string_2/g" {} +
+
+    local search replace path
+    search=$1
+    replace=$2
+    path=${3:-.}
+
+    # Escape for sed
+    local esc_search esc_replace
+    esc_search=$(printf '%s' "$search" | sed 's/[\/&]/\\&/g')
+    esc_replace=$(printf '%s' "$replace" | sed 's/[\/&]/\\&/g')
+
+    grep -rl -- "$search" "$path" | while IFS= read -r file; do
+        sed -i "s/$esc_search/$esc_replace/g" "$file"
+    done
     echo "Replacement complete"
 }
 
 function fnamereplace() {
-    ### Search and replace in filenames in current folder
-    echo -e "Search and replace in filenames in ${ORANGE:-}$PWD${NC:-}\nSearch for:"
-    read -r string_1
-    if [ -z "$string_1" ]; then
-        echo "No search string provided"
-        return 1
+    ### Replace text in filenames safely
+    if [[ $# -lt 2 || $1 == "-?" ]]; then
+        echo "fnamereplace <search> <replace> [path]"
+        return 0
     fi
-    echo -e "Replace ${YELLOW:-}$string_1${NC:-} with:"
-    read -r string_2
-    
-    # Check if rename command exists
-    if ! command -v rename >/dev/null 2>&1; then
-        echo "Error: 'rename' command not found. Install perl-rename package."
-        return 1
-    fi
-    
-    echo "This will rename files in $PWD. Continue? (y/n)"
-    read -r confirm
-    if [[ "$confirm" != "y" ]]; then
-        echo "Cancelled"
-        return 1
-    fi
-    
-    find . -type f -exec rename "s/$string_1/$string_2/g" {} +
-    echo "Renaming complete"
+
+    local search=$1
+    local replace=$2
+    local path=${3:-.}
+
+    find "$path" -depth -name "*$search*" -print0 |
+        while IFS= read -r -d '' file; do
+            local new
+            new=${file//$search/$replace}
+            if [[ $file != "$new" ]]; then
+                mv -v -- "$file" "$new"
+            fi
+        done
 }
+
 
 function dotfind() {
     ### Find folders with dots in names up to depth 2
@@ -627,39 +614,62 @@ function gs_remove() {
 
 function cd() {
     ### Override cd to show ls after entering directory
-    if [ -n "$1" ]; then
-        builtin cd "$@" && ls
-    else
-        builtin cd ~ && ls
+    if [[ $- == *i* ]]; then
+        cd() {
+            builtin cd "$@" || return
+            ls
+        }
     fi
 }
 
 function get_os() {
-    ### Detect OS and distribution information
-    OS=$(uname -s | tr '[:upper:]' '[:lower:]')
+    ### Detect OS and export global system variables
+    # shellcheck disable=SC2034
+
+    OS=$(uname -s)
     KERNEL=$(uname -r)
     MACH=$(uname -m)
-    DISTRO="unknown"
-    DISTRO_BASE="unknown"
-    
-    if [ -f /etc/os-release ]; then
+
+    if [[ -f /etc/os-release ]]; then
+        # shellcheck disable=SC1091
         source /etc/os-release
-        DISTRO="${ID:-unknown}"
-        DISTRO_BASE="${ID_LIKE:-$DISTRO}"
-    elif [ -f /etc/lsb-release ]; then
-        source /etc/lsb-release
-        DISTRO="${DISTRIB_ID:-unknown}"
-        DISTRO_BASE="$DISTRO"
+        DISTRO=$NAME
+        DISTRO_BASE=$ID
+    else
+        DISTRO="unknown"
+        DISTRO_BASE="unknown"
     fi
-    
+
     export OS KERNEL MACH DISTRO DISTRO_BASE
+}
+
+
+# function get_os() {
+#     ### Detect OS and distribution information
+#     OS=$(uname -s | tr '[:upper:]' '[:lower:]')
+#     KERNEL=$(uname -r)
+#     MACH=$(uname -m)
+#     DISTRO="unknown"
+#     DISTRO_BASE="unknown"
     
-    # Display the values
-    echo "OS: $OS"
-    echo "KERNEL: $KERNEL"
-    echo "MACH: $MACH"
-    echo "DISTRO: $DISTRO"
-    echo "DISTRO_BASE: $DISTRO_BASE"
+#     if [ -f /etc/os-release ]; then
+#         source /etc/os-release
+#         DISTRO="${ID:-unknown}"
+#         DISTRO_BASE="${ID_LIKE:-$DISTRO}"
+#     elif [ -f /etc/lsb-release ]; then
+#         source /etc/lsb-release
+#         DISTRO="${DISTRIB_ID:-unknown}"
+#         DISTRO_BASE="$DISTRO"
+#     fi
+    
+#     export OS KERNEL MACH DISTRO DISTRO_BASE
+    
+#     # Display the values
+#     echo "OS: $OS"
+#     echo "KERNEL: $KERNEL"
+#     echo "MACH: $MACH"
+#     echo "DISTRO: $DISTRO"
+#     echo "DISTRO_BASE: $DISTRO_BASE"
 }
 
 function setting_standard_commands() {
