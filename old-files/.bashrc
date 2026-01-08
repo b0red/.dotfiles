@@ -161,6 +161,3 @@ fi
 
 source ~/dotfiles/.bashrc
 if [ -f ~/.tmux-extras/tmux-gittmux-gittmux.sh ]; then source ~/.tmux-extras/tmux-gittmux-gittmux.sh; fi
-# Prevent recursion: if already sourced, exit early
-[ -n "${BASHRC_SOURCED:-}" ] && return
-BASHRC_SOURCED=1

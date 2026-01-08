@@ -52,4 +52,3 @@ fi
 # turns off the binding of Ctrl-S and gets rid of any XOFF onscreen messages when pressing Ctrl-S.
 # bind -r '\C-s'
 # stty -ixon
-# Prevent recursion: if already sourced, exit early

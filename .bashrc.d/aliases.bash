@@ -172,9 +172,10 @@ alias comstat="push \"Command ran! (uname -n)\" || push \"Command failed!\""
 alias diff="colordiff"                          # colorise diff output
 #alias mount="mount | column -t"                 # prettier outpu mount
 alias nocomment="grep -Ev '''^(#|$)'''"         #remove comments from file
-if command_exists deborphan 2>/dev/null ; then
-    alias deborphan='sudo deborphan | xargs sudo apt-get -y remove --purge'
-fi
+###     Deborphan alias - Removed because of "rolling on startup"
+# if command_exists deborphan 2>/dev/null ; then
+#     alias deborphan='sudo deborphan | xargs sudo apt-get -y remove --purge'
+# fi
 
 ###		MidnightCommande
 #
