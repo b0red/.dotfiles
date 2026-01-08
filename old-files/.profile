@@ -8,7 +8,8 @@
 # for ssh logins, install and configure the libpam-umask package.
 #umask 022
 
-# Prevent recursion
+###		Prevent recursion
+#
 [ -n "${PROFILE_SOURCED:-}" ] && return
 PROFILE_SOURCED=1
 
@@ -52,3 +53,4 @@ fi
 # turns off the binding of Ctrl-S and gets rid of any XOFF onscreen messages when pressing Ctrl-S.
 # bind -r '\C-s'
 # stty -ixon
+# Prevent recursion: if already sourced, exit early

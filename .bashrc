@@ -9,6 +9,11 @@ esac
 # Clear all aliases to avoid conflicts
 unalias -a 2>/dev/null
 
+###		Prevent recursion / infinite sourcing
+#
+[ -n "${BASHRC_SOURCED:-}" ] && return
+BASHRC_SOURCED=1
+
 # Source ENV variable file if set
 [ -n "$ENV" ] && [ -f "$ENV" ] && . "$ENV"
 
@@ -119,6 +124,12 @@ if command -v broot >/dev/null 2>&1; then
     [ -f "$HOME/.config/broot/launcher/bash/br" ] && source "$HOME/.config/broot/launcher/bash/br"
 fi
 
+# Start ssh-agent if not already running
+if [ -z "$SSH_AUTH_SOCK" ]; then
+    eval "$(ssh-agent -s)"
+    ssh-add ~/.ssh/id_rsa
+fi
+
 # SSH agent with keychain (if available)
 if command -v keychain >/dev/null 2>&1; then
     # Look for SSH keys
@@ -160,7 +171,5 @@ fi
 # source ~/.dcp_alias                                           # for alias="dcp vpn/novpn"
 
 source ~/dotfiles/.bashrc
-if [ -f ~/.tmux-extras/tmux-gittmux-gittmux.sh ]; then source ~/.tmux-extras/tmux-gittmux-gittmux.sh; fi
 # Prevent recursion: if already sourced, exit early
-[ -n "${BASHRC_SOURCED:-}" ] && return
-BASHRC_SOURCED=1
+if [ -f ~/.tmux-extras/tmux-gittmux-gittmux.sh ]; then source ~/.tmux-extras/tmux-gittmux-gittmux.sh; fi

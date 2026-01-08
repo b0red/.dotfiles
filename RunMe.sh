@@ -5,7 +5,15 @@
 
 set -euo pipefail
 
-# Config
+# Global recursion guard
+if [ -n "${RUNME_INITIATED:-}" ]; then
+    echo "RunMe.sh already running (PID $$)" >&2
+    exit 1
+fi
+RUNME_INITIATED=1
+export RUNME_INITIATED
+
+# Configuration variables   
 DEBUG=${DEBUG:-0}
 TRACE_DEBUG=${TRACE_DEBUG:-0}
 SLEEP=${SLEEP:-2}
@@ -18,19 +26,42 @@ APP_ARRAY=(curl htop ncdu pydf tree tmux vim mc fd-find git bat)
 DOT_ARRAY=("$HOME/.profile" "$HOME/.bashrc" "$HOME/.bash_profile" "$HOME/.inputrc")
 OLD_FILE_ARRAY=("$HOME/.bashrc" "$HOME/.profile" "$HOME/.bash_profile" "$HOME/.inputrc" "$HOME/.cshrc" "$HOME/.login")
 
-
-# Actions logging
-ACTIONS() { log "$(echo "$@" | tee -a "$LOG")"; sleep "$SLEEP"; }
+# Safe log (no unbound var)
 log() {
-    echo "[$(date +'%Y-%m-%d %H:%M:%S')] $*" | tee -a "$LOG"
+    local msg="[$(date +'%Y-%m-%d %H:%M:%S')] $*"
+    echo "$msg" | tee -a "${LOG:-/dev/stdin}"  # Fallback if LOG unset
 }
+
+ACTIONS() {
+    log "$@"
+    sleep "${SLEEP:-2}"
+}
+
+# # Load app list from external file (easy maintenance)
+# # Load apps safely (no recursion)
+# INSTALL_APPS_INC="$DIR/.install_apps.inc"
+# if [ -r "$INSTALL_APPS_INC" ]; then
+#     if . "$INSTALL_APPS_INC" 2>/dev/null; then
+#         log "Loaded ${#APP_ARRAY[@]} apps from $INSTALL_APPS_INC"
+#     else
+#         log "Warning: $INSTALL_APPS_INC syntax error; empty array"
+#         declare -a APP_ARRAY=()
+#     fi
+# else
+#     log "No $INSTALL_APPS_INC; empty APP_ARRAY"
+#     declare -a APP_ARRAY=()
+# fi
+
+
 logfile_init() {
     mkdir -p "$LOG_DIR"
     LOG="$LOG_DIR/install-$DATE.log"
+    if [ ! -t 1 ]; then return; fi  # Skip tee if piped
     exec > >(tee -a "$LOG")
     exec 2>&1
-    log "$TITLE"
+    log "$TITLE started (PID $$)"
 }
+
 if [ "$TRACE_DEBUG" -eq 1 ]; then set -x; trap 'read -p "DEBUG: Press Enter..."' DEBUG; fi
 
 if [ "$EUID" -eq 0 ]; then
@@ -292,24 +323,25 @@ main() {
 
 # Usage (safe for all modes)
 show_help() {
-    logfile_init  # Safe: idempotent mkdir/log
-    cat << EOF
+    logfile_init  # Sets LOG safely
+    cat << 'EOF'
 Usage: ./RunMe.sh [OPTIONS]
 
 Options:
-  -?, -h, --help    Show this help
-  -r, --revert      Restore backups, remove symlinks
+  -?, -h, --help  Show this help
+  -r, --revert    Restore backups, remove symlinks
 
-Description: Backs up dotfiles, symlinks new ones, installs apps, updates submodules.
-Works on first run (sets/reloads aliases immediately).
+Description: Backs up dotfiles, symlinks new ones, installs apps from .install_apps.inc,
+updates submodules. Works on first run (sets/reloads aliases immediately).
 Log: $LOG
+
 EOF
 }
 
 case "${1:-}" in
     -?|-h|--help) show_help; exit 0 ;;
     -r|--revert) logfile_init; revert_changes; exit 0 ;;
-    *) main "$@"; exit 0 ;;
+    *) main "$@";;
 esac
 
 main "$@"

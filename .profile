@@ -8,7 +8,8 @@
 # for ssh logins, install and configure the libpam-umask package.
 #umask 022
 
-# Prevent recursion
+###		Prevent recursion
+#
 [ -n "${PROFILE_SOURCED:-}" ] && return
 PROFILE_SOURCED=1
 

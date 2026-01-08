@@ -1,34 +1,29 @@
-Att göra:
+### ToDO:
+[] make so when it reverts, it actually shows whats getting done
+[] create a small header when run, write this to affected files:
+  ### -+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+  ###                                             Created by RunMe.sh <Current_Date>
+  ### -+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+[] ev fixa så att RunMe.sh kollar om det är kört tidigare eller om det är nytt?
+[] Skapa en "firstrun"-check. Om inte körd tidigare, gör en sak, annars en 
 
- ☐ ta bort check för symlink, den skapar troligtvis bara fel.
-   gör en check om filen som skall länkas finns eller inte, om den finns, symlänka, annars inte
- 
- ☐ bygga om så att den först kolla vilket system det är, sen skriver in det så att bash-script funkar
-  
+### Done:
+[x] Create a function that reads apps to be installed from file, easier maintance
+[x] fixa casesatsen för de olika aliasen @done (19-04-27 22:44)
+[x] fixa så logfilen skrivs snyggt @done (19-04-27 22:44)
 
- ✔ fixa casesatsen för de olika aliasen @done (19-04-27 22:44)
- ✔ fixa så logfilen skrivs snyggt @done (19-04-27 22:44)
- ☐ ev fixa så att RunMe.sh kollar om det är kört tidigare eller om det är nytt?
- ☐ Skapa en "firstrun"-check. Om inte körd tidigare, gör en sak, annars en annan.
-   fil som heter firstrun, innehåller 1 eller 0
-
- ☐ kanske fixa status i function'en, 
-	  början sstatus = uppdaterar ngt
-	  klar = satus & done?
-
-Kanske kan omarbetas: 
+### Kanske kan omarbetas: 
 Källa: https://www.cyberciti.biz/tips/bash-aliases-mac-centos-linux-unix.html
 ### Get os name via uname ###
 _myos="$(uname)"
  
 ### add alias as per os using $_myos ###
 case $_myos in
-   Linux) alias foo='/path/to/linux/bin/foo';;
-      FreeBSD|OpenBSD) alias foo='/path/to/bsd/bin/foo' ;;
-         SunOS) alias foo='/path/to/sunos/bin/foo' ;;
-            *) ;;
-            esac
-
+    Linux) alias foo='/path/to/linux/bin/foo';;
+    FreeBSD|OpenBSD) alias foo='/path/to/bsd/bin/foo' ;;
+    SunOS) alias foo='/path/to/sunos/bin/foo' ;;
+    *) ;;
+  esac
 
 Länkar:
 ---------------------------------------------------------------------------------
