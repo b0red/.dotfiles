@@ -132,10 +132,10 @@ if [ -n "$TMUX" ] && [ -f "$HOME/.tmux-git/tmux-git.sh" ]; then
 fi
 
 # OS detection and setting standard commands (if your functions exist).
-if command -v get_os >/dev/null 2>&1; then
-    get_os >/dev/null 2>&1
-    setting_standard_commands >/dev/null 2>&1
-fi
+# if command -v get_os >/dev/null 2>&1; then
+#     get_os >/dev/null 2>&1
+#     setting_standard_commands >/dev/null 2>&1
+# fi
 
 # -------------------------------------------------------------------
 # 9. Fix tmux socket permissions

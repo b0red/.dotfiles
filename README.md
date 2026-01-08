@@ -386,7 +386,8 @@ Original files are backed up to `~/dotfiles/old-files/` with timestamps.
 
 ## Credits
 
-Created and maintained by Patrick Österlund
+Created and maintained by Patrick Österlund. If you feel like it, send a dime:
+[[PayPal](https://paypal.me/fotosbypatrick)] 
 
 ---
 

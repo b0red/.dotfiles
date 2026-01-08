@@ -145,33 +145,6 @@ alias 666='chmod -R 666'
 alias 755='chmod -R 755'
 alias 777='chmod -R 777'
 
-###     Version (Updated)
-#
-if command -v fastfetch >/dev/null 2>&1; then
-    alias version="fastfetch"
-elif command -v neofetch >/dev/null 2>&1; then
-    alias version="neofetch"
-else
-    # Create a function that prompts for installation
-    version() {
-        echo "'version' command not found. Do you want to install neofetch or fastfetch?"
-        read -p "Install (n)eofetch, (f)astfetch, or (c)ancel? [n/f/c]: " choice
-        case "$choice" in
-            n|N)
-                echo "Installing neofetch..."
-                install neofetch -y && neofetch
-                ;;
-            f|F)
-                echo "Installing fastfetch..."
-                install fastfetch -y && fastfetch
-                ;;
-            *)
-                echo "Installation cancelled."
-                ;;
-        esac
-    }
-fi
-
 ###     TMUX
 #
 alias tm="tmux new -s main \; split-window -h \; split-window -v -p 30 \;"
