@@ -375,6 +375,15 @@ Original files are backed up to `~/dotfiles/old-files/` with timestamps.
 
 [Your license here]
 
+### Some links to where I've ~~stolen~~ borrowed stuff & inspiration from
+* [https://sanctum.geek.nz/arabesque/shell-config-subfiles/](https://sanctum.geek.nz/arabesque/shell-config-subfiles/)
+* [https://remysharp.com/2018/08/23/cli-improved](https://remysharp.com/2018/08/23/cli-improved)
+* [https://github.com/kenorb/dotfiles/blob/master/.bash_functions](https://github.com/kenorb/dotfiles/blob/master/.bash_functions)
+* [https://github.com/kenorb/dotfiles/blob/master/.bash_aliases](https://github.com/kenorb/dotfiles/blob/master/.bash_aliases)
+* [https://github.com/sharkdp/bat/](https://github.com/sharkdp/bat/)
+* [https://github.com/denilsonsa/prettyping.git](https://github.com/denilsonsa/prettyping.git) ~/dotfiles/extras/prettyping
+
+
 ## Credits
 
 Created and maintained by Patrick Österlund
