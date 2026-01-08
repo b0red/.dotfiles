@@ -7,8 +7,8 @@
 #           https://unix.stackexchange.com/questions/43601/how-can-i-set-my-default-shell-to-start-up-tmux
 #----------------------------------------------------------------------------------------------------------------
 ###     Reload aliases, functions and all
-#
-alias reload="source ~/.bashrc"
+#unset DOTFILES_BASHRC_DONE; source ~/.bashrc
+alias reload="source ~/.bashrc; echo 'Reloaded ~/.bashrc'"
 
 NOW=$(date '+%Y-%m-%d_%H:%M')
 
@@ -72,7 +72,7 @@ alias cls="clear"
 alias lsd="ls -alF |grep /$" 	## Might be wrong
 alias back="cd $OLDPWD"
 
-###	Rootstuf
+###	Rootstuff
 # 
 alias root="sudo su"
 alias su="sudo -i"
@@ -92,12 +92,12 @@ alias week="(/bin/date +%V)"
 
 ###	Tree
 #
+if command_check broot; then alias tree="broot"; fi
 alias ltree="ls -R | grep ":$" | sed -e 's/:$//' -e 's/[^-][^\/]*\//--/g' -e 's/^/   /' -e 's/-/|/'"
 alias tree1="tree -L 1"
 alias tree2="tree -L 2"
 alias tree3="tree -L 3"
 alias tree4="tree -L 4"
-alias tree="broot"
 
 ###	File related
 #
@@ -145,9 +145,32 @@ alias 666='chmod -R 666'
 alias 755='chmod -R 755'
 alias 777='chmod -R 777'
 
-###     Version
+###     Version (Updated)
 #
-alias version="fastfetch"
+if command -v fastfetch >/dev/null 2>&1; then
+    alias version="fastfetch"
+elif command -v neofetch >/dev/null 2>&1; then
+    alias version="neofetch"
+else
+    # Create a function that prompts for installation
+    version() {
+        echo "'version' command not found. Do you want to install neofetch or fastfetch?"
+        read -p "Install (n)eofetch, (f)astfetch, or (c)ancel? [n/f/c]: " choice
+        case "$choice" in
+            n|N)
+                echo "Installing neofetch..."
+                install neofetch -y && neofetch
+                ;;
+            f|F)
+                echo "Installing fastfetch..."
+                install fastfetch -y && fastfetch
+                ;;
+            *)
+                echo "Installation cancelled."
+                ;;
+        esac
+    }
+fi
 
 ###     TMUX
 #

@@ -91,6 +91,8 @@ fi
 # Cleanup variable
 unset BASHRC_DIR
 
+if [ -f ~/.tmux-extras/tmux-gittmux-gittmux.sh ]; then source ~/.tmux-extras/tmux-gittmux-gittmux.sh; fi
+
 # tmux git integration if inside tmux
 if [ -n "$TMUX" ] && [ -f "$HOME/.tmux-git/tmux-git.sh" ]; then
     source "$HOME/.tmux-git/tmux-git.sh"
@@ -124,7 +126,8 @@ if command -v broot >/dev/null 2>&1; then
     [ -f "$HOME/.config/broot/launcher/bash/br" ] && source "$HOME/.config/broot/launcher/bash/br"
 fi
 
-# Start ssh-agent if not already running
+###     Start ssh-agent if not already running
+#
 if [ -z "$SSH_AUTH_SOCK" ]; then
     eval "$(ssh-agent -s)"
     ssh-add ~/.ssh/id_rsa
@@ -170,6 +173,46 @@ fi
 
 # source ~/.dcp_alias                                           # for alias="dcp vpn/novpn"
 
-source ~/dotfiles/.bashrc
+# Guard to avoid recursion (already inserted at top via RunMe)
+[ -n "${BASHRC_SOURCED:-}" ] && return
+
+# Load main repo-specific bashrc fragment if you actually have one
+# (otherwise comment this out)
+# [ -f "$HOME/dotfiles/.bashrc.core" ] && source "$HOME/dotfiles/.bashrc.core"
+
+# Load modular bashrc parts from ~/dotfiles/.bashrc.d
+BASHRCDIR="$HOME/dotfiles/.bashrc.d"
+if [ -d "$BASHRCDIR" ]; then
+    # Specific files in fixed order
+    [ -f "$BASHRCDIR/exports.bash"  ] && source "$BASHRCDIR/exports.bash"
+    [ -f "$BASHRCDIR/env.bash"      ] && source "$BASHRCDIR/env.bash"
+    [ -f "$BASHRCDIR/functions.bash"] && source "$BASHRCDIR/functions.bash"
+    [ -f "$BASHRCDIR/git.bash"      ] && source "$BASHRCDIR/git.bash"
+    [ -f "$BASHRCDIR/docker.bash"   ] && source "$BASHRCDIR/docker.bash"
+
+    # Any remaining *.bash files
+    for f in "$BASHRCDIR"/*.bash; do
+        [ -f "$f" ] || continue
+        case "$(basename "$f")" in
+            exports.bash|env.bash|functions.bash|git.bash|docker.bash) continue ;;
+        esac
+        source "$f"
+    done
+fi
+unset BASHRCDIR
+
+# Profile fragments
+if [ -d "$HOME/dotfiles/.profile.d" ]; then
+    for f in "$HOME/dotfiles/.profile.d"/*.sh; do
+        [ -f "$f" ] && source "$f"
+    done
+fi
+
+# Finally, set package aliases for this shell
+if command -v set_package_aliases >/dev/null 2>&1; then
+    set_package_aliases
+    shopt -s expand_aliases
+fi
+
+BASHRCSOURCED=1
 # Prevent recursion: if already sourced, exit early
-if [ -f ~/.tmux-extras/tmux-gittmux-gittmux.sh ]; then source ~/.tmux-extras/tmux-gittmux-gittmux.sh; fi

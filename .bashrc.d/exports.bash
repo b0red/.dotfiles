@@ -128,8 +128,14 @@ export_if_unset TMUX_TMPDIR "/tmp/tmux-$UID"
 
 # Ignore list for fif in functions.bash
 # Comma-separated lists
-export FIF_IGNORE_DIRS=".git,.svn,node_modules,dist,build"
-export FIF_IGNORE_FILES="*.min.js,*.lock"
+export FIF_IGNORE_DIRS=".git,.svn,node_modules,dist,build,.landscape,.vscode*,__pycache__,.cache"
+export FIF_IGNORE_FILES="*.min.js,*.lock,'*~',*.log,*.tmp,*.pyc,*.class"
+
+# Add DISTRO_BASE_LOCAL detection
+if [ -f /etc/os-release ]; then
+    . /etc/os-release
+    export DISTRO_BASE_LOCAL="${ID_LIKE:-$ID}"
+fi
 
 # Cleanup helper functions
 unset -f export_if_unset add_to_path append_to_path

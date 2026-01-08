@@ -679,36 +679,53 @@ function setting_standard_commands() {
         get_os >/dev/null
     fi
     
-    case "$DISTRO_BASE" in
+    case "$DISTRO_BASE_LOCAL" in
         debian*|ubuntu*)
-            alias install="sudo apt-get install -y"
-            alias uninstall="sudo apt-get remove -y"
-            alias update="sudo apt-get update && sudo apt-get upgrade -y"
+            alias install='sudo apt-get install -y'
+            alias remove='sudo apt-get remove -y'
+            alias uninstall='sudo apt-get remove -y'
+            alias update='sudo apt-get update && sudo apt-get upgrade -y'
             ;;
-        rhel*|redhat*|centos*|fedora*)
+        redhat*|centos*|fedora*|almalinux*|rocky*|rhel*)
             if command -v dnf >/dev/null 2>&1; then
-                alias install="sudo dnf install -y"
-                alias uninstall="sudo dnf remove -y"
-                alias update="sudo dnf update -y"
+                alias install='sudo dnf install -y'
+                alias remove='sudo dnf remove -y'
+                alias uninstall='sudo dnf remove -y'
+                alias update='sudo dnf upgrade -y'
             else
-                alias install="sudo yum install -y"
-                alias uninstall="sudo yum remove -y"
-                alias update="sudo yum update -y"
+                alias install='sudo yum install -y'
+                alias remove='sudo yum remove -y'
+                alias uninstall='sudo yum remove -y'
+                alias update='sudo yum update -y'
             fi
             ;;
-        arch*)
-            alias install="sudo pacman -Syu --noconfirm"
-            alias uninstall="sudo pacman -Rns --noconfirm"
-            alias update="sudo pacman -Syu --noconfirm"
+        opensuse*|suse*)
+            alias install='sudo zypper install -y'
+            alias remove='sudo zypper remove -y'
+            alias uninstall='sudo zypper remove -y'
+            alias update='sudo zypper update -y'
+            ;;
+        arch*|manjaro*)
+            alias install='sudo pacman -S --noconfirm'
+            alias remove='sudo pacman -Rns --noconfirm'
+            alias uninstall='sudo pacman -Rns --noconfirm'
+            alias update='sudo pacman -Syu --noconfirm'
             ;;
         gentoo*)
-            alias install="sudo emerge"
-            alias uninstall="sudo emerge --unmerge"
-            alias update="sudo emerge --update --deep --newuse @world"
+            alias install='sudo emerge -av'
+            alias remove='sudo emerge --unmerge'
+            alias uninstall='sudo emerge --unmerge'
+            alias update='sudo emerge --update --deep @world'
+            ;;
+        freebsd*)
+            alias install='sudo pkg install -y'
+            alias remove='sudo pkg delete -y'
+            alias uninstall='sudo pkg delete -y'
+            alias update='sudo pkg upgrade -y'
             ;;
         *)
-            echo "Unknown OS base: $DISTRO_BASE"
-            return 1
+            # No-op but not fatal
+            return 0
             ;;
     esac
     echo "Package manager aliases set for $DISTRO_BASE"
