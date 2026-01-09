@@ -80,7 +80,8 @@ fi
 export_if_unset TIMEFORMAT 'real:%lR user:%lU sys:%lS'
 
 # LESS pager settings and colors
-export_if_unset LESS '-R -M -i -j10'
+# export LESS='--quit-if-one-screen --ignore-case --LONG-PROMPT --RAW-CONTROL-CHARS --HILITE-UNREAD --tabs=4 --no-init --window=-4'
+export_if_unset LESS '-F -i -M -R -W -x4 -X -z-4'
 export_if_unset LESS_TERMCAP_mb $'\E[1;31m'     # begin blinking
 export_if_unset LESS_TERMCAP_md $'\E[1;36m'     # begin bold
 export_if_unset LESS_TERMCAP_me $'\E[0m'        # end mode

@@ -43,4 +43,4 @@ if [ "$(uname -s)" = "Linux" ]; then
             linkwork "$home_dir/.gitconfig" "$home_dir/.gitconfig"
             ;;
     esac
-fi
+fi 

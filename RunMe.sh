@@ -25,7 +25,7 @@ OLD_FILES="$DIR/old-files"
 LOG_DIR="$DIR/install-$(date +%Y-%m-%d).log"
 DATE=$(date +%Y-%m-%d_%H-%M-%S)
 TITLE="Dotfiles Installer Script"
-APP_ARRAY=(curl htop ncdu pydf tree tmux vim mc fd-find git bat)
+APP_ARRAY=(curl htop ncdu pydf tree tmux vim mc fd-find git bat tldr jq wget unzip zip)
 DOT_ARRAY=("$HOME/.profile" "$HOME/.bashrc" "$HOME/.bash_profile" "$HOME/.inputrc")
 OLD_FILE_ARRAY=("$HOME/.bashrc" "$HOME/.profile" "$HOME/.bash_profile" "$HOME/.inputrc" "$HOME/.cshrc" "$HOME/.login")
 

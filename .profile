@@ -38,7 +38,6 @@ if [ -d $HOME/dotfiles/.profile.d ]; then
 	unset -v config
 fi
 
-# echo HOME: $HOME
 ###     Check if .cargo exists, then add to path
 #
 if [ -d "$HOME"/.cargo ]; then
@@ -46,11 +45,7 @@ if [ -d "$HOME"/.cargo ]; then
 fi
 
 ### Add Go binaries directory to PATH if it exists
+# 
 if [ -d "/usr/local/go/bin" ]; then
     export PATH="$PATH:/usr/local/go/bin"
 fi
-
-# turns off the binding of Ctrl-S and gets rid of any XOFF onscreen messages when pressing Ctrl-S.
-# bind -r '\C-s'
-# stty -ixon
-# Prevent recursion: if already sourced, exit early
