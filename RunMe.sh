@@ -40,6 +40,13 @@ main() {
     log "========================================="
     log "Starting Dotfiles Installation"
     log "========================================="
+    # CHANGES: Enable trace here so `--trace` passed on the command line
+    # can turn on `set -x` before the bulk of installation work runs.
+    if [ "${TRACE_DEBUG:-0}" -eq 1 ]; then
+        set -x
+        trap 'read -p "DEBUG: Press Enter..."' DEBUG
+        log "✓ Trace enabled"
+    fi
     
     get_os_info
     load_package_functions || log "⚠️  Continuing without package functions"
@@ -318,7 +325,8 @@ symlink_dotfiles() {
     # Ensure bash_profile loads bashrc (check the actual file, not symlink)
     local bash_profile_target="$DIR/.bash_profile"
     if [ -f "$bash_profile_target" ]; then
-        if ! grep -q "source.*bashrc\|\..*bashrc" "$bash_profile_target" 2>/dev/null; then
+        # Use extended regex so alternation works correctly (detect source or dot-sourcing)
+        if ! grep -qE 'source.*bashrc|\..*bashrc' "$bash_profile_target" 2>/dev/null; then
             cat >> "$bash_profile_target" << 'EOF'
 
 # Load .bashrc for interactive shells
@@ -374,30 +382,33 @@ update_submodules() {
 clone_repos() {
     log "Cloning additional repositories..."
     cd "$HOME" || return
-    
-    # Clone .tmux repo
-    if [ ! -d ".tmux" ]; then
-        log "Cloning .tmux repository..."
-        if git clone --recurse-submodules https://bitbucket.org/b0red/tmux.git .tmux 2>/dev/null; then
-            log "✓ Cloned .tmux"
-        else
-            log "⚠️  Failed to clone .tmux (network/credentials?)"
+    # Helper to clone only when target does not exist
+    clone_if_missing() {
+        local repo_url="$1"
+        local target_dir="$2"
+
+        if [ -e "$target_dir" ]; then
+            if [ -d "$target_dir/.git" ]; then
+                log "✓ $target_dir exists and is a git repo; skipping clone"
+            else
+                log "⚠️  $target_dir exists (not a git repo); skipping clone to avoid overwrite"
+            fi
+            return
         fi
-    else
-        log ".tmux already exists"
-    fi
-    
-    # Clone .vim repo
-    if [ ! -d ".vim" ]; then
-        log "Cloning .vim repository..."
-        if GIT_TERMINAL_PROMPT=0 git clone --recurse-submodules https://bitbucket.org/b0red/.vim.git .vim 2>/dev/null; then
-            log "✓ Cloned .vim"
+
+        log "Cloning $target_dir repository..."
+        if GIT_TERMINAL_PROMPT=0 git clone --recurse-submodules "$repo_url" "$target_dir" 2>/dev/null; then
+            log "✓ Cloned $target_dir"
         else
-            log "⚠️  Failed to clone .vim (private repo/credentials?)"
+            log "⚠️  Failed to clone $target_dir (network/credentials?)"
         fi
-    else
-        log ".vim already exists"
-    fi
+    }
+
+    # Clone .tmux repo (into $HOME/.tmux) if missing
+    clone_if_missing "https://bitbucket.org/b0red/tmux.git" "$HOME/.tmux"
+
+    # Clone .vim repo (into $HOME/.vim) if missing
+    clone_if_missing "https://bitbucket.org/b0red/.vim.git" "$HOME/.vim"
 }
 
 # =============================================================================
@@ -414,10 +425,11 @@ add_tmux_line() {
         log "⚠️  $bashrc_file not found, skipping tmux integration"
         return
     fi
-    
-    local tmux_line='if [ -f ~/.tmux-extras/tmux-gittmux-gittmux.sh ]; then source ~/.tmux-extras/tmux-gittmux-gittmux.sh; fi'
-    
-    if grep -qF "tmux-gittmux-gittmux.sh" "$bashrc_file" 2>/dev/null; then
+
+    local tmux_line='if [ -f ~/.tmux-extras/tmux-git.sh ]; then source ~/.tmux-extras/tmux-git.sh; fi'
+
+    # Check for the exact line before adding to avoid duplicates (literal match)
+    if grep -qF "$tmux_line" "$bashrc_file" 2>/dev/null; then
         log "✓ Tmux integration already present in .bashrc"
     else
         echo "$tmux_line" >> "$bashrc_file"

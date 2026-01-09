@@ -3,7 +3,11 @@
 
 set_package_aliases() {
     local DISTRO_BASE_LOCAL
-    local SUDO_CMD
+    # NOTE: `SUDO_CMD` must remain available to the install/remove functions
+    # defined in this function. Do not make it `local` (or export it) because
+    # `set -u` in the caller will cause an "unbound variable" error when those
+    # helper functions are invoked after `set_package_aliases` returns.
+    SUDO_CMD=""
 
     # Detect sudo/doas availability (FreeBSD, OpenBSD use doas)
     if command -v sudo >/dev/null 2>&1; then

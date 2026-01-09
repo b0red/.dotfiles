@@ -1,5 +1,10 @@
 #!/bin/bash
 
+# CHANGES: Use the repository directory as the source instead of $(pwd)
+# and avoid creating self-referential links in the default case.
+# Resolve repository directory (the directory of this script)
+REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
+
 # Symlink helper function with backup if target file exists
 function linkwork() {
     local linkTocheck="$1"
@@ -19,28 +24,29 @@ if [ "$(uname -s)" = "Linux" ]; then
     home_dir="/home/$(whoami)"
     case "$distro_id" in
         kali)
-            linkwork "$home_dir/.common_profile" "$(pwd)/.common_profile"
-            linkwork "$home_dir/.kali_profile" "$(pwd)/.kali_profile"
-            linkwork "$home_dir/.bashrc" "$(pwd)/.bashrc"
-            linkwork "$home_dir/.vimrc" "$(pwd)/.vimrc"
-            linkwork "$home_dir/.tmux.conf" "$(pwd)/.tmux.conf"
-            linkwork "$home_dir/.gitconfig" "$(pwd)/.gitconfig"
+            linkwork "$home_dir/.common_profile" "$REPO_DIR/.common_profile"
+            linkwork "$home_dir/.kali_profile" "$REPO_DIR/.kali_profile"
+            linkwork "$home_dir/.bashrc" "$REPO_DIR/.bashrc"
+            linkwork "$home_dir/.vimrc" "$REPO_DIR/.vimrc"
+            linkwork "$home_dir/.tmux.conf" "$REPO_DIR/.tmux.conf"
+            linkwork "$home_dir/.gitconfig" "$REPO_DIR/.gitconfig"
             ;;
         raspbian)
-            linkwork "$home_dir/.rpi_profile" "$(pwd)/.rpi_profile"
+            linkwork "$home_dir/.rpi_profile" "$REPO_DIR/.rpi_profile"
             ;;
         ubuntu)
-            linkwork "$home_dir/.ubu_profile" "$(pwd)/.ubu_profile"
+            linkwork "$home_dir/.ubu_profile" "$REPO_DIR/.ubu_profile"
             ;;
         centos)
-            linkwork "$home_dir/.centos_profile" "$(pwd)/.centos_profile"
+            linkwork "$home_dir/.centos_profile" "$REPO_DIR/.centos_profile"
             ;;
         *)
-            linkwork "$home_dir/.tmux.conf" "$home_dir/.tmux.conf"
-            linkwork "$home_dir/.vimrc" "$home_dir/.vimrc"
-            linkwork "$home_dir/.bashrc" "$home_dir/.bashrc"
-            linkwork "$home_dir/.common_profile" "$home_dir/.common_profile"
-            linkwork "$home_dir/.gitconfig" "$home_dir/.gitconfig"
+            # Default -> link home files to repo versions (avoid self-linking)
+            linkwork "$home_dir/.tmux.conf" "$REPO_DIR/.tmux.conf"
+            linkwork "$home_dir/.vimrc" "$REPO_DIR/.vimrc"
+            linkwork "$home_dir/.bashrc" "$REPO_DIR/.bashrc"
+            linkwork "$home_dir/.common_profile" "$REPO_DIR/.common_profile"
+            linkwork "$home_dir/.gitconfig" "$REPO_DIR/.gitconfig"
             ;;
     esac
 fi 
