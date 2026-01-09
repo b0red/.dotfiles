@@ -205,3 +205,5 @@ fi
 # Mark that dotfiles bashrc tail has run (for recursion guard).
 DOTFILES_BASHRC_DONE=1
 export DOTFILES_BASHRC_DONE
+
+source /home/patrick/.config/broot/launcher/bash/br

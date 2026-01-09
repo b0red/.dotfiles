@@ -8,7 +8,7 @@
 #----------------------------------------------------------------------------------------------------------------
 ###     Reload aliases, functions and all
 #unset DOTFILES_BASHRC_DONE; source ~/.bashrc
-alias reload="source ~/.bashrc; echo 'Reloaded ~/.bashrc'"
+alias reload="source ~/.bashrc; clear; echo 'Reloaded ~/.bashrc'"
 
 NOW=$(date '+%Y-%m-%d_%H:%M')
 

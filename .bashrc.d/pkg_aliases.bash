@@ -178,30 +178,5 @@ set_package_aliases() {
             ;;
     esac
 
-    # Set up version command (fastfetch or neofetch)
-    if command -v fastfetch >/dev/null 2>&1; then
-        alias version="fastfetch"
-    elif command -v neofetch >/dev/null 2>&1; then
-        alias version="neofetch"
-    else
-        version() {
-            echo "⚠️  'version' command not found. Install neofetch or fastfetch?"
-            read -r -p "Install (n)eofetch, (f)astfetch, or (c)ancel? [n/f/c]: " choice
-            case "$choice" in
-                n|N)
-                    echo "Installing neofetch..."
-                    install neofetch && neofetch
-                    ;;
-                f|F)
-                    echo "Installing fastfetch..."
-                    install fastfetch && fastfetch
-                    ;;
-                *)
-                    echo "Installation cancelled."
-                    ;;
-            esac
-        }
-    fi
-
     echo "✓ Package functions configured for: $DISTRO_BASE_LOCAL"
 }

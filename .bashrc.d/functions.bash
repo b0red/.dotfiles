@@ -739,3 +739,38 @@ function functions() {
         declare -F | awk '{print $3}' | sed 's/^[0-9]*://' | grep -v '^_' | column -c 80
     fi
 }
+
+
+# Set up version command (fastfetch or neofetch)
+if command -v fastfetch >/dev/null 2>&1; then
+    version() { fastfetch "$@"; }
+elif command -v neofetch >/dev/null 2>&1; then
+    version() { neofetch "$@"; }
+else
+    version() {
+        ### Shows system information using neofetch or fastfetch
+        echo "⚠️  'version' command not found. Install neofetch or fastfetch?"
+        read -r -p "Install (n)eofetch, (f)astfetch, or (c)ancel? [n/f/c]: " choice
+        case "$choice" in
+            n|N)
+                echo "Installing neofetch..."
+                if command -v install >/dev/null 2>&1; then
+                    install neofetch && neofetch
+                else
+                    sudo apt-get install -y neofetch && neofetch
+                fi
+                ;;
+            f|F)
+                echo "Installing fastfetch..."
+                if command -v install >/dev/null 2>&1; then
+                    install fastfetch && fastfetch
+                else
+                    sudo apt-get install -y fastfetch && fastfetch
+                fi
+                ;;
+            *)
+                echo "Installation cancelled."
+                ;;
+        esac
+    }
+fi

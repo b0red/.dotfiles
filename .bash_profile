@@ -5,3 +5,4 @@
 if [ -f ~/.bashrc ]; then
     . ~/.bashrc
 fi
+source /home/patrick/.config/broot/launcher/bash/br
