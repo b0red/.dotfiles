@@ -6,6 +6,7 @@
 a.txt
 .gitsecret/keys/random_seed
 !*.secret
+backup-*
 # Ignore folders
 extras/
 oldfiles/

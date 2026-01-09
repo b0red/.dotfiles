@@ -207,3 +207,4 @@ DOTFILES_BASHRC_DONE=1
 export DOTFILES_BASHRC_DONE
 
 source /home/patrick/.config/broot/launcher/bash/br
+if [ -f ~/.tmux-extras/tmux-git.sh ]; then source ~/.tmux-extras/tmux-git.sh; fi
