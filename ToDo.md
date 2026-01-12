@@ -1,15 +1,15 @@
 ### ToDO:
 	- [ ] make so when it reverts, it actually shows whats getting done
+	- [ ] Add the app array, read fom simple .inc file
 	- [ ] create a small header when run, write this to affected files:
   ### -+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
   ###                                             Created by RunMe.sh <Current_Date>
   ### -+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 
 ### Done:
-	- [x] Create a function that reads apps to be installed from file, easier maintance
-	- [x] fixa casesatsen för de olika aliasen @done (19-04-27 22:44)
-	- [x] fixa så logfilen skrivs snyggt @done (19-04-27 22:44)
-	- [x] ev fixa så att RunMe.sh kollar om det är kört tidigare @done (08-01-26) 
+	~~fixa casesatsen för de olika aliasen @done (19-04-27 22:44)~~
+	~~fixa så logfilen skrivs snyggt @done (19-04-27 22:44)~~
+	~~ev fixa så att RunMe.sh kollar om det är kört tidigare @done (08-01-26)~~
 
 ### Maybe rework: 
 Source: https://www.cyberciti.biz/tips/bash-aliases-mac-centos-linux-unix.html

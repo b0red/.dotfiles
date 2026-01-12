@@ -10,4 +10,10 @@ APP_ARRAY=(
     fd-find
     git
     bat
+    tldr
+    jq
+    wget
+    unzip
+    zip
+    broot
 )
