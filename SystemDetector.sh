@@ -1,10 +1,16 @@
 #!/bin/sh
+###############################################################################
+#
+#  system-detector: 
+#   A shell script to detect system information and shell capabilities
+#
+###############################################################################
 
 ###############################################################################
 # Metadata
 ###############################################################################
-SCRIPT_NAME="system-detector"
-SCRIPT_VERSION="1.0.0"
+SCRIPT_NAME="SystemDetector"
+SCRIPT_VERSION="5.1.0"
 
 ###############################################################################
 # Flags
@@ -12,7 +18,16 @@ SCRIPT_VERSION="1.0.0"
 DEBUG=0
 
 case "${1:-}" in
-  --version)
+  -h|--help)
+    echo "Usage: $0 [OPTIONS]"
+    echo
+    echo "Options:"
+    echo "  -h, --help       Show this help message and exit"
+    echo "  -v, --version    Show script version and exit"
+    echo "  --debug          Enable debug mode"
+    exit 0
+    ;;
+  -v|--version)
     echo "$SCRIPT_NAME v$SCRIPT_VERSION"
     exit 0
     ;;
