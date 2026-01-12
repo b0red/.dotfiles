@@ -13,9 +13,9 @@
 
 ### Maybe rework: 
 Source: https://www.cyberciti.biz/tips/bash-aliases-mac-centos-linux-unix.html
+
 ### Get os name via uname ###
 _myos="$(uname)"
- 
 
 ### Links:
 ---------------------------------------------------------------------------------
