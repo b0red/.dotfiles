@@ -1,234 +1,196 @@
-#!/usr/bin/env bash
-###############################################################################################
-##
-##
-##          This is just for testing
-##          https://askubuntu.com/questions/1705/how-can-i-create-a-select-menu-in-a-shell-script
-##
-###############################################################################################
-debug=1
-SLEEP=0
+#!/bin/sh
 
-unalias -a
+###############################################################################
+# Metadata
+###############################################################################
+SCRIPT_NAME="system-detector"
+SCRIPT_VERSION="1.0.0"
 
-function check_for_line(){
-        #grep -qxF "#All your base are belong to ${DistroBasedOn^}" ~/.bashrc
-        grep -E "#All your base are belong to ${DistroBasedOn^}" ~/.bashrc
-        if [ $? -ne 0 ]; then
-            echo "#All your base are belong to ${DistroBasedOn^}" >> ~/.bashrc
-            STATUS="Added to ~/.bashrc!"
-        else
-            STATUS="Was not added to ~/.bashrc!";  
-        fi
-}
-function get_os() 
-{
-    #checks for os tyoe, this to alias right things
-    OS=$(uname); OS="${OS,,}"
-    KERNEL=$(uname -r)
-    MACH=$(uname -m)
-    if [ "${OS}" == "windowsnt" ]; then
-        OS=windows; OSSYS="windows"
-    elif [ "${OS}" == "darwin" ]; then
-        OS=mac; OSSYS="darwin"
-    elif [ "${OS}" == "freebsd" ]; then
-        OS=bsd; OSSYS="bsd"
-        OSSTR=$(uname -rs)
-    else
-        OS="linux"
-        if [ "${OS}" = "SunOS" ] ; then
-            OS=Solaris; OSSYS="solaris"
-            ARCH=$(uname -p)
-            OSSTR="${OS} ${REV}(${ARCH} "uname -v")"
-        elif [ "${OS}" = "AIX" ] ; then
-            OSSTR="${OS} "oslevel" ("oslevel -r")"
-        elif [ "${OS}" = "linux" ] ; then
-            if [ -f /etc/redhat-release ] ; then
-                DistroBasedOn='RedHat'; OSSYS="redhat"
-                DIST=$(cat /etc/redhat-release |sed s/\ release.*//)
-                PSEUDONAME=$(cat /etc/redhat-release | sed s/.*\(// | sed s/\)//)
-                REV=$(cat /etc/redhat-release | sed s/.*release\ // | sed s/\ .*//)
-            elif [ -f /etc/SuSE-release ] ; then
-                DistroBasedOn='SuSe'; OSSYS="suse"
-                PSEUDONAME=$(cat /etc/SuSE-release | tr "\n" ' '| sed s/VERSION.*//)
-                REV=$(cat /etc/SuSE-release | tr "\n" ' ' | sed s/.*=\ //)
-            elif [ -f /etc/mandrake-release ] ; then
-                DistroBasedOn='Mandrake'; OSSYS="mandriva"
-                PSEUDONAME=$(cat /etc/mandrake-release | sed s/.*\(// | sed s/\)//)
-                REV=$(cat /etc/mandrake-release | sed s/.*release\ // | sed s/\ .*//)
-            elif [ -f /etc/debian_version ] ; then
-                DistroBasedOn='Debian'; OSSYS="debian"
-                DIST=$(cat /etc/lsb-release | grep '^DISTRIB_ID' | awk -F=  '{ print $2 }')
-                PSEUDONAME=$(cat /etc/lsb-release | grep '^DISTRIB_CODENAME' | awk -F=  '{ print $2 }')
-                REV=$(cat /etc/lsb-release | grep '^DISTRIB_RELEASE' | awk -F=  '{ print $2 }')
-            elif [ -f /etc/sabayon-edition ] ; then
-                DistroBasedOn='Gentoo'; OSSYS="gentoo"
-                DIST=$(cat /etc/*-release | grep '^DISTRIB_ID' | awk -F=  '{ print $2 }')
-                #PSEUDONAME=$(cat /etc/lsb-release | grep '^DISTRIB_CODENAME' | awk -F=  '{ print $2 }')
-                REV=$(cat /etc/sabayon-edition | grep -Eo '[0-9][0-9]'.'[0-9][0-9]')    
-            fi
-            if [ -f /etc/UnitedLinux-release ] ; then
-                DIST=$(${DIST}["cat /etc/UnitedLinux-release | tr "\n" ' ' | sed s/VERSION.*//"])
-                OSSYS="unitedlinux"
-            fi
-            OS="${OS,,}"
-            DistroBasedOn="${DistroBasedOn,,}"
-            #readnly make varaible readonly
-            # readonly OS
-            # readonly DIST
-            # readonly DistroBasedOn
-            # readonly PSEUDONAME
-            # readonly REV
-            # readonly KERNEL
-            # readonly MACH
-            # readonly OSSYS
-            ###     export variables
-            # export OS
-            # export DIST
-            # export DistroBasedOn
-            # export PSEUDONAME
-            # export REV
-            # export KERNEL
-            # export MACH
-        fi
+###############################################################################
+# Flags
+###############################################################################
+DEBUG=0
+
+case "${1:-}" in
+  --version)
+    echo "$SCRIPT_NAME v$SCRIPT_VERSION"
+    exit 0
+    ;;
+  --debug)
+    DEBUG=1
+    ;;
+esac
+
+[ "$DEBUG" -eq 1 ] && set -x
+
+###############################################################################
+# Color support (portable, optional)
+###############################################################################
+USE_COLOR=0
+
+if [ -t 1 ] && [ -z "${NO_COLOR:-}" ]; then
+  USE_COLOR=1
+fi
+
+if [ "$USE_COLOR" -eq 1 ]; then
+  C_RESET="$(printf '\033[0m')"
+  C_BOLD="$(printf '\033[1m')"
+  C_DIM="$(printf '\033[2m')"
+  C_RED="$(printf '\033[31m')"
+  C_GREEN="$(printf '\033[32m')"
+  C_YELLOW="$(printf '\033[33m')"
+  C_BLUE="$(printf '\033[34m')"
+  C_CYAN="$(printf '\033[36m')"
+else
+  C_RESET="" C_BOLD="" C_DIM="" C_RED="" C_GREEN=""
+  C_YELLOW="" C_BLUE="" C_CYAN=""
+fi
+
+###############################################################################
+# Defaults
+###############################################################################
+OS="unknown"
+DIST="unknown"
+REV="unknown"
+PSEUDONAME="unknown"
+KERNEL="$(uname -r 2>/dev/null)"
+ARCH="$(uname -m 2>/dev/null)"
+ENVIRONMENT="native"
+DistroBasedOn="unknown"
+OSSYS="unknown"
+os_status="unknown"
+
+###############################################################################
+# Execution + login shell
+###############################################################################
+EXEC_SHELL="$(ps -p $$ -o comm= 2>/dev/null | sed 's:.*/::')"
+LOGIN_SHELL="$(basename "${SHELL:-unknown}")"
+
+###############################################################################
+# Environment detection
+###############################################################################
+if [ -r /proc/version ] && grep -qi microsoft /proc/version; then
+  ENVIRONMENT="WSL"
+fi
+
+case "$(uname -s 2>/dev/null)" in
+  *CYGWIN*|*MSYS*|*MINGW*)
+    ENVIRONMENT="Windows POSIX"
+    ;;
+esac
+
+###############################################################################
+# OS detection
+###############################################################################
+OS="$(uname -s 2>/dev/null | tr '[:upper:]' '[:lower:]')"
+
+case "$OS" in
+  linux)
+    if [ -f /etc/os-release ]; then
+      . /etc/os-release
+      DIST="${NAME:-unknown}"
+      REV="${VERSION_ID:-unknown}"
+      PSEUDONAME="${VERSION_CODENAME:-N/A}"
+
+      case "${ID:-}" in
+        ubuntu|debian)
+          OSSYS="debian"; DistroBasedOn="debian" ;;
+        rhel|centos|rocky|almalinux)
+          OSSYS="redhat"; DistroBasedOn="redhat" ;;
+        fedora)
+          OSSYS="fedora"; DistroBasedOn="fedora" ;;
+        opensuse*|sles)
+          OSSYS="suse"; DistroBasedOn="suse" ;;
+        gentoo)
+          OSSYS="gentoo"; DistroBasedOn="gentoo" ;;
+        arch)
+          OSSYS="arch"; DistroBasedOn="arch" ;;
+        *)
+          OSSYS="linux"; DistroBasedOn="${ID:-unknown}" ;;
+      esac
     fi
+    ;;
+  darwin)
+    OSSYS="darwin"; DistroBasedOn="darwin"
+    DIST="macOS"
+    REV="$(sw_vers -productVersion 2>/dev/null)"
+    PSEUDONAME="$(sw_vers -productName 2>/dev/null)"
+    ;;
+  freebsd|openbsd|netbsd)
+    OSSYS="bsd"; DistroBasedOn="bsd"
+    DIST="$OS"
+    REV="$(uname -r 2>/dev/null)"
+    ;;
+  sunos)
+    OSSYS="solaris"; DistroBasedOn="solaris"
+    DIST="Solaris"
+    REV="$(uname -v 2>/dev/null)"
+    ;;
+esac
+
+###############################################################################
+# Shell capability detection (best-effort)
+###############################################################################
+CAP_ALIASES=0
+CAP_FUNCTIONS=0
+CAP_COMPLEX=0
+CAP_ARRAYS=0
+CAP_ASSOC_ARRAYS=0
+
+case "$LOGIN_SHELL" in
+  bash|zsh|ksh)
+    CAP_ALIASES=1
+    CAP_FUNCTIONS=1
+    CAP_COMPLEX=1
+    CAP_ARRAYS=1
+    ;;
+  sh)
+    CAP_ALIASES=1
+    CAP_FUNCTIONS=1
+    CAP_COMPLEX=0
+    ;;
+  fish)
+    CAP_ALIASES=1
+    CAP_FUNCTIONS=1
+    CAP_COMPLEX=1
+    ;;
+esac
+
+###############################################################################
+# Output (guaranteed)
+###############################################################################
+echo
+printf "%s%sSystem Information%s\n" "$C_BOLD" "$C_CYAN" "$C_RESET"
+
+printf "%s%-22s%s %s\n" "$C_BLUE" "OS:" "$C_RESET" "$OS"
+printf "%s%-22s%s %s\n" "$C_BLUE" "DistroBased on:" "$C_RESET" "$DistroBasedOn"
+printf "%s%-22s%s %s\n" "$C_BLUE" "Dist:" "$C_RESET" "$DIST"
+printf "%s%-22s%s %s\n" "$C_BLUE" "Rev:" "$C_RESET" "$REV"
+printf "%s%-22s%s %s\n" "$C_BLUE" "PSEUDONAME:" "$C_RESET" "$PSEUDONAME"
+printf "%s%-22s%s %s\n" "$C_BLUE" "Kernel:" "$C_RESET" "$KERNEL"
+printf "%s%-22s%s %s\n" "$C_BLUE" "Arch:" "$C_RESET" "$ARCH"
+printf "%s%-22s%s %s\n" "$C_BLUE" "Environment:" "$C_RESET" "$ENVIRONMENT"
+printf "%s%-22s%s %s\n" "$C_BLUE" "Login shell:" "$C_RESET" "$LOGIN_SHELL"
+printf "%s%-22s%s %s\n\n" "$C_BLUE" "Execution shell:" "$C_RESET" "$EXEC_SHELL"
+
+printf "%s%sShell Capabilities%s\n" "$C_BOLD" "$C_CYAN" "$C_RESET"
+
+cap_print() {
+  name="$1"
+  val="$2"
+  if [ "$val" -eq 1 ]; then
+    printf "  %s%-18s%s %sENABLED%s\n" \
+      "$C_BLUE" "$name:" "$C_RESET" "$C_GREEN" "$C_RESET"
+  else
+    printf "  %s%-18s%s %sdisabled%s\n" \
+      "$C_BLUE" "$name:" "$C_RESET" "$C_DIM" "$C_RESET"
+  fi
 }
 
-function setting_standard_commands() 
-{
-    case $OSSYS in
-        solaris*)                                                           # Solaris
-            [[ $debug -eq 1 ]] && echo "Setting alias' for: ${DistroBasedOn^}" || echo "Setting alias' for: ${DistroBasedOn^}" >> $LOG; sleep ${SLEEP}
-            alias install="pkg install" $1
-            alias {uninstall,remove}="pkg uninstall" $1
-            alias app_search="pkg search" $1
-            alias update="pkg update --accept"
-            check_for_line
-            os_status="solaris"
-            ;;
-        redhat*)                                                           #     YUM (RedHat Linux, centos)
-            [[ $debug -eq 1 ]] && echo "Setting alias' for: ${DistroBasedOn^}" || echo "Setting alias' for: ${DistroBasedOn^}" >> $LOG; sleep ${SLEEP}
-            #PATH=$PATH:$HOME/bin
-            alias install="sudo yum install -y" $1
-            alias {uninstall,remove}="sudo yum remove" $1
-            alias update="sudo yum update -y"
-            alias upgrade="sudo yum upgrade -y"
-            alias swap="sudo yum swap" $1 $2
-            alias autoremove="sudo yum autoremove" $1
-            alias reinstall="sudo yum reinstall" $1
-            check_for_line
-            os_status="redhadt"
-            ;;
-        suse*)                                                            #     OpenSuSe)
-            [[ $debug -eq 1 ]] && echo "Setting alias' for: ${DistroBasedOn^}" || echo "Setting alias' for: ${DistroBasedOn^}" >> $LOG; sleep ${SLEEP}
-            alias install="zypper install" $1
-            alias {uninstall,remove}="zypper remove" $1
-            alias app_search="zypper search" $1
-            alias update="sudo zypper refresh; sudo zypper dup"
-            alias sysclean="sudo zypper clean -a"
-            alias dist_upgrade="sudo zypper dist-upgrade"
-            check_for_line
-            os_status="suse"
-            ;;
-        mandriva*)                                                          # Mandrake/Mandriva
-            ;;
-        debian*)                                                            # Ubuntu and derivates
-            [[ $debug -eq 1 ]] && echo "Setting alias' for: ${DistroBasedOn^}" || echo "Setting alias' for: ${DistroBasedOn^}" >> $LOG; sleep ${SLEEP}
-            #alias rm='rm -i' 
-            # Upgrade
-            alias apt_update="sudo aptitude update"
-            # install
-            alias install="apt install" $1
-            alias {uninstall,remove}="sudo apt remove && sudo apt autoremove" $1
-            alias {sys_update,update,sysupdate}="sudo sh -c 'apt update && apt upgrade -y && apt autoremove && apt autoremove'"
-            alias {clean,sysclean}="sudo sh -c 'apt clean && apt autoremove && apt purge'"
-            alias f_install="apt -f install" #force install
-            alias reinstall="apt -f install --reinstall" # Force reinstall
-            # Cleaning
-            alias purge="apt purge"
-            # alias deborphan="deborphan | xaargs sudo apt -y remove --purge"
-            # Network Start, Stop, and Restart
-            alias networkrestart="sudo service networking restart"
-            alias networkstop="sudo service networking stop"
-            alias networkstart="sudo service networking start"
-            check_for_line
-            os_status="Debian"
-            ;;
-        gentoo*)
-            [[ $debug -eq 1 ]] && echo "Setting alias' for: ${DistroBasedOn^}" || echo "Setting alias' for: ${DistroBasedOn^}" >> $LOG; sleep ${SLEEP}
-            alias repo_update="emerge --sync"
-            alias update="emerge --update --deep --ask @world"
-            alias sysupdate="emerge --update --deep --with-bdeps=y --newuse @world"
-            alias cleanupdate="emerge --update --deep --newuse @world && emerge --depclean &&  revdep-rebuild"
-            alias app_search="emerge --search " $1
-            alias {remove,uninstall}="emerge --unmerge " $1
-            check_for_line
-            os_status="Gentoo"
-            ;;
-        darwin*)  
-            [[ $debug -eq 1 ]] && echo "Setting alias' for: ${DistroBasedOn^}" || echo "Setting alias' for: ${DistroBasedOn^}" >> $LOG; sleep ${SLEEP}
-            check_for_line
-            os_status="Mac/Darwin"
-            ;; 
-        *bsd) 
-            [[ $debug -eq 1 ]] && echo "Setting alias' for: ${DistroBasedOn^}" || echo "Setting alias' for: ${DistroBasedOn^}" >> $LOG; sleep ${SLEEP}
-            alias install="pkg install " $1
-            alias {uninstall,remove}="pkg deletei " $1
-            alias {sys_update,sysup,sysupdate}="freebsd-update fetch && freebsd-update install"
-            alias upgrade="pkg update && pkg upgrade"
-            alias autoclean="pkg autoremove"
-            alias clean="pkg clean -c"
-            check_for_line
-            check_for_lineos_status="*bsd"
-            ;;
-        fedora*)                                                           #        Fedora
-            [[ $debug -eq 1 ]] && echo "Setting alias' for: ${DistroBasedOn^}" || echo "Setting alias' for: ${DistroBasedOn^}" >> $LOG; sleep ${SLEEP}
-            alias install="dnf install" $1
-            alias {uninstall,remove}="dnf remove" $1
-            alias upgrade="dnf upgrade"
-            alias app_search="dnf search" $1
-            alias autoremove="dnf remove" $1
-            alias sysclean="dnf clean all"
-            check_for_line
-            os_status="fedora"
-            ;;
-        pacman*)                                                           #        ArchLinux
-            [[ $debug -eq 1 ]] && echo "Setting alias' for: ${DistroBasedOn^}" || echo "Setting alias' for: ${DistroBasedOn^}" >> $LOG; sleep ${SLEEP}
-            alias install="pacman -Syu" $1
-            alias {uninstall,remove}="pacman -Rsc" $1
-            alias force_install="pacman -S --force" $1
-            alias reinstall="pacman -Syu $(pacman -Qqen)"
-            alias update="pacman -Syu"
-            alias sysclean="pacman -Sc"
-            alias package_list="pacman -Q"
-            check_for_line
-            os_status="pacman"
-            ;;
-        msys*)    
-            [[ $debug -eq 1 ]] && echo "Setting alias' for: ${DistroBasedOn^}" || echo "Setting alias' for: ${DistroBasedOn^}" >> $LOG; sleep ${SLEEP}
-            check_for_line
-            os_status="MS Windows"
-            ;;
-        *)        
-            [[ $debug -eq 1 ]] && echo "Unknown OS!" || echo "Unknown OS!" >> $LOG; sleep ${SLEEP} 
-            check_for_line
-            os_status="I have no clue"
-            ;;
-    esac
-}
+cap_print "aliases" "$CAP_ALIASES"
+cap_print "functions" "$CAP_FUNCTIONS"
+cap_print "complex_cmds" "$CAP_COMPLEX"
+cap_print "arrays" "$CAP_ARRAYS"
+cap_print "assoc_arrays" "$CAP_ASSOC_ARRAYS"
 
-get_os
-setting_standard_commands
-
-clear
-echo "function: get_os"; get_os
-echo "function: standard_commands"; setting_standard_commands
-
-echo -e "\nOS:                   ${OS^} "
-echo -e "DistroBased on:       ${DistroBasedOn^}"
-
-echo "Dist:                 ${DIST^}"
-echo "Rev:                  ${REV^}"
-echo "PSEUDONAME:           ${PSEUDONAME^}"
-echo "os_status:            $os_status"
-echo "Status:           $STATUS"
+echo
