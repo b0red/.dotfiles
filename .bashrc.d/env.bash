@@ -25,14 +25,11 @@ shopt -s dirspell       # Autocorrect directory names during completion
 shopt -s nocaseglob     # Case-insensitive globbing (pathname expansion)
 
 # History settings
-HISTCONTROL='ignoreboth'  # Ignore commands starting with space and duplicates
-HISTSIZE=10000            # Number of commands to remember in memory
-HISTFILESIZE=20000        # Number of lines in history file
-# Fixed: removed readonly HISTIGNORE issue - simplified pattern
-HISTIGNORE="exit:history:l:ls:ll:la:lla:bg:fg:h:q:pwd:clear:cls:cd:man"
-
-# Timestamps in history (optional - uncomment if desired)
-# HISTTIMEFORMAT="%F %T "
+HISTCONTROL='ignoreboth'    # Ignore commands starting with space and duplicates
+HISTSIZE=100000             # Number of commands to remember in memory
+HISTFILESIZE=100000         # Number of lines in the history file   
+HISTIGNORE="exit:history:l:ls:ll:la:lla:bg:fg:h:q:pwd:clear:cls:cd:man:pwd:x"
+HISTTIMEFORMAT="%d/%m/%y %T "
 
 # Enable lesspipe for friendly less behavior if available
 [[ -x /usr/bin/lesspipe ]] && eval "$(SHELL=/bin/sh lesspipe)"

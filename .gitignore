@@ -1,4 +1,5 @@
 .bashrc.d/local_alias.bash
+
 #Ignore logs
 **/logs
 *.log
@@ -7,7 +8,11 @@ a.txt
 .gitsecret/keys/random_seed
 !*.secret
 backup-*
+
 # Ignore folders
 extras/
 oldfiles/
 old-files/
+
+# Machine-specific app lists (optional)
+.install_apps.inc.local

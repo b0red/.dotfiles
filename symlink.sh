@@ -1,52 +1,91 @@
 #!/bin/bash
 
-# CHANGES: Use the repository directory as the source instead of $(pwd)
-# and avoid creating self-referential links in the default case.
+# symlink.sh - Distro-specific profile symlink management
+# Called from RunMe.sh with distro information as arguments
+
+set -euo pipefail
+
+# Accept distro info from command line
+DISTRO="${1:-unknown}"
+DISTRO_BASE="${2:-unknown}"
+
 # Resolve repository directory (the directory of this script)
 REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
 
 # Symlink helper function with backup if target file exists
-function linkwork() {
+linkwork() {
     local linkTocheck="$1"
     local sourceLink="$2"
-    if [ -f "$linkTocheck" ]; then
-        echo "$linkTocheck is a file - backing it up"
-        mv "$linkTocheck" "$linkTocheck.bak"
+    
+    # Backup existing file (not symlink)
+    if [ -f "$linkTocheck" ] && [ ! -L "$linkTocheck" ]; then
+        echo "Backing up: $linkTocheck"
+        mv "$linkTocheck" "$linkTocheck.bak-$(date +%Y%m%d_%H%M%S)"
     fi
-    if [ ! -h "$linkTocheck" ]; then
-        ln -s "$sourceLink" "$linkTocheck"
-        echo "$linkTocheck created"
+    
+    # Remove existing symlink or file
+    if [ -e "$linkTocheck" ] || [ -L "$linkTocheck" ]; then
+        rm -f "$linkTocheck"
+    fi
+    
+    # Create symlink
+    if ln -s "$sourceLink" "$linkTocheck"; then
+        echo "✓ Created: $linkTocheck -> $sourceLink"
+        return 0
+    else
+        echo "❌ Failed: $linkTocheck" >&2
+        return 1
     fi
 }
 
-if [ "$(uname -s)" = "Linux" ]; then
-    distro_id=$(grep ^ID= /etc/os-release | sed 's/ID=//;s/"//g')
-    home_dir="/home/$(whoami)"
-    case "$distro_id" in
-        kali)
-            linkwork "$home_dir/.common_profile" "$REPO_DIR/.common_profile"
-            linkwork "$home_dir/.kali_profile" "$REPO_DIR/.kali_profile"
-            linkwork "$home_dir/.bashrc" "$REPO_DIR/.bashrc"
-            linkwork "$home_dir/.vimrc" "$REPO_DIR/.vimrc"
-            linkwork "$home_dir/.tmux.conf" "$REPO_DIR/.tmux.conf"
-            linkwork "$home_dir/.gitconfig" "$REPO_DIR/.gitconfig"
-            ;;
-        raspbian)
-            linkwork "$home_dir/.rpi_profile" "$REPO_DIR/.rpi_profile"
-            ;;
-        ubuntu)
-            linkwork "$home_dir/.ubu_profile" "$REPO_DIR/.ubu_profile"
-            ;;
-        centos)
-            linkwork "$home_dir/.centos_profile" "$REPO_DIR/.centos_profile"
-            ;;
-        *)
-            # Default -> link home files to repo versions (avoid self-linking)
-            linkwork "$home_dir/.tmux.conf" "$REPO_DIR/.tmux.conf"
-            linkwork "$home_dir/.vimrc" "$REPO_DIR/.vimrc"
-            linkwork "$home_dir/.bashrc" "$REPO_DIR/.bashrc"
-            linkwork "$home_dir/.common_profile" "$REPO_DIR/.common_profile"
-            linkwork "$home_dir/.gitconfig" "$REPO_DIR/.gitconfig"
-            ;;
-    esac
-fi 
+# Only run on Linux
+if [ "$(uname -s)" != "Linux" ]; then
+    echo "⚠️ Not Linux, skipping distro-specific symlinks"
+    exit 0
+fi
+
+home_dir="$HOME"
+
+# Distro-specific profile symlinking
+case "$DISTRO" in
+    kali)
+        echo "Setting up Kali-specific profiles..."
+        linkwork "$home_dir/.common_profile" "$REPO_DIR/.common_profile"
+        linkwork "$home_dir/.kali_profile" "$REPO_DIR/.kali_profile"
+        linkwork "$home_dir/.bashrc" "$REPO_DIR/.bashrc"
+        linkwork "$home_dir/.gitconfig" "$REPO_DIR/.gitconfig"
+        ;;
+    
+    raspbian)
+        echo "Setting up Raspbian-specific profiles..."
+        linkwork "$home_dir/.common_profile" "$REPO_DIR/.common_profile"
+        linkwork "$home_dir/.rpi_profile" "$REPO_DIR/.rpi_profile"
+        linkwork "$home_dir/.bashrc" "$REPO_DIR/.bashrc"
+        linkwork "$home_dir/.gitconfig" "$REPO_DIR/.gitconfig"
+        ;;
+    
+    ubuntu)
+        echo "Setting up Ubuntu-specific profiles..."
+        linkwork "$home_dir/.common_profile" "$REPO_DIR/.common_profile"
+        linkwork "$home_dir/.ubu_profile" "$REPO_DIR/.ubu_profile"
+        linkwork "$home_dir/.bashrc" "$REPO_DIR/.bashrc"
+        linkwork "$home_dir/.gitconfig" "$REPO_DIR/.gitconfig"
+        ;;
+    
+    centos|rhel|fedora)
+        echo "Setting up RHEL-based profiles..."
+        linkwork "$home_dir/.common_profile" "$REPO_DIR/.common_profile"
+        linkwork "$home_dir/.centos_profile" "$REPO_DIR/.centos_profile"
+        linkwork "$home_dir/.bashrc" "$REPO_DIR/.bashrc"
+        linkwork "$home_dir/.gitconfig" "$REPO_DIR/.gitconfig"
+        ;;
+    
+    *)
+        echo "Setting up default Linux profiles..."
+        linkwork "$home_dir/.common_profile" "$REPO_DIR/.common_profile"
+        linkwork "$home_dir/.bashrc" "$REPO_DIR/.bashrc"
+        linkwork "$home_dir/.gitconfig" "$REPO_DIR/.gitconfig"
+        ;;
+esac
+
+echo "✓ Distro-specific symlinks complete"
