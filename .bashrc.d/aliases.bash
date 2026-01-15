@@ -140,11 +140,11 @@ alias apt='sudo apt'
 # clean commented out as incomplete
 alias latest='grep " install " /var/log/dpkg.log* 2>/dev/null'
 
-# Deborphan (auto-install if missing, safe)
-if ! command -v deborphan >/dev/null 2>&1; then
-  echo "deborphan missing; installing..." >&2
-  sudo apt install -y deborphan >/dev/null 2>&1 || true
-fi
+# # Deborphan (auto-install if missing, safe)
+# if ! command -v deborphan >/dev/null 2>&1; then
+#   echo "deborphan missing; installing..." >&2
+#   sudo apt install -y deborphan >/dev/null 2>&1 || true
+# fi
 
 # Midnight Commander
 command -v mc >/dev/null 2>&1 && alias mc='sudo mc'

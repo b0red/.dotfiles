@@ -47,51 +47,7 @@ shopt -s cdspell         # Autocorrect minor spelling errors in cd
 shopt -s dirspell        # Autocorrect directory names during completion
 shopt -s nocaseglob      # Case-insensitive globbing
 
-# =============================================================================
-# PROMPT SETUP - Color-coded by privilege level
-# =============================================================================
-setup_prompt() {
-    local is_privileged=0
-    
-    # Primary check: Are we actually root right now?
-    if [ "$EUID" -eq 0 ] || [ "$(id -u)" -eq 0 ]; then
-        is_privileged=1
-    fi
-    
-    # Secondary check: Is the USER variable set to root?
-    if [ "$USER" = "root" ] || [ "$LOGNAME" = "root" ]; then
-        is_privileged=1
-    fi
-    
-    # Optional: Check if user is in sudo/wheel/admin group (commented out by default)
-    # Uncomment if you want sudoers to also get red prompt
-    # if groups 2>/dev/null | grep -qE '\b(sudo|wheel|admin)\b'; then
-    #     is_privileged=1
-    # fi
-    
-    if [ $is_privileged -eq 1 ]; then
-        # Root/privileged prompt - RED username, hostname, and $
-        PS1='\[\033[1;31m\]\u\[\033[0;31m\]@\[\033[1;31m\]\h\[\033[0m\]:\[\033[1;34m\]\w\[\033[1;31m\]\$\[\033[0m\] '
-    else
-        # Normal user - GREEN username, hostname, and $
-        PS1='\[\033[1;32m\]\u\[\033[0;32m\]@\[\033[1;32m\]\h\[\033[0m\]:\[\033[1;34m\]\w\[\033[1;32m\]\$\[\033[0m\] '
-    fi
-    
-    # Export for subshells
-    export PS1
-}
 
-# Set up the prompt
-setup_prompt
-unset -f setup_prompt
-
-# =============================================================================
-# SOURCE MODULAR CONFIGURATION FILES (IDEMPOTENT + INTERACTIVE GUARD)
-# =============================================================================
-# Only load in interactive shells; skip scripts/cron for perf/safety
-if [[ $- != *i* ]]; then
-    return 0
-fi
 
 BASHRC_DIR="$HOME/dotfiles/.bashrc.d"
 
@@ -127,6 +83,43 @@ fi
 
 unset -v BASHRC_DIR loaded_files
 
+    # =============================================================================
+    # PROMPT SETUP - Color-coded by privilege level
+    # =============================================================================
+    setup_prompt() {
+        local is_privileged=0
+        
+        # Primary check: Are we actually root right now?
+        if [ "$EUID" -eq 0 ] || [ "$(id -u)" -eq 0 ]; then
+            is_privileged=1
+        fi
+        
+        # Secondary check: Is the USER variable set to root?
+        if [ "$USER" = "root" ] || [ "$LOGNAME" = "root" ]; then
+            is_privileged=1
+        fi
+        
+        # Optional: Check if user is in sudo/wheel/admin group (commented out by default)
+        # Uncomment if you want sudoers to also get red prompt
+        # if groups 2>/dev/null | grep -qE '\b(sudo|wheel|admin)\b'; then
+        #     is_privileged=1
+        # fi
+        
+        if [ $is_privileged -eq 1 ]; then
+            # Root/privileged prompt - RED username, hostname, and $
+            PS1='\[\033[1;31m\]\u\[\033[0;31m\]@\[\033[1;31m\]\h\[\033[0m\]:\[\033[1;34m\]\w\[\033[1;31m\]\$\[\033[0m\] '
+        else
+            # Normal user - GREEN username, hostname, and $
+            PS1='\[\033[1;32m\]\u\[\033[0;32m\]@\[\033[1;32m\]\h\[\033[0m\]:\[\033[1;34m\]\w\[\033[1;32m\]\$\[\033[0m\] '
+        fi
+        
+        # Export for subshells
+        export PS1
+    }
+
+# Set up the prompt
+setup_prompt
+unset -f setup_prompt
 
 # =============================================================================
 # OS DETECTION & PACKAGE MANAGER SETUP
