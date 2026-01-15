@@ -4,6 +4,9 @@
 
 set -euo pipefail
 
+# Clear all aliases to avoid conflicts
+unalias -a 2>/dev/null
+
 # =============================================================================
 # RECURSION GUARD
 # =============================================================================
@@ -30,6 +33,10 @@ TITLE="Dotfiles Installer Script"
 # APP_ARRAY=(curl htop ncdu pydf tree tmux vim mc fd-find git bat tldr jq wget unzip zip broot atop btop fzf yq entr)
 DOT_ARRAY=("$HOME/.profile" "$HOME/.bashrc" "$HOME/.bash_profile" "$HOME/.inputrc")
 OLD_FILE_ARRAY=("$HOME/.bashrc" "$HOME/.profile" "$HOME/.bash_profile" "$HOME/.inputrc" "$HOME/.cshrc" "$HOME/.login")
+
+# ANSI Color for Yellow
+YELLOW='\033[1;33m'
+NC='\033[0m' # No Color
 
 # Global variable for sudo keeper process
 SUDO_KEEPER_PID=""
@@ -78,7 +85,7 @@ main() {
     update_submodules
     clone_repos
     symlink_external_repos
-    add_tmux_line
+    # add_tmux_line
     source_bashrc
     
     log ""
@@ -102,9 +109,14 @@ main() {
 # UTILITY FUNCTIONS
 # =============================================================================
 
+# Logging function, prints to both log file and stdout cleanly
 log() {
-    local msg="[$(date +'%Y-%m-%d %H:%M:%S')] $*"
-    echo "$msg" | tee -a "${LOG:-/dev/stdout}"
+    local msg="$1"
+    # 1. Write timestamped message to log file only
+    echo "[$(date +'%Y-%m-%d %H:%M:%S')] $msg" >> "$LOG" 2>/dev/null
+    
+    # 2. Print clean message to screen (stdout)
+    echo -e "$msg"
 }
 
 logfile_init() {
@@ -174,12 +186,12 @@ add_file_header() {
     local temp_file=$(mktemp)
     
     cat > "$temp_file" << EOF
-### -+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+### -+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ###                                             Created by RunMe.sh $creation_date
 ###                                             Host: $hostname
 ###                                             User: $USER
 ###                                             Distro: $DISTRO
-### -+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+### -+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 
 EOF
     
@@ -236,13 +248,6 @@ get_os_info() {
 
 load_app_list() {
     local app_file="$DIR/.install_apps.inc"
-    local local_file="$DIR/.install_apps.inc.local"
-    
-    # Use local override if exists
-    if [ -r "$local_file" ]; then
-        app_file="$local_file"
-        log "Using local app list: $local_file"
-    fi
     
     if [ ! -r "$app_file" ]; then
         log "⚠️ Warning: $app_file not found"
@@ -255,13 +260,17 @@ load_app_list() {
     # Read file, filter comments and empty lines
     local apps=()
     while IFS= read -r line || [ -n "$line" ]; do
-        # Skip comments and empty lines
-        [[ "$line" =~ ^[[:space:]]*# ]] && continue
-        [[ -z "${line// }" ]] && continue
+        # Remove inline comments (everything after #)
+        line="${line%%#*}"
         
-        # Trim whitespace and add to array
+        # Trim whitespace
         line=$(echo "$line" | xargs)
-        [ -n "$line" ] && apps+=("$line")
+        
+        # Skip empty lines
+        [ -z "$line" ] && continue
+        
+        # Add to array
+        apps+=("$line")
     done < "$app_file"
     
     if [ ${#apps[@]} -eq 0 ]; then
@@ -543,6 +552,8 @@ clone_repos() {
 
     # Clone .vim repo (into $HOME/.vim) if missing
     clone_if_missing "https://bitbucket.org/b0red/.vim.git" "$HOME/.vim"
+
+    clone_if_missing "https://github.com/tmux-plugins/tpm" "$HOME/.tmux/plugins/tpm"
 }
 
 symlink_external_repos() {
@@ -799,3 +810,4 @@ case "${1:-}" in
         exit 1
         ;;
 esac
+# End of RunMe.sh

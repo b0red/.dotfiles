@@ -52,39 +52,39 @@ case "$DISTRO" in
         echo "Setting up Kali-specific profiles..."
         linkwork "$home_dir/.common_profile" "$REPO_DIR/.common_profile"
         linkwork "$home_dir/.kali_profile" "$REPO_DIR/.kali_profile"
-        linkwork "$home_dir/.bashrc" "$REPO_DIR/.bashrc"
-        linkwork "$home_dir/.gitconfig" "$REPO_DIR/.gitconfig"
+        #linkwork "$home_dir/.bashrc" "$REPO_DIR/.bashrc"
+        #linkwork "$home_dir/.gitconfig" "$REPO_DIR/.gitconfig"
         ;;
     
     raspbian)
         echo "Setting up Raspbian-specific profiles..."
         linkwork "$home_dir/.common_profile" "$REPO_DIR/.common_profile"
         linkwork "$home_dir/.rpi_profile" "$REPO_DIR/.rpi_profile"
-        linkwork "$home_dir/.bashrc" "$REPO_DIR/.bashrc"
-        linkwork "$home_dir/.gitconfig" "$REPO_DIR/.gitconfig"
+        #linkwork "$home_dir/.bashrc" "$REPO_DIR/.bashrc"
+        #linkwork "$home_dir/.gitconfig" "$REPO_DIR/.gitconfig"
         ;;
     
     ubuntu)
         echo "Setting up Ubuntu-specific profiles..."
         linkwork "$home_dir/.common_profile" "$REPO_DIR/.common_profile"
         linkwork "$home_dir/.ubu_profile" "$REPO_DIR/.ubu_profile"
-        linkwork "$home_dir/.bashrc" "$REPO_DIR/.bashrc"
-        linkwork "$home_dir/.gitconfig" "$REPO_DIR/.gitconfig"
+        #linkwork "$home_dir/.bashrc" "$REPO_DIR/.bashrc"
+        #linkwork "$home_dir/.gitconfig" "$REPO_DIR/.gitconfig"
         ;;
     
     centos|rhel|fedora)
         echo "Setting up RHEL-based profiles..."
         linkwork "$home_dir/.common_profile" "$REPO_DIR/.common_profile"
         linkwork "$home_dir/.centos_profile" "$REPO_DIR/.centos_profile"
-        linkwork "$home_dir/.bashrc" "$REPO_DIR/.bashrc"
-        linkwork "$home_dir/.gitconfig" "$REPO_DIR/.gitconfig"
+        #linkwork "$home_dir/.bashrc" "$REPO_DIR/.bashrc"
+        #linkwork "$home_dir/.gitconfig" "$REPO_DIR/.gitconfig"
         ;;
     
     *)
         echo "Setting up default Linux profiles..."
         linkwork "$home_dir/.common_profile" "$REPO_DIR/.common_profile"
-        linkwork "$home_dir/.bashrc" "$REPO_DIR/.bashrc"
-        linkwork "$home_dir/.gitconfig" "$REPO_DIR/.gitconfig"
+        #linkwork "$home_dir/.bashrc" "$REPO_DIR/.bashrc"
+        #linkwork "$home_dir/.gitconfig" "$REPO_DIR/.gitconfig"
         ;;
 esac
 

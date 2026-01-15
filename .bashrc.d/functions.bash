@@ -740,7 +740,6 @@ function functions() {
     fi
 }
 
-
 # Set up version command (fastfetch or neofetch)
 if command -v fastfetch >/dev/null 2>&1; then
     version() { fastfetch "$@"; }

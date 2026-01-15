@@ -11,11 +11,10 @@ vim
 
 # === TERMINAL MULTIPLEXERS ===
 tmux
-# screen  # alternative to tmux
 
 # === SYSTEM MONITORING ===
 htop
-btop
+btop      # better top
 atop
 
 # === DISK UTILITIES ===

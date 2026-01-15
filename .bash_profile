@@ -1,3 +1,10 @@
+### -+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+###                                             Created by RunMe.sh 2026-01-15 01:43:44
+###                                             Host: DESKTOP-JLMCRD0
+###                                             User: patrick
+###                                             Distro: ubuntu
+### -+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
 ###     WSL-Specific: Proper Loading Order (add to ~/.bash_profile if exists, or create):
 #
 

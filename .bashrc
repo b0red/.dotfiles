@@ -1,6 +1,9 @@
-### -+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-###                                                   Created by RunMe.sh 20260107
-### -+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+### -+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+###                                             Created by RunMe.sh 2026-01-15 01:43:43
+###                                             Host: DESKTOP-JLMCRD0
+###                                             User: patrick
+###                                             Distro: ubuntu
+### -+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 
 # ~/.bashrc: executed by bash(1) for non-login shells.
 
@@ -9,9 +12,6 @@ case $- in
     *i*) ;;
     *) return;;
 esac
-
-# Clear all aliases to avoid conflicts
-unalias -a 2>/dev/null
 
 ###		Prevent recursion / infinite sourcing
 #
@@ -47,18 +47,13 @@ shopt -s cdspell         # Autocorrect minor spelling errors in cd
 shopt -s dirspell        # Autocorrect directory names during completion
 shopt -s nocaseglob      # Case-insensitive globbing
 
-# History settings
-HISTCONTROL='ignoreboth'
-HISTSIZE=100000
-HISTFILESIZE=100000
-HISTIGNORE="exit:history:l:ls:ll:la:lla:bg:fg:h:q:pwd:clear:cls:cd:man:pwd:x"
-HISTTIMEFORMAT="%d/%m/%y %T "
-
 # User prompt: red for root, green for normal users
-if [ "$(id -u)" -eq 0 ]; then
-    PS1='\[\e[1;31m\]\u\[\e[m\]\[\e[0;32m\]@\h:\[\e[m\]\[\e[1;34m\]\w\[\e[m\]\[\e[1;31m\]\$\[\e[m\] '
+if [ "$EUID" -eq 0 ] || [ "$(id -u)" -eq 0 ]; then
+    # Root prompt - red username and red $
+    PS1='\[\033[1;31m\]\u\[\033[0;32m\]@\h\[\033[0m\]:\[\033[1;34m\]\w\[\033[1;31m\]\$\[\033[0m\] '
 else
-    PS1='\[\e[1;32m\]\u\[\e[m\]\[\e[0;32m\]@\h:\[\e[m\]\[\e[1;34m\]\w\[\e[m\]\[\e[1;32m\]\$\[\e[m\] '
+    # Normal user - green username and green $
+    PS1='\[\033[1;32m\]\u\[\033[0;32m\]@\h\[\033[0m\]:\[\033[1;34m\]\w\[\033[1;32m\]\$\[\033[0m\] '
 fi
 
 # Source modular configuration files
@@ -95,85 +90,69 @@ fi
 # Cleanup variable
 unset BASHRC_DIR
 
-# tmux git integration if inside tmux
-if [ -n "$TMUX" ] && [ -f "$HOME/.tmux-git/tmux-git.sh" ]; then
-    source "$HOME/.tmux-git/tmux-git.sh"
-fi
-
 # OS detection and setting package manager aliases
 if command -v get_os >/dev/null 2>&1; then
     get_os >/dev/null 2>&1
     setting_standard_commands >/dev/null 2>&1
 fi
 
-# Fix tmux socket permissions
-umask 0022
-TMUX_TMPDIR="/tmp/tmux-$(id -u)"
-if [ -d "$TMUX_TMPDIR" ]; then
-    chmod 0700 "$TMUX_TMPDIR" 2>/dev/null
-    # Verify permissions were set correctly
-    if [ "$(stat -c '%a' "$TMUX_TMPDIR" 2>/dev/null)" != "700" ]; then
-        rm -rf "$TMUX_TMPDIR" 2>/dev/null
-        mkdir -p "$TMUX_TMPDIR" 2>/dev/null
-        chmod 0700 "$TMUX_TMPDIR" 2>/dev/null
-    fi
-else
-    mkdir -p "$TMUX_TMPDIR" 2>/dev/null
-    chmod 0700 "$TMUX_TMPDIR" 2>/dev/null
-fi
-unset TMUX_TMPDIR
-
 # Source broot launcher if available
 if command -v broot >/dev/null 2>&1; then
     [ -f "$HOME/.config/broot/launcher/bash/br" ] && source "$HOME/.config/broot/launcher/bash/br"
 fi
 
-# Start ssh-agent if not already running
-if [ -z "$SSH_AUTH_SOCK" ]; then
-    eval "$(ssh-agent -s)"
-    ssh-add ~/.ssh/id_rsa
-fi
+# --- SSH Agent & Keychain Setup ---
+# Only run in interactive shells AND when NOT already inside a tmux session
+if [[ $- == *i* ]] && [ -z "$TMUX" ]; then
 
-# SSH agent with keychain (if available)
-if command -v keychain >/dev/null 2>&1; then
-    # Look for SSH keys
+    # 1. Identify available SSH keys
     SSH_KEYS=()
     for key in id_ed25519 id_rsa id_ecdsa id_dsa; do
         [ -f "$HOME/.ssh/$key" ] && SSH_KEYS+=("$key")
     done
-    
-    # Only run keychain if we have keys
+
+    # 2. Only proceed if we actually found keys
     if [ ${#SSH_KEYS[@]} -gt 0 ]; then
-        eval $(keychain --eval --agents ssh --quiet "${SSH_KEYS[@]}" 2>/dev/null)
+        
+        if command -v keychain >/dev/null 2>&1; then
+            # Preferred: Use keychain to manage the agent
+            eval $(keychain --eval --agents ssh --quiet "${SSH_KEYS[@]}" 2>/dev/null)
+        else
+            # Fallback: Manual ssh-agent management
+            if [ -z "$SSH_AUTH_SOCK" ] || ! ssh-add -l >/dev/null 2>&1; then
+                eval "$(ssh-agent -s)" >/dev/null 2>&1
+                for k in "${SSH_KEYS[@]}"; do
+                    ssh-add "$HOME/.ssh/$k" </dev/null
+                done
+            fi
+        fi
     fi
-    unset SSH_KEYS key
+    
+    # Cleanup variables to keep the environment clean
+    unset SSH_KEYS key k
+fi
+####     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+# Launch the tmux script
+# 1. [[ $- == *i* ]]          -> Only run in interactive terminals
+# 2. [ -z "$TMUX" ]           -> Only run if NOT already inside a tmux session (prevents nesting)
+# 3. [ -x "$HOME/start_tmux.sh" ] -> Only run if the file exists and is executable
+if [[ $- == *i* ]] && [ -z "$TMUX" ] && [ -x "$HOME/start_tmux.sh" ]; then
+    bash "$HOME/start_tmux.sh"
 fi
 
-# Auto-start tmux session (disabled by default - uncomment to enable)
-# Note: This creates an infinite loop if tmux is not available or fails
-# Only enable if you're sure tmux is properly configured
-# if command -v tmux >/dev/null 2>&1 && [ -z "$TMUX" ]; then
-#     # Check if 'main' session exists
-#     if tmux has-session -t main 2>/dev/null; then
-#         exec tmux attach-session -t main
-#     else
-#         exec tmux new-session -s main
-#     fi
-# fi
-
-# Run custom tmux initialization script
-if [ -z "$TMUX" ] && [ -x "$HOME/bin/start_tmux.sh" ]; then
-    "$HOME/bin/start_tmux.sh"
+# --- Tmux Git Integration ---
+if [ -f ~/.tmux-extras/tmux-git.sh ]; then 
+    source ~/.tmux-extras/tmux-git.sh
 fi
 
 # Welcome message (optional - comment out if not desired)
 if [ -n "$PS1" ]; then
+    clear
     echo -e "\n${GREEN:-}Welcome to $(hostname)${NC:-}"
     echo -e "${BLUE:-}$(date)${NC:-}\n"
 fi
 
 # source ~/.dcp_alias                                           # for alias="dcp vpn/novpn"
 
-source ~/dotfiles/.bashrc
-# Prevent recursion: if already sourced, exit early
-if [ -f ~/.tmux-extras/tmux-gittmux-gittmux.sh ]; then source ~/.tmux-extras/tmux-gittmux-gittmux.sh; fi
+echo "✅ ~/.bashrc (re)loaded successfully"

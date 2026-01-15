@@ -8,7 +8,7 @@
 #----------------------------------------------------------------------------------------------------------------
 ###     Reload aliases, functions and all
 #unset DOTFILES_BASHRC_DONE; source ~/.bashrc
-alias reload="source ~/.bashrc; clear; echo 'Reloaded ~/.bashrc'"
+alias reload="source ~/.bashrc; clear;"
 
 NOW=$(date '+%Y-%m-%d_%H:%M')
 
@@ -269,7 +269,7 @@ alias wg_down="sudo wg-quick down ~/wireguard/conf/SeStockholm.conf"
 
 ###     Scan open ports
 #
-#alias portscan="for i in {1..65535}; do (echo < /dev/tcp/127.0.0.1/$i) &>/dev/null && printf "\n[+] Open Port at\n: \t%d\n" "$i" || printf "."; done"
+alias portscan="for i in {1..65535}; do (echo < /dev/tcp/127.0.0.1/$i) &>/dev/null && printf "\n[+] Open Port at\n: \t%d\n" "$i" || printf "."; done"
 
 ###     Just to check if loaded
 #

@@ -37,37 +37,34 @@ HISTTIMEFORMAT="%d/%m/%y %T "
 # Detect color support
 force_color_prompt=yes
 
-if [[ -n "$force_color_prompt" ]]; then
-    if command -v tput >/dev/null 2>&1; then
-        # Test if terminal supports colors
-        if tput setaf 1 &>/dev/null; then
-            color_prompt=yes
-        else
-            color_prompt=
-        fi
-    else
-        color_prompt=
-    fi
-fi
-
-# Set PS1 prompt string with or without colors
+# Set PS1 prompt with color support and root detection
 if [[ "$color_prompt" == yes ]]; then
-    # Colored prompt: user@host:path$
-    PS1='${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ '
+    # Check if running as root
+    if [ "$EUID" -eq 0 ] || [ "$(id -u)" -eq 0 ]; then
+        # Root prompt - RED username and dollar sign
+        PS1='${debian_chroot:+($debian_chroot)}\[\033[1;31m\]\u\[\033[0;32m\]@\h\[\033[0m\]:\[\033[1;34m\]\w\[\033[1;31m\]\$\[\033[0m\] '
+    else
+        # Normal user - GREEN username and dollar sign
+        PS1='${debian_chroot:+($debian_chroot)}\[\033[1;32m\]\u\[\033[0;32m\]@\h\[\033[0m\]:\[\033[1;34m\]\w\[\033[1;32m\]\$\[\033[0m\] '
+    fi
 else
-    # Plain prompt
-    PS1='${debian_chroot:+($debian_chroot)}\u@\h:\w\$ '
+    # Plain prompt without colors
+    if [ "$EUID" -eq 0 ] || [ "$(id -u)" -eq 0 ]; then
+        PS1='${debian_chroot:+($debian_chroot)}\u@\h:\w# '  # Root gets #
+    else
+        PS1='${debian_chroot:+($debian_chroot)}\u@\h:\w\$ '  # User gets $
+    fi
 fi
 
 # Set xterm title to user@host:dir if supported
 case "$TERM" in
-    xterm*|rxvt*)
-        PS1="\[\e]0;${debian_chroot:+($debian_chroot)}\u@\h: \w\a\]$PS1"
-        ;;
+xterm*|rxvt*)
+    PS1="\[\e]0;${debian_chroot:+($debian_chroot)}\u@\h: \w\a\]$PS1"
+    ;;
 esac
 
 unset color_prompt force_color_prompt
-
+    
 # Enable colored ls output if supported
 if [[ -x /usr/bin/dircolors ]]; then
     if [[ -r ~/.dircolors ]]; then
