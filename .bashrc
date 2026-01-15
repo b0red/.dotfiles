@@ -86,40 +86,47 @@ setup_prompt
 unset -f setup_prompt
 
 # =============================================================================
-# SOURCE MODULAR CONFIGURATION FILES
+# SOURCE MODULAR CONFIGURATION FILES (IDEMPOTENT + INTERACTIVE GUARD)
 # =============================================================================
+# Only load in interactive shells; skip scripts/cron for perf/safety
+if [[ $- != *i* ]]; then
+    return 0
+fi
+
 BASHRC_DIR="$HOME/dotfiles/.bashrc.d"
 
-if [ -d "$BASHRC_DIR" ]; then
-    # Source specific files first (order matters)
-    [ -f "$BASHRC_DIR/exports.bash" ] && source "$BASHRC_DIR/exports.bash"
-    [ -f "$BASHRC_DIR/env.bash" ] && source "$BASHRC_DIR/env.bash"
-    [ -f "$BASHRC_DIR/functions.bash" ] && source "$BASHRC_DIR/functions.bash"
-    [ -f "$BASHRC_DIR/git.bash" ] && source "$BASHRC_DIR/git.bash"
-    [ -f "$BASHRC_DIR/docker.bash" ] && source "$BASHRC_DIR/docker.bash"
+# Track loaded files to prevent reload dupes
+declare -A loaded_files
+
+if [[ -d "$BASHRC_DIR" ]]; then
+    # Explicit order (critical: exports first, then functions/tools)
+    for file in exports.bash env.bash functions.bash git.bash docker.bash; do
+        f="$BASHRC_DIR/$file"
+        if [[ -f "$f" && -z "${loaded_files[$file]}" ]]; then
+            source "$f" && loaded_files[$file]=1
+        fi
+    done
     
-    # Source any remaining .bash files not already loaded
+    # Remaining .bash files (alphabetical)
     for f in "$BASHRC_DIR"/*.bash; do
-        [ -f "$f" ] || continue
-        # Skip already sourced files
-        case "$(basename "$f")" in
-            exports.bash|env.bash|functions.bash|git.bash|docker.bash) continue ;;
-        esac
-        source "$f"
+        [[ -f "$f" ]] || continue
+        basename_f=$(basename "$f")
+        [[ -z "${loaded_files[$basename_f]}" ]] || continue
+        source "$f" && loaded_files[$basename_f]=1
     done
-    unset f
+    unset -v f basename_f
 fi
 
-# Source profile scripts if they exist
-if [ -d "$HOME/dotfiles/.profile.d" ]; then
+# .profile.d (non-bash, always load if interactive)
+if [[ -d "$HOME/dotfiles/.profile.d" && $- == *i* ]]; then
     for f in "$HOME/dotfiles/.profile.d"/*.sh; do
-        [ -f "$f" ] && source "$f"
+        [[ -f "$f" ]] && source "$f"
     done
-    unset f
+    unset -v f
 fi
 
-# Cleanup variable
-unset BASHRC_DIR
+unset -v BASHRC_DIR loaded_files
+
 
 # =============================================================================
 # OS DETECTION & PACKAGE MANAGER SETUP
