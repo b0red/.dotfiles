@@ -10,6 +10,9 @@ case $- in
     *) return ;;
 esac
 
+# Date alias (original NOW fixed)
+NOW='date +%Y-%m-%d_%H:%M'
+
 # Check window size after each command and update LINES and COLUMNS if needed
 shopt -s checkwinsize
 

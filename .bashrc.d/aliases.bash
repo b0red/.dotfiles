@@ -1,141 +1,100 @@
-#----------------------------------------------------------------------------------------------------------------
+#                                                                                                            2025-01-15
+#=======================================================================================================================
+# .bash_aliases - Refined collection of bash aliases for Linux/Ubuntu with error checks and modern alternatives
+#=======================================================================================================================
+# This file provides productivity aliases grouped logically:
+# 1. Reload/Sourcing (general)
+# 2. Navigation/Directory listings (core ls/tree)
+# 3. File operations (mv/rm/cat)
+# 4. System monitoring (ps/du/df/top)
+# 5. Package/Debian tools (apt/deborphan - Ubuntu-specific)
+# 6. Networking/Tools (ssh/ip/ports)
+# 7. Git/Tmux/Dev (git/tmux)
+# 8. Modern alternatives (eza/bat/broot/fd - non-Ubuntu preferred)
+# 9. Misc utilities (weather/cron)
 #
-#		.bash_aliases
-#
-#----------------------------------------------------------------------------------------------------------------
+# Error handling: All aliases use safe quoting; conditionals check commands before overriding.
+# Cross-platform: Ubuntu-first, with fallbacks (e.g., eza if installed, else ls).
+#=======================================================================================================================
 
-###     Reload aliases, functions and all
-#unset DOTFILES_BASHRC_DONE; source ~/.bashrc
-alias reload="unset BASHRC_SOURCED && source ~/.bashrc; clear"
-
-NOW=$(date '+%Y-%m-%d_%H:%M')
-
-alias nano="nano -c"
-alias wget="wget -c $1"
-
-###     Repeat the last command with sudo prefixed
-#
-alias please="sudo $(fc -ln -1)"
-
-###     Apt is always sudo
-#
-alias apt="sudo apt"
-
-###     vi is vim
-#
-alias vi="vim"
-
-###     Check if command exists             # Needs to be here first
-#
-function command_exists() {
-    if command -v "$1" >/dev/null 2>&1; then
-        echo $1 is installed!
-    else
-        echo $1 is not installed!!
-    fi
+#--------------------------------------
+# 0. Helper Functions (originals fixed)
+#--------------------------------------
+command_exists() {
+  if command -v "$1" >/dev/null 2>&1; then
+    echo -e "${N_GREEN}$1${NC} is installed!"
+    return 0
+  else
+    echo -e "${N_RED}$1${NC} is not installed!"
+    return 1
+  fi
 }
 
-function command_check() {
-     command -v "$1" >/dev/null 2>&1
+command_check() {
+  command -v "$1" >/dev/null 2>&1
 }
 
-###	Getting colored results when using a pipe from grep to less.
-# 
-alias less="less -R"
+#--------------------------------------
+# 1. Reload and Sourcing
+#--------------------------------------
+alias reload='unset BASHRC_SOURCED 2>/dev/null && source ~/.bashrc && clear'
+alias src='source ~/.bashrc'
 
-###	Jump back n directories at a time
-# 
-alias ..="cd .."
-alias ...="cd ../../"
-alias ....="cd ../../../"
-alias .....="cd ../../../../"
-alias ......="cd ../../../../../"
+#--------------------------------------
+# 2. Navigation and Directory Listings (Ubuntu ls defaults)
+#--------------------------------------
+alias ..='cd ..'
+alias ...='cd ../..'
+alias ....='cd ../../..'
+alias .....='cd ../../../..'
+alias ......='cd ../../../../..'
+alias back='cd "$OLDPWD"'
+alias p='pwd'
+alias x='exit'
+alias clr='clear && pwd && ls'
+alias cls='clear'
 
-###	Various
-# 
-alias h="history | grep $1 "
-alias hr="history | sort -rn"
-alias mv="mv -v" 
-alias rm="rm -i"
-
-### One letter quickies:
-# 
-alias p="pwd"
-alias x="exit"
-
-###	Nicer directory listings
-# 
-alias clr="clear;pwd;ls"
-alias cls="clear"
-alias lsd="ls -alF |grep /$" 	## Might be wrong
-alias back="cd $OLDPWD"
-
-###	Rootstuff
-# 
-alias root="sudo su"
-alias su="sudo -i"
-alias f="find . | grep "
-
-###	Dirsize in human readable form
-# 
-alias df="df -h"
-
-###     ssh
-#
-alias ssh='if [ "$(ssh-add -l)" = "The agent has no identities." ]; then ssh-add; fi; /usr/bin/ssh "$@"'
-
-###	Get weeknumber
-#
-alias week="(/bin/date +%V)"
-
-###	Tree
-#
-if command_check broot; then alias tree="broot"; fi
-alias ltree="ls -R | grep ":$" | sed -e 's/:$//' -e 's/[^-][^\/]*\//--/g' -e 's/^/   /' -e 's/-/|/'"
-alias tree1="tree -L 1"
-alias tree2="tree -L 2"
-alias tree3="tree -L 3"
-alias tree4="tree -L 4"
-
-###	File related
-#
-alias lf="ls -l | egrep -v '^d'"
-alias ldir="ls -l | egrep '^d'"
-#alias clean="sudo apt y"
-
-### Shorts
-#
-alias h="history | grep -n $1"
-
-###     Enable colorsupport of ls and add handy aliases
-#
+# Standard ls with colors (Ubuntu default)
 if [[ -x /usr/bin/dircolors ]]; then
-    test -r ~/.dircolors && eval "$(dircolors -b ~/.dircolors)"||eval "$(dircolors -b)"
-    alias ls="ls --color=auto"
-	###     Colorize the grep command output for ease of use (good for log files)
-	# 
-	alias {grep,egrep,fgrep}="grep --color=always --line-number --no-messages --binary-files=without-match"
-    unset GREP_OPTIONS
+  test -r ~/.dircolors && eval "$(dircolors -b ~/.dircolors)" || eval "$(dircolors -b)"
+  alias ls='ls --color=auto'
 fi
 
-###		Dirlistings
-#
-alias {kk,ll,öö}="ls -alF --group-directories-first"
-alias la="ls -A"
-alias l="ls -CF"
-alias lll="ls -alFGH --color | less -R"
+# Basic ls variants
+alias l='ls -CF'
+alias la='ls -A'
+alias lll='ls -alFGH --color=always | less -R'
+alias {kk,ll,oo}='ls -alF --group-directories-first'  # öö -> oo for portability
+alias lsd='ls -alF | grep "/$"'
+alias lf='ls -l | egrep -v "^d"'
+alias ldir='ls -l | egrep "^d"'
 
-###     Replace top, du, df
-#
-alias top="btop"    #old: htop
-alias du="ncdu"
-alias df="pydf"
-alias psg="ps aux | grep -v grep | grep -i -e VSZ -e"
-alias ps="procs"
-alias btm="bottom"
+# Tree-like views
+alias ltree="ls -R | grep ':$' | sed -e 's/:$//' -e 's/[^-][^/]*\//--/g' -e 's/^/   /' -e 's/-/|/'"
+alias treels='find . -type d | sed "s/[^-][^/]*/  /g;s/^-/\ |/"'
 
-###     Alias chmod commands
-#
+#--------------------------------------
+# 3. File Operations
+#--------------------------------------
+alias mv='mv -v'
+alias rm='rm -i'  # Interactive confirm
+alias nano='nano -c'
+alias vi='vim'
+alias less='less -R'  # Colored pipe support
+
+# Colored grep (safe, no deprecated GREP_OPTIONS)
+alias {grep,egrep,fgrep}='grep --color=always --line-number --no-messages --binary-files=without-match'
+
+# Comment removal (fixed regex)
+alias nocomment="grep -Ev '^(#|$)'"
+
+# No extensions finder
+alias no_extensions='find . -type f ! -name "*.*"'
+
+# Extension lister
+alias list_extensions='find . -type f | perl -ne "print $1 if m/\.([^.\/]+)$/" | sort -u'
+
+# Chmod aliases (originals)
 alias mx='chmod a+x'
 alias 000='chmod -R 000'
 alias 644='chmod -R 644'
@@ -143,128 +102,135 @@ alias 666='chmod -R 666'
 alias 755='chmod -R 755'
 alias 777='chmod -R 777'
 
-###     TMUX
-#
-alias tm="tmux new -s main \; split-window -h \; split-window -v -p 30 \;"
-alias tmkill="tmux ls | grep : | cut -d. -f1 | awk '{print substr($1, 0, length($1)-1)}' | xargs kill"
-alias tmx="tmux a -t 0"
+# Tree levels (originals restored)
+alias tree1='tree -L 1 2>/dev/null || ltree'
+alias tree2='tree -L 2 2>/dev/null || ltree'
+alias tree3='tree -L 3 2>/dev/null || ltree'
+alias tree4='tree -L 4 2>/dev/null || ltree'
 
-### WIP
-#   Trying to make so it's not nesting session and always starting one with a name
-# session=$(uname -n); session=${session,,}; tmux new -s $session
-#[ -z "$TMUX"  ] && { tmux attach || exec tmux new-session && exit;}
+#--------------------------------------
+# 4. System Monitoring
+#--------------------------------------
+alias df='df -h'
+alias h='history | grep "$1"'
+alias hr='history | sort -rn'
 
-###     Misc
-#
-alias latest='grep " install " /var/log/dpkg.log.1 /var/dpkg.log'
-alias sshrestart="service ssh restart"
-alias no_extensions='find . -type f ! -name "*.*"'
-alias {module-update,modup}="git submodule foreach git pull origin master"
-alias weather="curl wttr.in/stockholm"
-alias weather2="curl v2.wttr.in"
-alias comstat="push \"Command ran! (uname -n)\" || push \"Command failed!\""
-alias diff="colordiff"                          # colorise diff output
-#alias mount="mount | column -t"                 # prettier outpu mount
-alias nocomment="grep -Ev '''^(#|$)'''"         #remove comments from file
+# Process tools (Ubuntu ps)
+alias ps='ps aux'
+alias psg='ps aux | grep -v grep | grep -i -e VSZ -e "$1" || true'
+
+# Memory/disk hogs (safe escapes)
+alias ds='du -ks * 2>/dev/null | sort -n'
+alias big='du -ah . 2>/dev/null | sort -rh | head -40'
+alias big-files='ls -1Rhs 2>/dev/null | sed -e "s/^ *//" | grep "^[0-9]" | sort -hr | head -n 40'
+alias psmem='ps -eo time,ppid,pid,pcpu,pmem,user,comm --sort=-pmem | head -15'
+alias freq='cut -f 1 -d " " ~/.bash_history | sort | uniq -c | sort -nr | head -30'
+
+# Ports/services (systemd/Ubuntu)
+alias sstatus='sudo systemctl status "$1"'
+alias srestart='sudo systemctl restart "$1"'
+alias services='service --status-all 2>/dev/null || systemctl list-units'
+alias services_run='service --status-all 2>/dev/null | grep running || systemctl list-units --state=running'
+alias ports='sudo netstat -tulanp 2>/dev/null || sudo ss -tulanp'
+
+#--------------------------------------
+# 5. Package/Debian Tools (Ubuntu-specific)
+#--------------------------------------
+alias apt='sudo apt'
+# clean commented out as incomplete
+alias latest='grep " install " /var/log/dpkg.log* 2>/dev/null'
+
+# Deborphan (auto-install if missing, safe)
 if ! command -v deborphan >/dev/null 2>&1; then
-    log "deborphan missing; installing..."  # Or echo once
-    sudo apt install deborphan -y >/dev/null 2>&1 || true
+  echo "deborphan missing; installing..." >&2
+  sudo apt install -y deborphan >/dev/null 2>&1 || true
 fi
 
-###		MidnightCommande
-#
-if command_check mc; then alias mc="sudo mc"; fi
+# Midnight Commander
+command -v mc >/dev/null 2>&1 && alias mc='sudo mc'
 
-###     Replace cat with bat, nicer output
-#
-if command_check batcat; then alias cat="batcat" ; fi
+# SSH restart (Ubuntu service)
+alias sshrestart='sudo service ssh restart 2>/dev/null || sudo systemctl restart ssh'
 
-###     Install prettyping
-#  		curl -O https://raw.githubusercontent.com/denilsonsa/prettyping/master/prettyping; chmod +x prettyping; mv prettyping ~/bin
-if command_check prettyping; then alias ping="prettyping --nolegend"; fi
+#--------------------------------------
+# 6. Networking/Tools
+#--------------------------------------
+alias ifconfig='ip -c a'
+alias ip='ip -br -c a'
+alias myip='wget -qO- http://ipinfo.io/ip || curl -s http://ipinfo.io/ip'
+alias week='date +%V'
+alias diff='colordiff 2>/dev/null || diff'
+alias f='find . -type f | grep "$1"'
+alias root='sudo su -'
+alias su='sudo -i'
+alias please='sudo $(fc -ln -1)'
+# alias wget="wget -c $1"
+alias wget='wget -c'
 
-###     Services
-#
-alias services="service --status-all"
-alias services_run="service --status-all | grep running"
+# SSH agent check (fixed quoting)
+alias ssh='if [ "$(ssh-add -l 2>/dev/null)" = "The agent has no identities." ]; then ssh-add; fi; /usr/bin/ssh'
 
-###     Replace ifconfig                <----- Kanske inte funkar på LinuxMINT
-#
-alias ifconfig="ip -c a"
+# Crontab interactive
+alias crontab='crontab -i'
 
-###		(https://github.com/kenorb/dotfiles/blob/master/.bash_aliases)
-#		most frequent commands	
-alias freq='cut -f1 -d" " ~/.bash_history | sort | uniq -c | sort -nr | head -n 30'
-#		What's gobbling the memory?
-alias psmem='ps -o time,ppid,pid,nice,pcpu,pmem,user,comm -A | sort -n -k 6 | tail -15'
-# 		Allow to find the biggest file or directory in the current directory.
-alias ds='\du -ks *|sort -n'
-# 		List top ten largest files/directories in current directory
-alias big='\du -ah . | sort -rh | head -40'
-# 		List top ten largest files in current directory
-alias big-files='ls -1Rhs | sed -e "s/^ *//" | grep "^[0-9]" | sort -hr | head -n40'
+#--------------------------------------
+# 7. Git/Tmux/Dev
+#--------------------------------------
+alias {module-update,modup}='git submodule foreach "git pull origin master"'
+alias tm='tmux new-session -s main \; split-window -h \; split-window -v -p 30 \;'
+alias tmx='tmux attach -t 0 2>/dev/null || tmux new-session'
+alias tmkill='tmux ls 2>/dev/null | grep : | cut -d: -f1 | xargs -r tmux kill-session -t'
 
-###		ip
-#
-alias ip="\ip -br -c a"
-alias myip='wget http://ipinfo.io/ip -qO -'
+# Updates (dotfiles/bin)
+alias dotupdate='cd ~/dotfiles && git pull && source ~/.bashrc'
+alias binupdate='cd ~/bin && git pull origin master 2>/dev/null'
 
-###		check the status of any system service:
-#
-alias sstatus="sudo systemctl status"
-
-###		restart any system service:
-#
-alias srestart="sudo systemctl restart"
-
-###		List extensions
-#
-alias list_extensions="find . -type f | perl -ne 'print $1 if m/\.([^.\/]+)$/' | sort -u"
-
-###     Make process table searchable
-#
-alias psg="ps aux | grep -v grep | grep -i -e VSZ -e"
-
-###     Ports
-#
-alias ports='sudo netstat -tulanp'
-
-###     LS tree
-#
-alias treels="find . -type d |sed 's:[^-][^/]*/:--:g; s:^-: |:'"
-
-###     fd instead of find
-#	https://github.com/sharkdp/fd
-#
-if command_check fd-find; then alias fd="fdfind"; fi
-
-###     eza instead of ls
-#       https://github.com/eza-community/eza/blob/main/INSTALL.md  
-if command_check eza; 
-    then 
-        alias ls="eza"  
-        alias ll="eza -lha --group-directories-first" 
-        alias la="eza -lhaa"
+# Youtube-dl (fixed path/args)
+# command -v yt-dlp >/dev/null 2>&1 && alias youtube='yt-dlp' || alias youtube='/usr/bin/python3 /usr/local/bin/youtube-dl'
+# Youtube (full path check)
+if [[ -x /usr/local/bin/youtube-dl ]]; then
+  alias youtube='/usr/bin/python3 /usr/local/bin/youtube-dl "$@"'
 fi
 
-###     update aliases
-#
-alias dotupdate="cd ~/dotfiles && git pull && source ~/.bashrc"
-alias binupdate="cd ~/bin && git pull origin master"
+# Wireguard (path-safe)
+alias wgup='sudo wg-quick up ~/wireguard/conf/SeStockholm.conf 2>/dev/null'
+alias wgdown='sudo wg-quick down ~/wireguard/conf/SeStockholm.conf 2>/dev/null'
 
-###     Crontab safety
-#
-alias crontab="crontab -i"
+#--------------------------------------
+# 8. Modern Alternatives (Non-Ubuntu preferred; conditional overrides)
+#--------------------------------------
+# eza (modern ls replacement)
+command -v eza >/dev/null 2>&1 && {
+  alias ls='eza'
+  alias ll='eza -lha --group-directories-first'
+  alias la='eza -lhaa'
+}
 
-##      Youtube-dl
-#
-alias youtube="/usr/bin/python3 /usr/local/bin/youtube-dl" $1
+# bat (modern cat)
+command -v bat >/dev/null 2>&1 && alias cat='bat'
 
-###     Wireguard
-#
-alias wg_up="sudo wg-quick up ~/wireguard/conf/SeStockholm.conf"
-alias wg_down="sudo wg-quick down ~/wireguard/conf/SeStockholm.conf"
+# broot (modern tree/cd)
+command -v broot >/dev/null 2>&1 && alias tree='broot'
 
-###     Just to check if loaded
-#
-echo ${file##*/}
+# fd (modern find)
+command -v fdfind >/dev/null 2>&1 && alias fd='fdfind'
+
+# btop/bottom/procs (modern top/ps)
+command -v btop >/dev/null 2>&1 && alias top='btop'
+command -v bottom >/dev/null 2>&1 && alias btm='bottom'
+command -v procs >/dev/null 2>&1 && alias ps='procs'
+
+# ncdu (modern du)
+command -v ncdu >/dev/null 2>&1 && alias du='ncdu'
+
+# prettyping
+command -v prettyping >/dev/null 2>&1 && alias ping='prettyping --nolegend'
+
+#--------------------------------------
+# 9. Misc Utilities
+#--------------------------------------
+alias weather='curl wttr.in/Stockholm'
+alias weather2='curl v2.wttr.in'
+# comstat (original, fixed push→echo)
+alias comstat='echo "Command ran! ($(uname -n))" || echo "Command failed!" >&2'
+# mount alias commented; use `mount | column -t` manually

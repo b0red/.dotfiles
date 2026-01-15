@@ -169,16 +169,16 @@ if [[ $- == *i* ]] && [ -z "$TMUX" ]; then
     unset SSH_KEYS key k
 fi
 
-# =============================================================================
-# TMUX AUTO-LAUNCH
-# =============================================================================
-# Launch the tmux script
-# 1. [[ $- == *i* ]]          -> Only run in interactive terminals
-# 2. [ -z "$TMUX" ]           -> Only run if NOT already inside a tmux session (prevents nesting)
-# 3. [ -x "$HOME/start_tmux.sh" ] -> Only run if the file exists and is executable
-if [[ $- == *i* ]] && [ -z "$TMUX" ] && [ -x "$HOME/start_tmux.sh" ]; then
-    bash "$HOME/start_tmux.sh"
-fi
+# # =============================================================================
+# # TMUX AUTO-LAUNCH
+# # =============================================================================
+# # Launch the tmux script
+# # 1. [[ $- == *i* ]]          -> Only run in interactive terminals
+# # 2. [ -z "$TMUX" ]           -> Only run if NOT already inside a tmux session (prevents nesting)
+# # 3. [ -x "$HOME/start_tmux.sh" ] -> Only run if the file exists and is executable
+# if [[ $- == *i* ]] && [ -z "$TMUX" ] && [ -x "$HOME/start_tmux.sh" ]; then
+#     bash "$HOME/start_tmux.sh"
+# fi
 
 # =============================================================================
 # TMUX GIT INTEGRATION
@@ -195,22 +195,21 @@ if [ -n "$PS1" ] && [ "$BASHRC_SOURCED" -eq 1 ]; then
     clear
     
     # Color definitions for welcome message
-    GREEN='\033[0;32m'
-    BLUE='\033[0;34m'
+    N_GREEN='\033[0;32m'
+    N_BLUE='\033[0;34m'
     NC='\033[0m'
     
-    echo -e "\n${GREEN}Welcome to $(hostname)${NC}"
-    echo -e "${BLUE}$(date)${NC}\n"
-    
-    unset GREEN BLUE NC
+    echo -e "\n${N_GREEN}Welcome to $(hostname)${NC}"
+    echo -e "${N_BLUE}$(date)${NC}\n"
+    unset N_GREEN N_BLUE NC
 fi
 
-# =============================================================================
-# CUSTOM ALIASES
-# =============================================================================
-# Reload bashrc easily
-alias reload='BASHRC_SOURCED=0 && source ~/.bashrc'
-alias src='source ~/.bashrc'
+# # =============================================================================
+# # CUSTOM ALIASES
+# # =============================================================================
+# # Reload bashrc easily
+# alias reload='BASHRC_SOURCED=0 && source ~/.bashrc'
+# alias src='source ~/.bashrc'
 
 # Optional: Uncomment to enable DCP alias
 # source ~/.dcp_alias  # for alias="dcp vpn/novpn"
