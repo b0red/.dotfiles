@@ -1,5 +1,5 @@
 ### -+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-###                                             Created by RunMe.sh 2026-01-15 01:43:43
+###                                             Created by RunMe.sh 2026-01-15 02:51:46
 ###                                             Host: DESKTOP-JLMCRD0
 ###                                             User: patrick
 ###                                             Distro: ubuntu
@@ -13,10 +13,10 @@ case $- in
     *) return;;
 esac
 
-###		Prevent recursion / infinite sourcing
+###		Prevent infinite recursion (allow up to 3 levels for re-sourcing)
 #
-[ -n "${BASHRC_SOURCED:-}" ] && return
-BASHRC_SOURCED=1
+BASHRC_SOURCED=$((${BASHRC_SOURCED:-0} + 1))
+[ "$BASHRC_SOURCED" -gt 3 ] && return
 
 # Source ENV variable file if set
 [ -n "$ENV" ] && [ -f "$ENV" ] && . "$ENV"
@@ -47,16 +47,47 @@ shopt -s cdspell         # Autocorrect minor spelling errors in cd
 shopt -s dirspell        # Autocorrect directory names during completion
 shopt -s nocaseglob      # Case-insensitive globbing
 
-# User prompt: red for root, green for normal users
-if [ "$EUID" -eq 0 ] || [ "$(id -u)" -eq 0 ]; then
-    # Root prompt - red username and red $
-    PS1='\[\033[1;31m\]\u\[\033[0;32m\]@\h\[\033[0m\]:\[\033[1;34m\]\w\[\033[1;31m\]\$\[\033[0m\] '
-else
-    # Normal user - green username and green $
-    PS1='\[\033[1;32m\]\u\[\033[0;32m\]@\h\[\033[0m\]:\[\033[1;34m\]\w\[\033[1;32m\]\$\[\033[0m\] '
-fi
+# =============================================================================
+# PROMPT SETUP - Color-coded by privilege level
+# =============================================================================
+setup_prompt() {
+    local is_privileged=0
+    
+    # Primary check: Are we actually root right now?
+    if [ "$EUID" -eq 0 ] || [ "$(id -u)" -eq 0 ]; then
+        is_privileged=1
+    fi
+    
+    # Secondary check: Is the USER variable set to root?
+    if [ "$USER" = "root" ] || [ "$LOGNAME" = "root" ]; then
+        is_privileged=1
+    fi
+    
+    # Optional: Check if user is in sudo/wheel/admin group (commented out by default)
+    # Uncomment if you want sudoers to also get red prompt
+    # if groups 2>/dev/null | grep -qE '\b(sudo|wheel|admin)\b'; then
+    #     is_privileged=1
+    # fi
+    
+    if [ $is_privileged -eq 1 ]; then
+        # Root/privileged prompt - RED username, hostname, and $
+        PS1='\[\033[1;31m\]\u\[\033[0;31m\]@\[\033[1;31m\]\h\[\033[0m\]:\[\033[1;34m\]\w\[\033[1;31m\]\$\[\033[0m\] '
+    else
+        # Normal user - GREEN username, hostname, and $
+        PS1='\[\033[1;32m\]\u\[\033[0;32m\]@\[\033[1;32m\]\h\[\033[0m\]:\[\033[1;34m\]\w\[\033[1;32m\]\$\[\033[0m\] '
+    fi
+    
+    # Export for subshells
+    export PS1
+}
 
-# Source modular configuration files
+# Set up the prompt
+setup_prompt
+unset -f setup_prompt
+
+# =============================================================================
+# SOURCE MODULAR CONFIGURATION FILES
+# =============================================================================
 BASHRC_DIR="$HOME/dotfiles/.bashrc.d"
 
 if [ -d "$BASHRC_DIR" ]; then
@@ -90,18 +121,24 @@ fi
 # Cleanup variable
 unset BASHRC_DIR
 
-# OS detection and setting package manager aliases
+# =============================================================================
+# OS DETECTION & PACKAGE MANAGER SETUP
+# =============================================================================
 if command -v get_os >/dev/null 2>&1; then
     get_os >/dev/null 2>&1
     setting_standard_commands >/dev/null 2>&1
 fi
 
-# Source broot launcher if available
+# =============================================================================
+# BROOT LAUNCHER
+# =============================================================================
 if command -v broot >/dev/null 2>&1; then
     [ -f "$HOME/.config/broot/launcher/bash/br" ] && source "$HOME/.config/broot/launcher/bash/br"
 fi
 
-# --- SSH Agent & Keychain Setup ---
+# =============================================================================
+# SSH AGENT & KEYCHAIN SETUP
+# =============================================================================
 # Only run in interactive shells AND when NOT already inside a tmux session
 if [[ $- == *i* ]] && [ -z "$TMUX" ]; then
 
@@ -122,7 +159,7 @@ if [[ $- == *i* ]] && [ -z "$TMUX" ]; then
             if [ -z "$SSH_AUTH_SOCK" ] || ! ssh-add -l >/dev/null 2>&1; then
                 eval "$(ssh-agent -s)" >/dev/null 2>&1
                 for k in "${SSH_KEYS[@]}"; do
-                    ssh-add "$HOME/.ssh/$k" </dev/null
+                    ssh-add "$HOME/.ssh/$k" </dev/null 2>/dev/null
                 done
             fi
         fi
@@ -131,8 +168,10 @@ if [[ $- == *i* ]] && [ -z "$TMUX" ]; then
     # Cleanup variables to keep the environment clean
     unset SSH_KEYS key k
 fi
-####     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 
+# =============================================================================
+# TMUX AUTO-LAUNCH
+# =============================================================================
 # Launch the tmux script
 # 1. [[ $- == *i* ]]          -> Only run in interactive terminals
 # 2. [ -z "$TMUX" ]           -> Only run if NOT already inside a tmux session (prevents nesting)
@@ -141,18 +180,42 @@ if [[ $- == *i* ]] && [ -z "$TMUX" ] && [ -x "$HOME/start_tmux.sh" ]; then
     bash "$HOME/start_tmux.sh"
 fi
 
-# --- Tmux Git Integration ---
+# =============================================================================
+# TMUX GIT INTEGRATION
+# =============================================================================
 if [ -f ~/.tmux-extras/tmux-git.sh ]; then 
     source ~/.tmux-extras/tmux-git.sh
 fi
 
-# Welcome message (optional - comment out if not desired)
-if [ -n "$PS1" ]; then
+# =============================================================================
+# WELCOME MESSAGE
+# =============================================================================
+if [ -n "$PS1" ] && [ "$BASHRC_SOURCED" -eq 1 ]; then
+    # Only show welcome on first load, not on re-source
     clear
-    echo -e "\n${GREEN:-}Welcome to $(hostname)${NC:-}"
-    echo -e "${BLUE:-}$(date)${NC:-}\n"
+    
+    # Color definitions for welcome message
+    GREEN='\033[0;32m'
+    BLUE='\033[0;34m'
+    NC='\033[0m'
+    
+    echo -e "\n${GREEN}Welcome to $(hostname)${NC}"
+    echo -e "${BLUE}$(date)${NC}\n"
+    
+    unset GREEN BLUE NC
 fi
 
-# source ~/.dcp_alias                                           # for alias="dcp vpn/novpn"
+# =============================================================================
+# CUSTOM ALIASES
+# =============================================================================
+# Reload bashrc easily
+alias reload='BASHRC_SOURCED=0 && source ~/.bashrc'
+alias src='source ~/.bashrc'
 
-echo "✅ ~/.bashrc (re)loaded successfully"
+# Optional: Uncomment to enable DCP alias
+# source ~/.dcp_alias  # for alias="dcp vpn/novpn"
+
+# =============================================================================
+# FINAL STATUS MESSAGE
+# =============================================================================
+echo "✅ ~/.bashrc (re)loaded successfully (level: $BASHRC_SOURCED)"

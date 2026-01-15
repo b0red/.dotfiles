@@ -2,13 +2,11 @@
 #
 #		.bash_aliases
 #
-#       links:
-#           https://www.cyberciti.biz/tips/bash-aliases-mac-centos-linux-unix.html
-#           https://unix.stackexchange.com/questions/43601/how-can-i-set-my-default-shell-to-start-up-tmux
 #----------------------------------------------------------------------------------------------------------------
+
 ###     Reload aliases, functions and all
 #unset DOTFILES_BASHRC_DONE; source ~/.bashrc
-alias reload="source ~/.bashrc; clear;"
+alias reload="unset BASHRC_SOURCED && source ~/.bashrc; clear"
 
 NOW=$(date '+%Y-%m-%d_%H:%M')
 
@@ -266,10 +264,6 @@ alias youtube="/usr/bin/python3 /usr/local/bin/youtube-dl" $1
 #
 alias wg_up="sudo wg-quick up ~/wireguard/conf/SeStockholm.conf"
 alias wg_down="sudo wg-quick down ~/wireguard/conf/SeStockholm.conf"
-
-###     Scan open ports
-#
-alias portscan="for i in {1..65535}; do (echo < /dev/tcp/127.0.0.1/$i) &>/dev/null && printf "\n[+] Open Port at\n: \t%d\n" "$i" || printf "."; done"
 
 ###     Just to check if loaded
 #

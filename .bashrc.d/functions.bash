@@ -52,6 +52,25 @@ function ff() {
     find . -type f -name "$1"
 }
 
+quickscan() {
+    ### Quick port scan of common ports on target (default: localhost)
+    local target=${1:-127.0.0.1}
+    # A small sample of common ports (SSH, HTTP, HTTPS, DBs, etc.)
+    local ports=(21 22 23 25 53 80 110 139 143 443 445 1433 1521 3306 3389 5432 8080 8443)
+    
+    echo "Quick scanning $target for common services..."
+    
+    for port in "${ports[@]}"; do
+        (
+            if (echo < /dev/tcp/"$target"/"$port") &>/dev/null; then
+                printf "[+] Found service on port: %d\n" "$port"
+            fi
+        ) &
+    done
+    wait
+    echo "Quick scan finished."
+}
+
 function fif() {
     ### Find text recursively in files (rg preferred, grep fallback)
     # Supports file or directory targets
@@ -530,40 +549,67 @@ function dotfind() {
 }
 
 function reverseempty() {
-    ### Find folders not containing certain media file types
-    if [ $# -ne 1 ]; then
-        echo "Usage: reverseempty <music|movies|epub>"
+    local target="${1:-.}"
+    if [ $# -gt 1 ] || [ ! -d "$target" ]; then
+        echo "Usage: reverseempty [folder_path] [music|movies|epub]"
         return 1
     fi
-    case "$1" in
+    local type="${2:-music}" cmd depth=1 msg
+    case "${type,,}" in
         music)
-            echo -e "Searching for folders ${ORANGE:-}NOT${NC:-} containing music files in $PWD"
-            find . -maxdepth 1 -mindepth 1 -type d \! -exec sh -c \
-                'find "$1" \( -iname "*.mp3" -o -iname "*.flac" -o -iname "*.ogg" -o -iname "*.wav" -o -iname "*.m4a" \) -type f | read a' _ {} \; -print
-            ;;
-        movie|movies)
-            echo -e "Searching for folders ${ORANGE:-}NOT${NC:-} containing movie files in $PWD"
-            find . -maxdepth 1 -mindepth 1 -type d \! -exec sh -c \
-                'find "$1" \( -iname "*.mov" -o -iname "*.avi" -o -iname "*.mkv" -o -iname "*.vob" -o -iname "*.mp4" -o -iname "*.wmv" -o -iname "*.m4v" \) -type f | read a' _ {} \; -print
-            ;;
-        epubs|ePubs|epub)
-            echo -e "Searching for folders ${ORANGE:-}NOT${NC:-} containing epub files in $PWD"
-            find . -maxdepth 2 -mindepth 2 -type d \! -exec sh -c \
-                'find "$1" \( -iname "*.epub" -o -iname "*.azw" -o -iname "*.mobi" -o -iname "*.pdf" \) -type f | read a' _ {} \; -print
-            ;;
+            cmd='find "$1" \( -iname "*.mp3" -o -iname "*.flac" -o -iname "*.ogg" -o -iname "*.wav" -o -iname "*.m4a" \) -type f | read a'
+            msg="music files";;
+        movies|movie)
+            cmd='find "$1" \( -iname "*.mov" -o -iname "*.avi" -o -iname "*.mkv" -o -iname "*.vob" -o -iname "*.mp4" -o -iname "*.wmv" -o -iname "*.m4v" \) -type f | read a'
+            msg="movie files";;
+        epub|epubs|epubs)
+            cmd='find "$1" \( -iname "*.epub" -o -iname "*.azw" -o -iname "*.mobi" -o -iname "*.pdf" \) -type f | read a'
+            msg="epub files"; depth=2;;
         *)
-            echo "Unknown category: $1"
-            echo "Usage: reverseempty <music|movies|epub>"
-            return 1
-            ;;
+            echo "Unknown category: $type (use music|movies|epub)"
+            return 1;;
     esac
+    echo -e "Searching for folders ${ORANGE:-}NOT${NC:-} containing $msg in $target"
+    find "$target" -maxdepth "$depth" -mindepth "$depth" -type d ! -exec sh -c "$cmd" _ {} \; -print
 }
 
-function funchelp() {
-    ### List all custom functions available
-    echo "Custom functions available:"
-    typeset -f | awk '/ \(\) $/ && !/^main / {print $1}' | grep -v '^_'
-}
+# function reverseempty() {
+#     ### Find folders not containing certain media file types
+#     if [ $# -ne 1 ]; then
+#         echo "Usage: reverseempty <music|movies|epub>"
+#         return 1
+#     fi
+#     case "$1" in
+#         music)
+#             echo -e "Searching for folders ${ORANGE:-}NOT${NC:-} containing music files in $PWD"
+#             find . -maxdepth 1 -mindepth 1 -type d \! -exec sh -c \
+#                 'find "$1" \( -iname "*.mp3" -o -iname "*.flac" -o -iname "*.ogg" -o -iname "*.wav" -o -iname "*.m4a" \) -type f | read a' _ {} \; -print
+#             ;;
+#         movie|movies)
+#             echo -e "Searching for folders ${ORANGE:-}NOT${NC:-} containing movie files in $PWD"
+#             find . -maxdepth 1 -mindepth 1 -type d \! -exec sh -c \
+#                 'find "$1" \( -iname "*.mov" -o -iname "*.avi" -o -iname "*.mkv" -o -iname "*.vob" -o -iname "*.mp4" -o -iname "*.wmv" -o -iname "*.m4v" \) -type f | read a' _ {} \; -print
+#             ;;
+#         epubs|ePubs|epub)
+#             echo -e "Searching for folders ${ORANGE:-}NOT${NC:-} containing epub files in $PWD"
+#             find . -maxdepth 2 -mindepth 2 -type d \! -exec sh -c \
+#                 'find "$1" \( -iname "*.epub" -o -iname "*.azw" -o -iname "*.mobi" -o -iname "*.pdf" \) -type f | read a' _ {} \; -print
+#             ;;
+#         *)
+#             echo "Unknown category: $1"
+#             echo "Usage: reverseempty <music|movies|epub>"
+#             return 1
+#             ;;
+#     esac
+# }
+
+
+
+# function funchelp() {
+#     ### List all custom functions available
+#     echo "Custom functions available:"
+#     typeset -f | awk '/ \(\) $/ && !/^main / {print $1}' | grep -v '^_'
+# }
 
 function lockfolder() {
     ### Lock folder by making a marker file readonly
