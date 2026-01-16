@@ -6,8 +6,11 @@ A comprehensive, cross-platform dotfiles setup with modular bash configuration, 
 
 - 🔧 **Modular Configuration**: Split into logical files in `.bashrc.d/`
 - 📦 **Universal Package Management**: Unified `install`, `update`, `upgrade` commands across all distros
-- 🎨 **Customizable**: Easy to extend and modify
-- 🔄 **Automatic Backup**: Old configs saved before changes
+- 🎨 **Smart Prompt**: Color-coded by privilege level (green for users, red for root)
+- 🎯 **Intelligent Backups**: Only backs up changed files, keeps pristine originals forever
+- 🗑️ **Automatic Cleanup**: Keeps only 3 most recent backup archives
+- 🔄 **Re-runnable**: Safe to run multiple times, skips unchanged files
+- 📝 **Comprehensive Logging**: Timestamped logs with color-coded output
 - 🚀 **One-Command Setup**: `./RunMe.sh` does everything
 - 💻 **Cross-Platform**: Supports Debian, Ubuntu, RHEL, Fedora, Arch, Gentoo, Alpine, NixOS, FreeBSD, OpenBSD, macOS
 
@@ -24,18 +27,22 @@ cd dotfiles
 ```
 
 The script will:
-1. Backup existing dotfiles to `~/dotfiles/old-files/`
-2. Create symlinks from `~/.bashrc`, `~/.profile`, etc. to repo files
-3. Install essential applications (curl, htop, vim, tmux, etc.)
-4. Update git submodules
-5. Clone additional repos (.tmux, .vim)
-6. Log everything to `~/dotfiles/install-YYYY-MM-DD.log/`
+1. Detect your OS and distribution
+2. Backup existing dotfiles to `~/dotfiles/oldfiles/` (only if changed)
+3. Create symlinks from `~/.bashrc`, `~/.profile`, etc. to repo files
+4. Load package manager functions for your distro
+5. Install essential applications from `.install_apps.inc`
+6. Update git submodules
+7. Clone additional repos (.tmux, .vim, tpm)
+8. Create archived backups (tar.gz)
+9. Clean up old archives (keeps 3 most recent)
+10. Log everything to `~/dotfiles/logs/install-YYYY-MM-DD_HH-MM-SS.log`
 
 ## Directory Structure
 
 ```
 ~/dotfiles/
-├── .bashrc                 # Main bash configuration
+├── .bashrc                 # Main bash configuration (with smart recursion guard)
 ├── .bash_profile           # Login shell config
 ├── .profile                # POSIX shell config
 ├── .inputrc                # Readline configuration
@@ -53,9 +60,26 @@ The script will:
 │   ├── browser.sh
 │   ├── pager.sh
 │   └── timezone.sh
-├── old-files/              # Backup directory
+├── .install_apps.inc       # List of applications to install
+├── oldfiles/               # Backup directory (pristine originals - never deleted)
+├── logs/                   # Installation logs
+│   └── install-*.log
+├── backup-*.tar.gz         # Archive backups (auto-culled to 3 most recent)
 ├── RunMe.sh                # Installation script
 └── README.md               # This file
+```
+
+## Installation Options
+
+```bash
+./RunMe.sh                  # Normal installation
+./RunMe.sh --help           # Show help message
+./RunMe.sh --version        # Show version (v1.0.1)
+./RunMe.sh --revert         # Revert changes (restore backups)
+./RunMe.sh --debug          # Enable debug mode
+./RunMe.sh --trace          # Enable trace mode (set -x)
+DEBUG=1 ./RunMe.sh          # Debug with environment variable
+TRACE_DEBUG=1 ./RunMe.sh    # Trace with environment variable
 ```
 
 ## Package Manager Commands
@@ -88,19 +112,26 @@ After installation, these commands work across **all supported distros**:
 - **OpenBSD**: pkg_add
 - **macOS**: Homebrew (if installed)
 
-## Usage
+## Daily Usage
 
-### Installation Options
+### Installing Applications
+
+Applications are defined in `.install_apps.inc`:
 
 ```bash
-./RunMe.sh              # Normal installation
-./RunMe.sh --help       # Show help
-./RunMe.sh --revert     # Revert changes (see below)
-./RunMe.sh --debug      # Debug mode
-DEBUG=1 ./RunMe.sh      # Debug with environment variable
+# Edit the file to add/remove apps
+vim ~/dotfiles/.install_apps.inc
+
+# Add one app per line, comments allowed
+curl
+htop
+vim
+# tmux  <- commented out, won't install
 ```
 
-### Daily Usage
+Then run `./RunMe.sh` again - it will only install missing packages.
+
+### Package Management
 
 ```bash
 # Install packages (works on any distro)
@@ -121,15 +152,71 @@ version
 
 ### Reloading Configuration
 
+The `.bashrc` includes a smart recursion guard that allows re-sourcing up to 3 times:
+
 ```bash
-# After editing dotfiles
+# Quick reload
+reload           # Uses the built-in alias
+
+# Or manually
 source ~/.bashrc
-or 
-reload
 
 # Or restart your shell
 exec bash
 ```
+
+## Smart Backup System
+
+### How Backups Work
+
+1. **First Run**: Creates pristine originals in `oldfiles/`
+   - Files: `.bashrc.bak-2026-01-15_10-00-00`
+   - These are **NEVER** deleted - they're your restoration point
+
+2. **Subsequent Runs**: 
+   - Compares files byte-by-byte with repo versions
+   - Only backs up if changed (skips unnecessary backups)
+   - Creates tar.gz archive: `backup-HOSTNAME-DATE.tar.gz`
+
+3. **Automatic Cleanup**:
+   - Keeps pristine originals forever
+   - Keeps only 3 most recent tar.gz archives
+   - Deletes older archives automatically
+
+### Backup Output Example
+
+```bash
+Backing up existing dotfiles...
+⏭️  Skipping /home/user/.bashrc (unchanged from repo)
+✓ Backed up: /home/user/.profile
+Backed up 1 files to /home/user/dotfiles/oldfiles/
+Skipped 1 unchanged files
+
+✓ Archived backups: backup-DESKTOP-JLMCRD0-2026-01-16_10-30-00.tar.gz
+
+Cleaning up old backup archives (keeping 3 most recent)...
+🗑️  Deleted old archive: backup-DESKTOP-JLMCRD0-2026-01-10_10-00-00.tar.gz
+✓ Cleaned up 1 old archive(s), kept 3 most recent
+```
+
+## Color-Coded Prompt
+
+The prompt automatically adjusts based on privilege level:
+
+- **Green prompt**: Normal user
+  ```
+  user@hostname:~/path$ 
+  ```
+
+- **Red prompt**: Root/privileged user
+  ```
+  root@hostname:~/path# 
+  ```
+
+The prompt checks multiple conditions:
+- EUID = 0
+- USER/LOGNAME = root
+- Optional: sudo/wheel/admin group membership (commented by default)
 
 ## Reverting Changes
 
@@ -140,8 +227,9 @@ exec bash
 ```
 
 This will:
-- Restore original dotfiles from backups
+- Restore original dotfiles from `oldfiles/` backups
 - Remove all symlinks created by the installer
+- Show summary of restored files and removed symlinks
 - Leave installed packages in place
 
 ### Manual Revert
@@ -150,9 +238,19 @@ If `--revert` doesn't work or you need more control:
 
 1. **Restore backups manually:**
    ```bash
-   cd ~/dotfiles/old-files/
-   cp *.bak-* ~/
-   # Rename files (remove .bak-TIMESTAMP suffix)
+   cd ~/dotfiles/oldfiles/
+   
+   # Find your pristine backups (earliest .bak-* files)
+   ls -lt *.bak-* | tail -n 4
+   
+   # Restore them
+   for f in .bashrc.bak-* .profile.bak-* .bash_profile.bak-* .inputrc.bak-*; do
+       [ -f "$f" ] || continue
+       # Take the earliest backup (pristine original)
+       original=$(echo "$f" | sed 's/\.bak-.*$//')
+       cp "$f" ~/"$original"
+       echo "Restored: $original"
+   done
    ```
 
 2. **Remove symlinks:**
@@ -161,18 +259,14 @@ If `--revert` doesn't work or you need more control:
    rm -f .bashrc .bash_profile .profile .inputrc
    ```
 
-3. **Restore from backups:**
-   ```bash
-   cd ~/dotfiles/old-files/
-   for f in *.bak-*; do
-       original=$(echo "$f" | sed 's/\.bak-.*$//')
-       cp "$f" ~/"$original"
-   done
-   ```
-
-4. **Delete dotfiles repo** (optional):
+3. **Delete dotfiles repo** (optional):
    ```bash
    rm -rf ~/dotfiles
+   ```
+
+4. **Restart shell:**
+   ```bash
+   exec bash
    ```
 
 ## Customization
@@ -185,6 +279,7 @@ Edit or create `~/.bashrc.d/extra_alias.bash`:
 # My custom aliases
 alias mycommand='echo "Hello World"'
 alias ll='ls -lah'
+alias ..='cd ..'
 ```
 
 ### Adding Environment Variables
@@ -194,27 +289,61 @@ Edit `~/.bashrc.d/exports.bash`:
 ```bash
 export MY_VAR="my_value"
 export PATH="$HOME/bin:$PATH"
+export EDITOR="vim"
 ```
 
 ### Adding Custom Functions
 
 Edit `~/.bashrc.d/functions.bash`:
 
-Adding the tree "`###`" under the function name makes so it shows if you run the command `function`, it lists all the functions and a short description.
+Adding the tree "`###`" under the function name with a description makes it show up when you run the `function` command:
 
 ```bash
 function my_function() {
-    ### short informatiove description
+    ### Short informative description of what this does
     echo "This is my function"
     # Your code here
 }
 ```
 
+Then run `function` to see all available functions with descriptions.
+
 ### Modifying Package Manager Behavior
 
 Edit `~/.bashrc.d/pkg_aliases.bash` to customize package commands or add new distros.
 
+### Customizing Application List
+
+Edit `.install_apps.inc`:
+
+```bash
+# Core utilities
+curl
+wget
+git
+
+# Development tools
+vim
+tmux
+htop
+
+# Optional (comment out to skip)
+# docker
+# python3
+
+# One app per line, # for comments
+```
+
 ## Troubleshooting
+
+### Colors Not Showing
+
+Check if your terminal supports colors:
+```bash
+echo -e "\033[0;32mGreen\033[0m \033[0;31mRed\033[0m"
+```
+
+If no colors appear, your terminal might not support ANSI colors. Try a different terminal emulator.
 
 ### Aliases Not Working
 
@@ -227,7 +356,20 @@ source ~/dotfiles/.bashrc.d/pkg_aliases.bash
 set_package_aliases
 
 # Then reload bashrc
+reload
+```
+
+### "Recursion Guard" Preventing Re-source
+
+The `.bashrc` allows re-sourcing up to 3 times per session. If you hit the limit:
+
+```bash
+# Reset the counter
+BASHRC_SOURCED=0
 source ~/.bashrc
+
+# Or use the reload alias (does this automatically)
+reload
 ```
 
 ### Symlinks Not Created
@@ -236,16 +378,11 @@ source ~/.bashrc
 # Check if files exist in repo
 ls -la ~/dotfiles/.bashrc
 
-# Manually create symlink
+# Check if symlink exists
+ls -la ~/.bashrc
+
+# Manually create symlink if needed
 ln -sf ~/dotfiles/.bashrc ~/.bashrc
-```
-
-### Permission Denied Errors
-
-The installer needs sudo for package installation. Run:
-```bash
-sudo -v  # Verify sudo access
-./RunMe.sh
 ```
 
 ### Package Installation Fails
@@ -256,7 +393,11 @@ sudo -v  # Verify sudo access
    sudo apt-get update  # Debian/Ubuntu
    sudo dnf check-update  # Fedora/RHEL
    ```
-3. Try installing packages manually:
+3. Check the log file:
+   ```bash
+   tail -f ~/dotfiles/logs/install-*.log
+   ```
+4. Try installing packages manually:
    ```bash
    sudo apt-get install -y curl htop vim
    ```
@@ -269,40 +410,49 @@ Your distribution isn't detected. Edit `pkg_aliases.bash` and add your distro to
 case "$DISTRO_BASE_LOCAL" in
     yourdistro*)
         install() { sudo your-pkg-manager install "$@"; }
-        # ... add other functions
+        remove() { sudo your-pkg-manager remove "$@"; }
+        update() { sudo your-pkg-manager update; }
+        upgrade() { sudo your-pkg-manager upgrade; }
+        search() { your-pkg-manager search "$@"; }
+        clean() { sudo your-pkg-manager autoremove; }
+        info() { your-pkg-manager info "$@"; }
         ;;
 ```
 
-### Colors Not Working
+### Script Fails with "Permission Denied"
 
-Check if color definitions exist:
+The installer needs sudo for package installation. Run:
 ```bash
-grep -r "GREEN=" ~/dotfiles/.bashrc.d/
+sudo -v  # Verify sudo access
+./RunMe.sh
 ```
 
-If missing, add to `colorcodes.bash`:
+### Files Not Being Backed Up
+
+The script only backs up files that are different from the repo. To force a backup:
 ```bash
-export RED='\033[0;31m'
-export GREEN='\033[0;32m'
-export BLUE='\033[0;34m'
-export YELLOW='\033[1;33m'
-export NC='\033[0m'
+# Make a change to trigger backup
+echo "# test" >> ~/.bashrc
+./RunMe.sh
 ```
 
 ## Advanced Configuration
 
 ### WSL-Specific Setup
 
-The installer automatically configures `.bash_profile` to load `.bashrc` for WSL compatibility.
+The installer automatically configures `.bash_profile` to load `.bashrc` for WSL compatibility. No additional setup needed.
 
 ### Tmux Integration
 
-If you use tmux, additional setup:
-```bash
-# Install tmux plugin manager
-git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm
+The script automatically:
+- Clones tmux configuration from Bitbucket
+- Clones Tmux Plugin Manager (TPM)
+- Creates symlink for `.tmux.conf`
 
-# Inside tmux, press: prefix + I (capital i) to install plugins
+Inside tmux:
+```bash
+# Press: prefix + I (capital i) to install plugins
+# Default prefix is Ctrl+b
 ```
 
 ### SSH Key Management
@@ -312,9 +462,18 @@ The `.bashrc` includes keychain integration for SSH keys. Install keychain:
 install keychain
 ```
 
-Then add your SSH keys:
+The script automatically detects and loads SSH keys:
+- `~/.ssh/id_ed25519` (preferred)
+- `~/.ssh/id_rsa`
+- `~/.ssh/id_ecdsa`
+- `~/.ssh/id_dsa`
+
+### Vim Setup
+
+The script clones your vim configuration:
 ```bash
-ssh-add ~/.ssh/id_ed25519
+# Automatically cloned to ~/.vim
+# Symlinks ~/.vimrc to ~/.vim/.vimrc
 ```
 
 ## Maintenance
@@ -324,10 +483,10 @@ ssh-add ~/.ssh/id_ed25519
 ```bash
 cd ~/dotfiles
 git pull origin main
-source ~/.bashrc  # Reload configuration
+reload  # Reload configuration
 ```
 
-### Backing (push to repo, you need to fork it first) Up Current Config
+### Backing Up Current Config
 
 ```bash
 cd ~/dotfiles
@@ -336,12 +495,69 @@ git commit -m "Update configuration"
 git push
 ```
 
-### Cleaning Old Backups
+### Cleaning Up Old Backups
+
+The script automatically:
+- Keeps pristine originals in `oldfiles/` **forever**
+- Keeps only 3 most recent `backup-*.tar.gz` archives
+
+To manually clean archives:
+```bash
+# Remove all but 3 newest archives
+cd ~/dotfiles
+ls -t backup-*.tar.gz | tail -n +4 | xargs rm -f
+```
+
+### Viewing Logs
 
 ```bash
-# Remove old backup files (older than 30 days)
-find ~/dotfiles/old-files -name "*.bak-*" -mtime +30 -delete
-find ~/dotfiles/install-*.log -type d -mtime +30 -exec rm -rf {} +
+# View latest log
+tail -f ~/dotfiles/logs/install-*.log
+
+# View all logs
+ls -lth ~/dotfiles/logs/
+
+# Clean old logs (older than 30 days)
+find ~/dotfiles/logs -name "*.log" -mtime +30 -delete
+```
+
+## Script Output
+
+### Success Messages (Green ✓)
+- File backups
+- Symlink creation
+- Package installations
+- Archive creation
+
+### Info/Warning Messages (Yellow ⚠️)
+- Skipped unchanged files
+- Missing optional files
+- Warnings about system state
+
+### Error Messages (Red ❌)
+- Failed operations
+- Missing required files
+- Permission issues
+
+Example output:
+```bash
+=========================================
+Starting Dotfiles Installation
+Version: v1.0.1 (2026-01-15)
+=========================================
+🎨 Color output enabled
+Detected: OS=linux, Distro=ubuntu, Base=debian, Kernel=5.15.0, Arch=x86_64
+✓ Package management functions loaded for debian
+✓ Loaded 15 applications from .install_apps.inc
+
+🔐 Checking sudo access (you may be prompted for password)...
+✓ Sudo access verified
+
+Backing up existing dotfiles...
+⏭️  Skipping /home/user/.bashrc (unchanged from repo)
+✓ Backed up: /home/user/.profile
+Backed up 1 files to /home/user/dotfiles/oldfiles/
+Skipped 1 unchanged files
 ```
 
 ## Files Modified by Installer
@@ -352,43 +568,62 @@ The installer creates/modifies these files in your home directory:
 - `~/.bash_profile` → symlink to `~/dotfiles/.bash_profile`
 - `~/.profile` → symlink to `~/dotfiles/.profile`
 - `~/.inputrc` → symlink to `~/dotfiles/.inputrc`
+- `~/.tmux.conf` → symlink to `~/.tmux/.tmux.conf`
+- `~/.vimrc` → symlink to `~/.vim/.vimrc`
 
-Original files are backed up to `~/dotfiles/old-files/` with timestamps.
+Original files are backed up to `~/dotfiles/oldfiles/` with timestamps.
 
 ## Security Notes
 
 - 🔒 The installer never modifies system files (only user home directory)
 - 🔐 Sudo is only used for package installation
-- 💾 All changes are logged to `install-YYYY-MM-DD.log/`
+- 💾 All changes are logged to timestamped log files
 - 🔄 Original files are backed up before any changes
 - ⚠️ Review `RunMe.sh` before running if you're security-conscious
+- 🛡️ Script includes recursion guard to prevent infinite loops
+- ✅ All file operations include error checking
+
+## Version History
+
+- **v1.0.1** (2026-01-15)
+  - Added version support (`--version` flag)
+  - Smart backup system (only backs up changed files)
+  - Automatic cleanup (keeps 3 most recent archives)
+  - Color-coded output (green/yellow/red)
+  - Improved error handling throughout
+  - Smart recursion guard in `.bashrc`
+  - Privilege-aware prompt colors
 
 ## Getting Help
 
-1. **Check logs**: `~/dotfiles/install-YYYY-MM-DD.log/`
+1. **Check logs**: `~/dotfiles/logs/install-*.log`
 2. **Review this README**: Most issues are covered above
 3. **Check bash syntax**: `bash -n ~/.bashrc`
 4. **Test in debug mode**: `DEBUG=1 ./RunMe.sh`
-5. **Open an issue**: [Your repo's issue tracker]
+5. **Test in trace mode**: `TRACE_DEBUG=1 ./RunMe.sh`
+6. **Check version**: `./RunMe.sh --version`
+7. **Open an issue**: [Your repo's issue tracker]
 
 ## License
 
-[Your license here]
+[Your license here - MIT recommended]
 
-### Some links to where I've ~~stolen~~ borrowed stuff & inspiration from
-* [https://sanctum.geek.nz/arabesque/shell-config-subfiles/](https://sanctum.geek.nz/arabesque/shell-config-subfiles/)
-* [https://remysharp.com/2018/08/23/cli-improved](https://remysharp.com/2018/08/23/cli-improved)
-* [https://github.com/kenorb/dotfiles/blob/master/.bash_functions](https://github.com/kenorb/dotfiles/blob/master/.bash_functions)
-* [https://github.com/kenorb/dotfiles/blob/master/.bash_aliases](https://github.com/kenorb/dotfiles/blob/master/.bash_aliases)
-* [https://github.com/sharkdp/bat/](https://github.com/sharkdp/bat/)
-* [https://github.com/denilsonsa/prettyping.git](https://github.com/denilsonsa/prettyping.git) ~/dotfiles/extras/prettyping
+## Credits & Inspiration
 
+Some links to where I've ~~stolen~~ borrowed stuff & inspiration from:
 
-## Credits
+* [Shell Config Subfiles](https://sanctum.geek.nz/arabesque/shell-config-subfiles/)
+* [CLI Improved](https://remysharp.com/2018/08/23/cli-improved)
+* [kenorb/dotfiles Functions](https://github.com/kenorb/dotfiles/blob/master/.bash_functions)
+* [kenorb/dotfiles Aliases](https://github.com/kenorb/dotfiles/blob/master/.bash_aliases)
+* [sharkdp/bat](https://github.com/sharkdp/bat/)
+* [prettyping](https://github.com/denilsonsa/prettyping.git) → `~/dotfiles/extras/prettyping`
 
-Created and maintained by Patrick Österlund. If you feel like it, send a dime:
-[[PayPal](https://paypal.me/fotosbypatrick)] 
+Created and maintained by **Patrick Österlund**. 
+
+If you find this useful, consider supporting: [[PayPal](https://paypal.me/fotosbypatrick)]
 
 ---
 
-**Last Updated**: January 2026
+**Last Updated**: January 16, 2026  
+**Script Version**: v1.0.1

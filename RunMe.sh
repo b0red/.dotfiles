@@ -10,7 +10,7 @@ unalias -a 2>/dev/null || true
 # =============================================================================
 # VERSION & CONFIGURATION
 # =============================================================================
-VERSION="12.0"
+VERSION="15.1.0"
 VERSION_DATE="2026-01-16"
 
 DEBUG=${DEBUG:-0}
@@ -457,9 +457,22 @@ backup_dotfiles() {
     fi
     
     local backed_up=0
+    local skipped_unchanged=0
+    
     for f in "${OLD_FILE_ARRAY[@]}"; do
         if [ -f "$f" ] && [ ! -L "$f" ]; then
-            if cp -p "$f" "$OLD_FILES/$(basename "$f").bak-$DATE" 2>/dev/null; then
+            local target="$DIR/$(basename "$f")"
+            local backup_name="$(basename "$f").bak-$DATE"
+            
+            # Check if file has changed compared to repo version
+            if [ -f "$target" ] && cmp -s "$f" "$target" 2>/dev/null; then
+                log "⏭️  Skipping $f (unchanged from repo)" "info"
+                skipped_unchanged=$((skipped_unchanged + 1))
+                continue
+            fi
+            
+            # Backup the file
+            if cp -p "$f" "$OLD_FILES/$backup_name" 2>/dev/null; then
                 log "✓ Backed up: $f" "success"
                 backed_up=$((backed_up + 1))
             else
@@ -469,9 +482,14 @@ backup_dotfiles() {
     done
     
     if [ $backed_up -eq 0 ]; then
-        log "No files to backup" "info"
+        if [ $skipped_unchanged -gt 0 ]; then
+            log "No new backups needed ($skipped_unchanged files unchanged)" "info"
+        else
+            log "No files to backup" "info"
+        fi
     else
         log "Backed up $backed_up files to $OLD_FILES/" "success"
+        [ $skipped_unchanged -gt 0 ] && log "Skipped $skipped_unchanged unchanged files" "info"
     fi
 }
 
@@ -581,12 +599,56 @@ archive_backup() {
     if [ -d "$OLD_FILES" ] && [ -n "$(ls -A "$OLD_FILES" 2>/dev/null)" ]; then
         if tar -czf "$archived" -C "$DIR" "oldfiles" 2>/dev/null; then
             log "✓ Archived backups: $archived" "success"
+            
+            # Clean up old archive files (keep only 3 most recent)
+            cleanup_old_archives
         else
             log "⚠️ Failed to create archive" "warn"
             return 1
         fi
     else
         log "No files to archive" "info"
+    fi
+}
+
+cleanup_old_archives() {
+    log "Cleaning up old backup archives (keeping 3 most recent)..." "info"
+    
+    # Find all backup-*.tar.gz files in the dotfiles directory
+    shopt -s nullglob
+    local archives=("$DIR"/backup-*-[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]_[0-9][0-9]-[0-9][0-9]-[0-9][0-9].tar.gz)
+    shopt -u nullglob
+    
+    local count=${#archives[@]}
+    
+    if [ $count -le 3 ]; then
+        log "Keeping all $count archive(s) (3 or fewer exist)" "info"
+        return 0
+    fi
+    
+    # Sort archives by modification time (oldest first) and get files to delete
+    local to_delete=$((count - 3))
+    local deleted=0
+    
+    # Use ls -t to sort by time (newest first), then tail to get oldest
+    local old_archives
+    mapfile -t old_archives < <(ls -t "$DIR"/backup-*-[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]_[0-9][0-9]-[0-9][0-9]-[0-9][0-9].tar.gz 2>/dev/null | tail -n $to_delete)
+    
+    for archive in "${old_archives[@]}"; do
+        if [ -f "$archive" ]; then
+            if rm -f "$archive" 2>/dev/null; then
+                log "🗑️  Deleted old archive: $(basename "$archive")" "info"
+                deleted=$((deleted + 1))
+            else
+                log "⚠️  Failed to delete: $(basename "$archive")" "warn"
+            fi
+        fi
+    done
+    
+    if [ $deleted -gt 0 ]; then
+        log "✓ Cleaned up $deleted old archive(s), kept 3 most recent" "success"
+    else
+        log "No old archives to clean up" "info"
     fi
 }
 
@@ -763,7 +825,7 @@ revert_changes() {
     local failed=0
     
     # Restore backup files
-    shopt -s nullglob  # Enable nullglob
+    shopt -s nullglob  # Handle case when no files match
     for f in "$OLD_FILES"/*.bak-* "$OLD_FILES"/*.moved-*; do
         [ -f "$f" ] || continue
         local basename_file=$(basename "$f" | sed 's/\.\(bak\|moved\)-.*$//')
@@ -776,7 +838,7 @@ revert_changes() {
             failed=$((failed + 1))
         fi
     done
-    shopt -u nullglob  # Disable nullglob (restore default)
+    shopt -u nullglob  # Restore default behavior
     
     # Remove symlinks
     local removed=0
