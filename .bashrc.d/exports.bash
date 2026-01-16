@@ -37,7 +37,7 @@
 [ -z "${TMUX_TMPDIR:-}" ] && export TMUX_TMPDIR="$HOME/tmp/tmux-$(id -un)"
 
 # History (originals)
-[ -z "${HISTCONTROL:-}" ] && export HISTCONTROL='ignoredups:erasedups,ignoreboth'
+[ -z "${HISTCONTROL:-}" ] && export HISTCONTROL='ignoredups:erasedups'
 [ -z "${HISTIGNORE:-}" ] && export HISTIGNORE='exit:history:l:ls:ll:la:lla:bg:fg:h:q:pwd:clear:cls:cd:man:pwd:x'
 [ -z "${HISTSIZE:-}" ] && export HISTSIZE=100000
 [ -z "${HISTFILESIZE:-}" ] && export HISTFILESIZE=100000

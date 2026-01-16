@@ -23,6 +23,7 @@ shopt -s nocaseglob            # Case-insensitive globs
 # History (original exports dup-safe)
 #--------------------------------------
 export HISTIGNORE="${HISTIGNORE:-}:exit:history:l:ls:ll:la:lla:bg:fg:h:q:pwd:clear:cls:cd:man:pwd:x"
+
 case "${TERM:-}" in
     xterm*|rxvt*|screen*|tmux*)
         color_prompt=yes ;;
