@@ -3,28 +3,16 @@
 # Backs up old files, symlinks dotfiles, installs apps, updates submodules.
 
 set -euo pipefail
-# =============================================================================
-# SCRIPT METADATA
-# =============================================================================
-VERSION="1.0.1"
-VERSION_DATE="2026-01-15"
 
 # Clear all aliases to avoid conflicts
 unalias -a 2>/dev/null || true
 
 # =============================================================================
-# RECURSION GUARD
+# VERSION & CONFIGURATION
 # =============================================================================
-if [ -n "${RUNME_INITIATED:-}" ]; then
-    echo "RunMe.sh already running (PID $$)" >&2
-    exit 1
-fi
-RUNME_INITIATED=1
-export RUNME_INITIATED
+VERSION="12.0"
+VERSION_DATE="2026-01-16"
 
-# =============================================================================
-# CONFIGURATION
-# =============================================================================
 DEBUG=${DEBUG:-0}
 TRACE_DEBUG=${TRACE_DEBUG:-0}
 SLEEP=${SLEEP:-2}
@@ -40,55 +28,19 @@ OLD_FILE_ARRAY=("$HOME/.bashrc" "$HOME/.profile" "$HOME/.bash_profile" "$HOME/.i
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+BOLD='\033[1m'
 NC='\033[0m' # No Color
 
 # =============================================================================
-# UTILITY FUNCTIONS
+# RECURSION GUARD
 # =============================================================================
-
-# Logging function with color support
-log() {
-    local msg="$1"
-    local level="${2:-info}"
-    local color=""
-    
-    # Write timestamped message to log file
-    echo "[$(date +'%Y-%m-%d %H:%M:%S')] $msg" >> "$LOG" 2>/dev/null
-    
-    # Determine color for screen output
-    case "$level" in
-        success|ok)
-            color="$GREEN"
-            ;;
-        warn|warning|info)
-            color="$YELLOW"
-            ;;
-        error|fail)
-            color="$RED"
-            ;;
-        *)
-            color="$NC"
-            ;;
-    esac
-    
-    # Print colored message to screen (no timestamp)
-    echo -e "${color}${msg}${NC}"
-}
-
-logfile_init() {
-    mkdir -p "$LOG_DIR" || {
-        echo "❌ Failed to create log directory: $LOG_DIR" >&2
-        exit 1
-    }
-    LOG="$LOG_DIR/install-$DATE.log"
-    
-    # Write initial log entry
-    echo "[$(date +'%Y-%m-%d %H:%M:%S')] $TITLE started (PID $$)" > "$LOG" 2>/dev/null || {
-        echo "❌ Failed to initialize log file: $LOG" >&2
-        exit 1
-    }
-}
-
+if [ -n "${RUNME_INITIATED:-}" ]; then
+    echo -e "${RED}RunMe.sh already running (PID $$)${NC}" >&2
+    exit 1
+fi
+RUNME_INITIATED=1
+export RUNME_INITIATED
 
 # =============================================================================
 # MAIN FUNCTION
@@ -97,6 +49,7 @@ main() {
     logfile_init
     log "=========================================" "info"
     log "Starting Dotfiles Installation" "info"
+    log "Version: v${VERSION} (${VERSION_DATE})" "info"
     log "=========================================" "info"
     
     if [ "${TRACE_DEBUG:-0}" -eq 1 ]; then
@@ -138,7 +91,7 @@ main() {
     log "" "info"
     log "Next steps:" "info"
     log "  1. Restart your shell: exec bash" "info"
-    log "  2. Or source manually: source ~/.bashrc" "info"
+    log "  2. Or reload config: reload" "info"
     log "  3. Test package functions: version" "info"
     log "  4. Check for warnings above" "info"
     log "" "info"
@@ -147,9 +100,70 @@ main() {
     log "=========================================" "success"
 }
 
+# =============================================================================
+# UTILITY FUNCTIONS
+# =============================================================================
+
+# Logging function with color support
+log() {
+    local msg="$1"
+    local level="${2:-info}"
+    local color=""
+    
+    # Write timestamped message to log file
+    if [ -n "${LOG:-}" ]; then
+        echo "[$(date +'%Y-%m-%d %H:%M:%S')] $msg" >> "$LOG" 2>/dev/null || true
+    fi
+    
+    # Determine color for screen output
+    case "$level" in
+        success|ok)
+            color="$GREEN"
+            ;;
+        warn|warning|info)
+            color="$YELLOW"
+            ;;
+        error|fail)
+            color="$RED"
+            ;;
+        *)
+            color="$NC"
+            ;;
+    esac
+    
+    # Print colored message to screen (no timestamp)
+    echo -e "${color}${msg}${NC}"
+}
+
+logfile_init() {
+    if ! mkdir -p "$LOG_DIR" 2>/dev/null; then
+        echo -e "${RED}❌ Failed to create log directory: $LOG_DIR${NC}" >&2
+        exit 1
+    fi
+    
+    LOG="$LOG_DIR/install-$DATE.log"
+    
+    # Write initial log entry
+    if ! echo "[$(date +'%Y-%m-%d %H:%M:%S')] $TITLE started (PID $$)" > "$LOG" 2>/dev/null; then
+        echo -e "${RED}❌ Failed to initialize log file: $LOG${NC}" >&2
+        exit 1
+    fi
+    
+    # Test color output
+    if [ -t 1 ]; then
+        log "🎨 Color output enabled" "success"
+    fi
+}
 
 check_or_add_line() {
-    local line="$1" file="$2"
+    local line="$1" 
+    local file="$2"
+    
+    # Validate inputs
+    if [ -z "$line" ] || [ -z "$file" ]; then
+        log "❌ check_or_add_line: Invalid arguments" "error"
+        return 1
+    fi
     
     # Don't modify symlinked files
     if [ -L "$file" ]; then
@@ -158,22 +172,24 @@ check_or_add_line() {
     fi
     
     if [ ! -f "$file" ]; then
-        touch "$file" || {
+        if ! touch "$file" 2>/dev/null; then
             log "❌ Failed to create $file" "error"
             return 1
-        }
+        fi
         log "Created empty $file" "info"
     fi
     
     if grep -qxF "$line" "$file" 2>/dev/null; then
         log "Line already exists in $file" "info"
     else
-        echo "$line" >> "$file" || {
+        if ! echo "$line" >> "$file" 2>/dev/null; then
             log "❌ Failed to add line to $file" "error"
             return 1
-        }
+        fi
         log "Added line to $file" "success"
     fi
+    
+    return 0
 }
 
 add_file_header() {
@@ -181,14 +197,27 @@ add_file_header() {
     local creation_date="$(date '+%Y-%m-%d %H:%M:%S')"
     local hostname="${HOSTNAME:-$(hostname)}"
     
+    # Validate input
+    if [ -z "$target_file" ]; then
+        log "❌ add_file_header: No target file specified" "error"
+        return 1
+    fi
+    
+    if [ ! -f "$target_file" ]; then
+        log "⚠️ Target file does not exist: $target_file" "warn"
+        return 1
+    fi
+    
     # Check if header already exists and remove it
     if grep -q "Created by RunMe.sh" "$target_file" 2>/dev/null; then
         log "Updating header in $(basename "$target_file")..." "info"
         
-        local temp_file=$(mktemp) || {
+        local temp_file
+        if ! temp_file=$(mktemp 2>/dev/null); then
             log "❌ Failed to create temp file" "error"
             return 1
-        }
+        fi
+        
         local skip_lines=0
         
         # Count header lines to skip
@@ -203,24 +232,27 @@ add_file_header() {
         done < "$target_file"
         
         # Copy file without old header
-        tail -n +$((skip_lines + 1)) "$target_file" > "$temp_file" || {
+        if ! tail -n +$((skip_lines + 1)) "$target_file" > "$temp_file" 2>/dev/null; then
             log "❌ Failed to process header" "error"
             rm -f "$temp_file"
             return 1
-        }
-        mv "$temp_file" "$target_file" || {
+        fi
+        
+        if ! mv "$temp_file" "$target_file" 2>/dev/null; then
             log "❌ Failed to update file" "error"
+            rm -f "$temp_file"
             return 1
-        }
+        fi
     else
         log "Adding header to $(basename "$target_file")..." "info"
     fi
     
     # Create new header
-    local temp_file=$(mktemp) || {
+    local temp_file
+    if ! temp_file=$(mktemp 2>/dev/null); then
         log "❌ Failed to create temp file" "error"
         return 1
-    }
+    fi
     
     cat > "$temp_file" << EOF
 ### -+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -234,15 +266,15 @@ EOF
     
     # Append existing content
     if [ -f "$target_file" ]; then
-        cat "$target_file" >> "$temp_file" || {
+        if ! cat "$target_file" >> "$temp_file" 2>/dev/null; then
             log "❌ Failed to append content" "error"
             rm -f "$temp_file"
             return 1
-        }
+        fi
     fi
     
     # Replace original
-    if mv "$temp_file" "$target_file"; then
+    if mv "$temp_file" "$target_file" 2>/dev/null; then
         log "✓ Header updated in $(basename "$target_file")" "success"
         return 0
     else
@@ -272,9 +304,10 @@ get_os_info() {
     
     if [ -f /etc/os-release ]; then
         # shellcheck disable=SC1091
-        . /etc/os-release
-        DISTRO="${ID:-unknown}"
-        DISTRO_BASE="${ID_LIKE:-$ID}"
+        if . /etc/os-release 2>/dev/null; then
+            DISTRO="${ID:-unknown}"
+            DISTRO_BASE="${ID_LIKE:-$ID}"
+        fi
     fi
     
     export OS="$os" KERNEL="$kernel" MACH="$mach" DISTRO DISTRO_BASE
@@ -302,7 +335,7 @@ load_app_list() {
         line="${line%%#*}"
         
         # Trim whitespace
-        line=$(echo "$line" | xargs)
+        line=$(echo "$line" | xargs 2>/dev/null || echo "$line")
         
         # Skip empty lines
         [ -z "$line" ] && continue
@@ -342,8 +375,9 @@ load_package_functions() {
     
     # Call the function to set up install/remove/etc functions
     if command -v set_package_aliases >/dev/null 2>&1; then
-        if set_package_aliases; then
+        if set_package_aliases 2>/dev/null; then
             log "✓ Package management functions loaded for $DISTRO_BASE" "success"
+            return 0
         else
             log "⚠️ set_package_aliases returned error" "warn"
             return 1
@@ -416,15 +450,16 @@ install_apps() {
 
 backup_dotfiles() {
     log "Backing up existing dotfiles..." "info"
-    mkdir -p "$OLD_FILES" || {
+    
+    if ! mkdir -p "$OLD_FILES" 2>/dev/null; then
         log "❌ Failed to create backup directory" "error"
         exit 1
-    }
+    fi
     
     local backed_up=0
     for f in "${OLD_FILE_ARRAY[@]}"; do
         if [ -f "$f" ] && [ ! -L "$f" ]; then
-            if cp -p "$f" "$OLD_FILES/$(basename "$f").bak-$DATE"; then
+            if cp -p "$f" "$OLD_FILES/$(basename "$f").bak-$DATE" 2>/dev/null; then
                 log "✓ Backed up: $f" "success"
                 backed_up=$((backed_up + 1))
             else
@@ -447,15 +482,15 @@ cleanup_symlinks() {
         if [ -L "$file" ]; then
             if [ ! -e "$file" ]; then
                 # Broken symlink
-                rm -f "$file" || {
+                if rm -f "$file" 2>/dev/null; then
+                    log "✓ Removed broken symlink: $file" "success"
+                else
                     log "❌ Failed to remove broken symlink: $file" "error"
-                    continue
-                }
-                log "✓ Removed broken symlink: $file" "success"
+                fi
             fi
         elif [ -e "$file" ]; then
             # Regular file exists
-            if mv "$file" "$OLD_FILES/$(basename "$file").moved-$DATE"; then
+            if mv "$file" "$OLD_FILES/$(basename "$file").moved-$DATE" 2>/dev/null; then
                 log "✓ Moved existing file: $file -> $OLD_FILES/" "success"
             else
                 log "❌ Failed to move: $file" "error"
@@ -466,6 +501,7 @@ cleanup_symlinks() {
 
 symlink_dotfiles() {
     log "Creating symlinks..." "info"
+    
     if [ ! -d "$DIR" ]; then
         log "❌ Error: $DIR not found. Clone repo first." "error"
         exit 1
@@ -480,13 +516,13 @@ symlink_dotfiles() {
         fi
 
         if [ -e "$src" ] || [ -L "$src" ]; then
-            rm -f "$src" || {
+            if ! rm -f "$src" 2>/dev/null; then
                 log "❌ Failed to remove: $src" "error"
                 continue
-            }
+            fi
         fi
 
-        if ln -sf "$target" "$src"; then
+        if ln -sf "$target" "$src" 2>/dev/null; then
             log "✓ Linked: $target -> $src" "success"
             linked=$((linked + 1))
         else
@@ -517,13 +553,17 @@ symlink_dotfiles() {
     local bash_profile_target="$DIR/.bash_profile"
     if [ -f "$bash_profile_target" ]; then
         if ! grep -qE 'source.*bashrc|\..*bashrc' "$bash_profile_target" 2>/dev/null; then
-            cat >> "$bash_profile_target" << 'EOF'
+            if cat >> "$bash_profile_target" 2>/dev/null << 'EOF'
 # Load .bashrc for interactive shells
 if [ -n "$PS1" ] && [ -f ~/.bashrc ]; then
     source ~/.bashrc
 fi
 EOF
-            log "✓ Added .bashrc loader to .bash_profile (in repo)" "success"
+            then
+                log "✓ Added .bashrc loader to .bash_profile (in repo)" "success"
+            else
+                log "❌ Failed to add .bashrc loader" "error"
+            fi
         else
             log "✓ .bash_profile already sources .bashrc" "success"
         fi
@@ -558,10 +598,10 @@ update_submodules() {
         return 0
     fi
     
-    cd "$DIR" || {
+    if ! cd "$DIR" 2>/dev/null; then
         log "❌ Failed to cd to $DIR" "error"
         return 1
-    }
+    fi
     
     if git submodule update --init --recursive 2>&1 | tee -a "$LOG"; then
         git submodule foreach --recursive 'git pull origin master || git pull origin main' 2>&1 | tee -a "$LOG" || true
@@ -573,15 +613,22 @@ update_submodules() {
 
 clone_repos() {
     log "Cloning additional repositories..." "info"
-    cd "$HOME" || {
+    
+    if ! cd "$HOME" 2>/dev/null; then
         log "❌ Failed to cd to $HOME" "error"
         return 1
-    }
+    fi
     
     # Helper to clone only when target does not exist
     clone_if_missing() {
         local repo_url="$1"
         local target_dir="$2"
+        
+        # Validate inputs
+        if [ -z "$repo_url" ] || [ -z "$target_dir" ]; then
+            log "❌ clone_if_missing: Invalid arguments" "error"
+            return 1
+        fi
         
         if [ -e "$target_dir" ]; then
             if [ -d "$target_dir/.git" ]; then
@@ -592,7 +639,7 @@ clone_repos() {
             return 0
         fi
         
-        log "Cloning $target_dir repository..." "info"
+        log "Cloning $(basename "$target_dir") repository..." "info"
         if GIT_TERMINAL_PROMPT=0 git clone --recurse-submodules "$repo_url" "$target_dir" 2>&1 | tee -a "$LOG"; then
             log "✓ Cloned $target_dir" "success"
             return 0
@@ -607,11 +654,10 @@ clone_repos() {
     
     # Mark that RunMe.sh has handled tmux setup
     if [ -d "$HOME/.tmux" ]; then
-        echo "$(date +'%Y-%m-%d %H:%M:%S')" > "$HOME/.tmux/.installed-by-runme" || {
-            log "⚠️ Failed to create marker file" "warn"
-        }
-        if [ -f "$HOME/.tmux/.installed-by-runme" ]; then
+        if echo "$(date +'%Y-%m-%d %H:%M:%S')" > "$HOME/.tmux/.installed-by-runme" 2>/dev/null; then
             log "✓ Created marker: .tmux/.installed-by-runme" "success"
+        else
+            log "⚠️ Failed to create marker file" "warn"
         fi
     fi
 
@@ -631,16 +677,18 @@ symlink_external_repos() {
     if [ -d "$HOME/.tmux" ]; then
         if [ -f "$HOME/.tmux/.tmux.conf" ]; then
             if [ -e "$HOME/.tmux.conf" ] || [ -L "$HOME/.tmux.conf" ]; then
-                rm -f "$HOME/.tmux.conf" || {
+                if ! rm -f "$HOME/.tmux.conf" 2>/dev/null; then
                     log "❌ Failed to remove old .tmux.conf" "error"
                     errors=$((errors + 1))
-                }
+                fi
             fi
-            if ln -sf "$HOME/.tmux/.tmux.conf" "$HOME/.tmux.conf"; then
-                log "✓ Linked: ~/.tmux/.tmux.conf -> ~/.tmux.conf" "success"
-            else
-                log "❌ Failed to link .tmux.conf" "error"
-                errors=$((errors + 1))
+            if [ $errors -eq 0 ]; then
+                if ln -sf "$HOME/.tmux/.tmux.conf" "$HOME/.tmux.conf" 2>/dev/null; then
+                    log "✓ Linked: ~/.tmux/.tmux.conf -> ~/.tmux.conf" "success"
+                else
+                    log "❌ Failed to link .tmux.conf" "error"
+                    errors=$((errors + 1))
+                fi
             fi
         else
             log "⚠️ ~/.tmux/.tmux.conf not found, skipping" "warn"
@@ -653,12 +701,12 @@ symlink_external_repos() {
     if [ -d "$HOME/.vim" ]; then
         if [ -f "$HOME/.vim/.vimrc" ]; then
             if [ -e "$HOME/.vimrc" ] || [ -L "$HOME/.vimrc" ]; then
-                rm -f "$HOME/.vimrc" || {
+                if ! rm -f "$HOME/.vimrc" 2>/dev/null; then
                     log "❌ Failed to remove old .vimrc" "error"
                     errors=$((errors + 1))
-                }
+                fi
             fi
-            if ln -sf "$HOME/.vim/.vimrc" "$HOME/.vimrc"; then
+            if ln -sf "$HOME/.vim/.vimrc" "$HOME/.vimrc" 2>/dev/null; then
                 log "✓ Linked: ~/.vim/.vimrc -> ~/.vimrc" "success"
             else
                 log "❌ Failed to link .vimrc" "error"
@@ -686,7 +734,11 @@ source_bashrc() {
     log "Configuration complete..." "info"
     
     if [ -f "$HOME/.bashrc" ]; then
-        log "✓ .bashrc is ready (restart shell to activate)" "success"
+        log "✓ .bashrc is ready" "success"
+        log "" "info"
+        log "To activate changes:" "info"
+        log "  Option 1: Restart shell: exec bash" "info"
+        log "  Option 2: Reload config: reload" "info"
     else
         log "⚠️ .bashrc not found" "warn"
     fi
@@ -711,11 +763,12 @@ revert_changes() {
     local failed=0
     
     # Restore backup files
+    shopt -s nullglob  # Enable nullglob
     for f in "$OLD_FILES"/*.bak-* "$OLD_FILES"/*.moved-*; do
         [ -f "$f" ] || continue
         local basename_file=$(basename "$f" | sed 's/\.\(bak\|moved\)-.*$//')
         
-        if cp -pf "$f" "$HOME/$basename_file"; then
+        if cp -pf "$f" "$HOME/$basename_file" 2>/dev/null; then
             log "✓ Restored: $basename_file" "success"
             reverted=$((reverted + 1))
         else
@@ -723,12 +776,13 @@ revert_changes() {
             failed=$((failed + 1))
         fi
     done
+    shopt -u nullglob  # Disable nullglob (restore default)
     
     # Remove symlinks
     local removed=0
     for src in "${DOT_ARRAY[@]}"; do
         if [ -L "$src" ]; then
-            if rm -f "$src"; then
+            if rm -f "$src" 2>/dev/null; then
                 log "✓ Removed symlink: $src" "success"
                 removed=$((removed + 1))
             else
@@ -762,17 +816,25 @@ revert_changes() {
 # HELP DOCUMENTATION
 # =============================================================================
 
-show_help() {
-    cat << 'EOF'
-Usage: ./RunMe.sh [OPTIONS]
+show_version() {
+    echo -e "${GREEN}${BOLD}RunMe.sh${NC} version ${BLUE}v${VERSION}${NC} (${VERSION_DATE})"
+    echo ""
+    echo "Dotfiles installer and configuration manager"
+    echo "https://github.com/yourusername/dotfiles"
+}
 
-Options:
+show_help() {
+    cat << EOF
+${BOLD}Usage:${NC} ./RunMe.sh [OPTIONS]
+
+${BOLD}Options:${NC}
   -h, --help      Show this help message
+  -v, --version   Show version information
   -r, --revert    Restore backups and remove symlinks
   --debug         Enable debug mode
   --trace         Enable trace mode (set -x)
 
-Description:
+${BOLD}Description:${NC}
   Installs dotfiles by:
     1. Backing up existing dotfiles
     2. Creating symlinks to dotfiles repo
@@ -780,20 +842,22 @@ Description:
     4. Updating git submodules
     5. Cloning additional repos (.tmux, .vim)
 
-Environment Variables:
+${BOLD}Environment Variables:${NC}
   DEBUG=1         Enable debug output
   TRACE_DEBUG=1   Enable bash trace mode
   SLEEP=N         Seconds to sleep between operations (default: 2)
 
-Log files are saved to: ~/dotfiles/logs/install-YYYY-MM-DD_HH-MM-SS.log
+${BOLD}Log files:${NC}
+  ~/dotfiles/logs/install-YYYY-MM-DD_HH-MM-SS.log
 
-Examples:
+${BOLD}Examples:${NC}
   ./RunMe.sh              # Normal installation
+  ./RunMe.sh --version    # Show version
   ./RunMe.sh --revert     # Undo changes (restore backups)
   DEBUG=1 ./RunMe.sh      # Debug mode
   TRACE_DEBUG=1 ./RunMe.sh # Trace mode
 
-For detailed documentation, see README.md
+${BOLD}For detailed documentation, see:${NC} README.md
 EOF
 }
 
@@ -804,13 +868,13 @@ EOF
 # Setup cleanup trap
 trap cleanup_on_exit EXIT
 
-if [ "$TRACE_DEBUG" -eq 1 ]; then 
+if [ "${TRACE_DEBUG:-0}" -eq 1 ]; then 
     set -x
     trap 'read -p "DEBUG: Press Enter..."' DEBUG
 fi
 
 if [ "$EUID" -eq 0 ]; then
-    echo "❌ Please don't run as root!"
+    echo -e "${RED}❌ Please don't run as root!${NC}"
     exit 1
 fi
 
@@ -821,6 +885,10 @@ fi
 case "${1:-}" in
     -h|--help|-\?)
         show_help
+        exit 0
+        ;;
+    -v|--version)
+        show_version
         exit 0
         ;;
     -r|--revert)
@@ -843,10 +911,12 @@ case "${1:-}" in
         exit 0
         ;;
     *)
-        echo "❌ Unknown option: $1"
+        echo -e "${RED}❌ Unknown option: $1${NC}"
         echo ""
         show_help
         exit 1
         ;;
 esac
+
 # End of RunMe.sh
+    log "
