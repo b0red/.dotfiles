@@ -886,42 +886,41 @@ show_version() {
 }
 
 show_help() {
-    cat << EOF
-${BOLD}Usage:${NC} ./RunMe.sh [OPTIONS]
-
-${BOLD}Options:${NC}
-  -h, --help      Show this help message
-  -v, --version   Show version information
-  -r, --revert    Restore backups and remove symlinks
-  --debug         Enable debug mode
-  --trace         Enable trace mode (set -x)
-
-${BOLD}Description:${NC}
-  Installs dotfiles by:
-    1. Backing up existing dotfiles
-    2. Creating symlinks to dotfiles repo
-    3. Installing essential applications
-    4. Updating git submodules
-    5. Cloning additional repos (.tmux, .vim)
-
-${BOLD}Environment Variables:${NC}
-  DEBUG=1         Enable debug output
-  TRACE_DEBUG=1   Enable bash trace mode
-  SLEEP=N         Seconds to sleep between operations (default: 2)
-
-${BOLD}Log files:${NC}
-  ~/dotfiles/logs/install-YYYY-MM-DD_HH-MM-SS.log
-
-${BOLD}Examples:${NC}
-  ./RunMe.sh              # Normal installation
-  ./RunMe.sh --version    # Show version
-  ./RunMe.sh --revert     # Undo changes (restore backups)
-  DEBUG=1 ./RunMe.sh      # Debug mode
-  TRACE_DEBUG=1 ./RunMe.sh # Trace mode
-
-${BOLD}For detailed documentation, see:${NC} README.md
-EOF
+    echo -e "${BOLD}Usage:${NC} ./RunMe.sh [OPTIONS]"
+    echo ""
+    echo -e "${BOLD}Options:${NC}"
+    echo "  -h, --help      Show this help message"
+    echo "  -v, --version   Show version information"
+    echo "  -r, --revert    Restore backups and remove symlinks"
+    echo "  --debug         Enable debug mode"
+    echo "  --trace         Enable trace mode (set -x)"
+    echo ""
+    echo -e "${BOLD}Description:${NC}"
+    echo "  Installs dotfiles by:"
+    echo "    1. Backing up existing dotfiles"
+    echo "    2. Creating symlinks to dotfiles repo"
+    echo "    3. Installing essential applications"
+    echo "    4. Updating git submodules"
+    echo "    5. Cloning additional repos (.tmux, .vim)"
+    echo ""
+    echo -e "${BOLD}Environment Variables:${NC}"
+    echo "  DEBUG=1         Enable debug output"
+    echo "  TRACE_DEBUG=1   Enable bash trace mode"
+    echo "  SLEEP=N         Seconds to sleep between operations (default: 2)"
+    echo ""
+    echo -e "${BOLD}Log files:${NC}"
+    echo "  ~/dotfiles/logs/install-YYYY-MM-DD_HH-MM-SS.log"
+    echo ""
+    echo -e "${BOLD}Examples:${NC}"
+    echo "  ./RunMe.sh              # Normal installation"
+    echo "  ./RunMe.sh --version    # Show version"
+    echo "  ./RunMe.sh --revert     # Undo changes (restore backups)"
+    echo "  DEBUG=1 ./RunMe.sh      # Debug mode"
+    echo "  TRACE_DEBUG=1 ./RunMe.sh # Trace mode"
+    echo ""
+    echo -e "${BOLD}For detailed documentation, see:${NC} README.md"
 }
+
 
 # =============================================================================
 # SCRIPT INITIALIZATION
