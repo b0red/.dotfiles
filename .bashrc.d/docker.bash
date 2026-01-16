@@ -157,38 +157,48 @@ dport() {
     return 0
 }
 
-# function lzj() {
-#     if [ -n "$TMUX" ]; then
-#         tmux new-window -n lazyjournal "lazyjournal"
-#         return
-#     fi
+# Helper function to check Docker
+docker_check() {
+    if [ ! -x "$(command -v docker)" ]; then
+        echo -e "${RED}Error:${NC} Docker is not installed. Please install Docker first." >&2
+        return 1
+    fi
+    if ! docker ps >/dev/null 2>&1; then
+        echo "${RED}Error:${NC} Docker daemon is not running. Please start Docker." >&2
+        return 1
+    fi
+    return 0
+}
 
-#     if tmux ls >/dev/null 2>&1; then
-#         tmux new-session -d -s lazyjournal-temp "lazyjournal"
-#         tmux new-window -t lazyjournal-temp -n lazyjournal "lazyjournal"
-#         tmux attach-session -t lazyjournal-temp
-#         # Window auto-closes when lazyjournal exits [web:22]
-#         return
-#     fi
+function lzj() {
+    if ! docker_check; then return 1; fi
+    if [ -n "$TMUX" ]; then
+        tmux new-window -n lazyjournal "lazyjournal"
+        return
+    fi
+    if tmux ls >/dev/null 2>&1; then
+        tmux new-session -d -s lazyjournal-temp "lazyjournal"
+        tmux new-window -t lazyjournal-temp -n lazyjournal "lazyjournal"
+        tmux attach-session -t lazyjournal-temp
+        return
+    fi
+    lazyjournal
+}
 
-#     lazyjournal
-# }
-
-# function lzd() {
-#     if [ -n "$TMUX" ]; then
-#         tmux new-window -n lazydocker "lazydocker"
-#         return
-#     fi
-
-#     if tmux ls >/dev/null 2>&1; then
-#         tmux new-session -d -s lazydocker-temp "lazydocker"
-#         tmux new-window -t lazydocker-temp -n lazydocker "lazydocker"
-#         tmux attach-session -t lazydocker-temp
-#         # Window auto-closes when lazyjournal exits [web:22]
-#         return
-#     fi
-
-#     lazydocker
-# }
-
+function lzd() {
+    if ! docker_check; then return 1; fi
+    if [ -n "$TMUX" ]; then
+        tmux new-window -n lazydocker "lazydocker"
+        return
+    fi
+    if tmux ls >/dev/null 2>&1; then
+        tmux new-session -d -s lazydocker-temp "lazydocker"
+        tmux new-window -t lazydocker-temp -n lazydocker "lazydocker"
+        tmux attach-session -t lazydocker-temp
+        return
+    fi
+    lazydocker
+}
+if command_check lazydocker; then alias lzd="lzd"; fi
+if command_check lazyjournal; then alias lzj="lzj"; fi
 # End - FULL VERBATIM ORIGINAL
