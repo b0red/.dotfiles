@@ -626,4 +626,4 @@ If you find this useful, consider supporting: [[PayPal](https://paypal.me/fotosb
 ---
 
 **Last Updated**: January 16, 2026  
-**Script Version**: v1.0.1
+**Script Version**: v15.0.1
