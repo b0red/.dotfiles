@@ -33,7 +33,10 @@ function set_package_aliases() {
     else
         if [[ -f /etc/os-release ]]; then
             . /etc/os-release
-            DISTROBASE_LOCAL="${ID_LIKE:-$ID}"
+            # Use ID first, then ID_LIKE as fallback
+            DISTROBASE_LOCAL="${ID:-unknown}"
+            # Debug output
+            [[ -n "${DEBUG:-}" ]] && echo "DEBUG: ID=$ID, ID_LIKE=$ID_LIKE, Using: $DISTROBASE_LOCAL" >&2
         elif [[ "$(uname -s)" == "Darwin" ]]; then
             DISTROBASE_LOCAL="macos"
         else
@@ -41,11 +44,14 @@ function set_package_aliases() {
         fi
     fi
     
-    # Normalize/export
+    # Normalize/export (use lowercase ID for matching)
     DISTROBASE="$(echo "$DISTROBASE_LOCAL" | tr '[:upper:]' '[:lower:]')"
     export DISTROBASE
     
-    case "$DISTROBASE_LOCAL" in
+    # Debug output
+    [[ -n "${DEBUG:-}" ]] && echo "DEBUG: DISTROBASE_LOCAL='$DISTROBASE_LOCAL', DISTROBASE='$DISTROBASE'" >&2
+    
+    case "$DISTROBASE" in
         debian|ubuntu|linuxmint|pop)
             # Debian/Ubuntu
             p_install() { "$SUDOCMD" apt-get install -y "$@"; }
@@ -81,8 +87,8 @@ function set_package_aliases() {
             fi
             ;;
         
-        opensuse|suse|sles)
-            # openSUSE
+        opensuse|opensuse-tumbleweed|opensuse-leap|suse|sles)
+            # openSUSE (all variants)
             p_install() { "$SUDOCMD" zypper install -y "$@"; }
             p_remove() { "$SUDOCMD" zypper remove -y "$@"; }
             p_uninstall() { "$SUDOCMD" zypper remove -y "$@"; }
