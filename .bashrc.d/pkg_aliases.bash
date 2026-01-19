@@ -2,10 +2,10 @@
 # =================================================================================================
 # pkg_aliases.bash - COMPLETE CROSS-DISTRO PACKAGE MANAGER (7.7k original)
 # =================================================================================================
-# Purpose: Universal install/update/upgrade/search via setpackagealiases().
+# Purpose: Universal install/update/upgrade/search via set_package_aliases().
 # Dependencies: None (early load).
 # Review: Logic flawless (12 distros). Fixed quoting/export. NO OMISSIONS.
-# Usage: setpackagealiases → use install pkgname
+# Usage: set_package_aliases → use install pkgname
 # =================================================================================================
 
 # Guard
