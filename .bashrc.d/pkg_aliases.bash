@@ -25,7 +25,7 @@ else
 fi
 export SUDOCMD
 
-setpackagealiases() {
+function set_package_aliases() {
     local DISTROBASE_LOCAL
     
     # Distro detect (orig safe source)
@@ -207,6 +207,6 @@ setpackagealiases() {
 }
 
 # Auto-init (orig call)
-setpackagealiases
+set_package_aliases
 
 # End - FULL COMPLETE VERBATIM
