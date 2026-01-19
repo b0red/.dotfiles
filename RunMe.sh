@@ -355,38 +355,77 @@ load_app_list() {
 }
 
 # =============================================================================
-# PACKAGE MANAGEMENT
+# PACKAGE MANAGEMENT - FIXED VERSION
 # =============================================================================
 
 load_package_functions() {
     local pkg_file="$DIR/.bashrc.d/pkg_aliases.bash"
     
     if [ ! -r "$pkg_file" ]; then
-        log "⚠️ Warning: $pkg_file not found" "warn"
+        log "⚠️ Warning: $pkg_file not found or not readable" "warn"
         return 1
     fi
     
-    # Source the file to get set_package_aliases function
+    log "Loading package management functions from $pkg_file..." "info"
+    
+    # Source the file in current shell context (not subshell)
     # shellcheck disable=SC1090
-    if ! . "$pkg_file" 2>/dev/null; then
+    if ! source "$pkg_file" 2>&1 | tee -a "$LOG"; then
         log "❌ Failed to source $pkg_file" "error"
         return 1
     fi
     
+    # DEBUG: Show what was loaded
+    if [ "${DEBUG:-0}" -eq 1 ]; then
+        log "DEBUG: Checking what was loaded from $pkg_file..." "info"
+        log "DEBUG: File size: $(wc -l < "$pkg_file") lines" "info"
+        log "DEBUG: File permissions: $(ls -l "$pkg_file")" "info"
+        log "DEBUG: First 10 lines:" "info"
+        head -10 "$pkg_file" | tee -a "$LOG"
+    fi
+    
+    # Verify the p_install function exists after sourcing (using p_* prefix)
+    if ! declare -f p_install >/dev/null 2>&1; then
+        log "❌ p_install function not found after sourcing $pkg_file" "error"
+        log "Available functions:" "info"
+        declare -F | grep -v '^declare -f _' | tee -a "$LOG"
+        return 1
+    fi
+    
+    log "✅ p_install function loaded successfully" "success"
+    
     # Call the function to set up install/remove/etc functions
-    if command -v set_package_aliases >/dev/null 2>&1; then
-        if set_package_aliases 2>/dev/null; then
-            log "✓ Package management functions loaded for $DISTRO_BASE" "success"
-            return 0
-        else
-            log "⚠️ set_package_aliases returned error" "warn"
+    log "Calling set_package_aliases for distro: $DISTRO_BASE..." "info"
+    if set_package_aliases 2>&1 | tee -a "$LOG"; then
+        log "✅ Package management functions configured for $DISTRO_BASE" "success"
+        
+        # Verify critical functions exist (p_* prefix)
+        local missing_funcs=()
+        for func in p_install p_remove p_update p_upgrade p_search; do
+            if ! declare -f "$func" >/dev/null 2>&1; then
+                missing_funcs+=("$func")
+            fi
+        done
+        
+        if [ ${#missing_funcs[@]} -gt 0 ]; then
+            log "⚠️ Warning: Some package functions not created: ${missing_funcs[*]}" "warn"
             return 1
         fi
+        
+        log "✅ All package functions verified: p_install, p_remove, p_update, p_upgrade, p_search" "success"
+        return 0
     else
-        log "⚠️ set_package_aliases function not found in $pkg_file" "warn"
+        log "❌ set_package_aliases returned error for distro: $DISTRO_BASE" "error"
         return 1
     fi
 }
+
+# Alternative: Export the function so it's available in subshells
+export -f set_package_aliases 2>/dev/null || true
+
+# =============================================================================
+# APPLICATION INSTALLATION - FIXED VERSION
+# =============================================================================
 
 install_apps() {
     log "Installing applications..." "info"
@@ -399,46 +438,151 @@ install_apps() {
     
     log "Processing ${#APP_ARRAY[@]} applications..." "info"
     
-    # Check if install function exists
-    if ! command -v install >/dev/null 2>&1; then
-        log "⚠️ 'install' function not available, falling back to apt" "warn"
+    # Check if p_install function exists (p_* prefix to avoid /usr/bin/install conflict)
+    if ! declare -f p_install >/dev/null 2>&1; then
+        log "⚠️ 'p_install' function not available, falling back to apt" "warn"
         for app in "${APP_ARRAY[@]}"; do
-            if ! command -v "$app" >/dev/null 2>&1; then
-                log "Installing $app with apt..." "info"
-                if sudo apt-get install -y "$app" 2>&1 | tee -a "$LOG"; then
-                    log "✓ Installed $app" "success"
-                else
-                    log "❌ Failed to install $app" "error"
-                fi
+            # Check if already installed (handle both regular and -find packages)
+            local check_cmd="$app"
+            case "$app" in
+                fd-find) check_cmd="fdfind" ;;
+                bat) check_cmd="batcat" ;;
+            esac
+            
+            if command -v "$check_cmd" >/dev/null 2>&1; then
+                log "✅ $app already installed" "success"
+                continue
+            fi
+            
+            log "Installing $app with apt..." "info"
+            if sudo apt-get install -y "$app" 2>&1 | tee -a "$LOG"; then
+                log "✅ Installed $app" "success"
             else
-                log "✓ $app already installed" "success"
+                log "❌ Failed to install $app" "error"
             fi
         done
         return 0
     fi
 
-    # Use the install function from pkg_aliases.bash
+    # Use the p_install function from pkg_aliases.bash
     local installed=0
     local skipped=0
     local failed=0
     
     for app in "${APP_ARRAY[@]}"; do
-        if ! command -v "$app" >/dev/null 2>&1; then
-            log "Installing $app..." "info"
-            if install "$app" 2>&1 | tee -a "$LOG"; then
-                log "✓ Installed $app" "success"
-                installed=$((installed + 1))
-            else
-                log "❌ Failed to install $app" "error"
-                failed=$((failed + 1))
-            fi
-            sleep 0.5
-        else
-            log "✓ $app already installed" "success"
+        # Map package names to actual command names for checking
+        local check_cmd="$app"
+        case "$app" in
+            fd-find) check_cmd="fdfind" ;;
+            bat) 
+                # On Debian/Ubuntu, bat is installed as batcat
+                check_cmd="batcat"
+                ;;
+            ripgrep) check_cmd="rg" ;;
+            silversearcher-ag) check_cmd="ag" ;;
+        esac
+        
+        # Check if the actual command exists
+        if command -v "$check_cmd" >/dev/null 2>&1; then
+            log "✅ $app already installed (found: $check_cmd)" "success"
             skipped=$((skipped + 1))
+            continue
         fi
+        
+        # Install using p_install function (p_* prefix avoids /usr/bin/install)
+        log "Installing $app..." "info"
+        
+        # Use p_install directly - no collision with /usr/bin/install
+        if p_install "$app" 2>&1 | tee -a "$LOG"; then
+            log "✅ Installed $app" "success"
+            installed=$((installed + 1))
+        else
+            log "❌ Failed to install $app" "error"
+            failed=$((failed + 1))
+        fi
+        
+        sleep 0.5
     done
     
+    log "" "info"
+    log "Installation summary: $installed installed, $skipped skipped, $failed failed" "info"
+    [ $failed -gt 0 ] && return 1
+    return 0
+}
+
+# Alternative approach: Call the package manager directly
+install_apps_direct() {
+    log "Installing applications (direct package manager)..." "info"
+    
+    # Verify app list is loaded
+    if [ -z "${APP_ARRAY+x}" ] || [ ${#APP_ARRAY[@]} -eq 0 ]; then
+        log "❌ APP_ARRAY not loaded or empty" "error"
+        return 1
+    fi
+    
+    log "Processing ${#APP_ARRAY[@]} applications..." "info"
+    
+    local installed=0
+    local skipped=0
+    local failed=0
+    
+    # Detect package manager based on DISTRO_BASE
+    local pkg_install=""
+    case "${DISTRO_BASE:-unknown}" in
+        debian|ubuntu)
+            pkg_install="sudo apt-get install -y"
+            ;;
+        redhat|fedora|centos|rhel)
+            if command -v dnf >/dev/null 2>&1; then
+                pkg_install="sudo dnf install -y"
+            else
+                pkg_install="sudo yum install -y"
+            fi
+            ;;
+        opensuse|suse)
+            pkg_install="sudo zypper install -y"
+            ;;
+        arch|manjaro)
+            pkg_install="sudo pacman -S --noconfirm"
+            ;;
+        *)
+            log "❌ Unknown distro: $DISTRO_BASE" "error"
+            return 1
+            ;;
+    esac
+    
+    for app in "${APP_ARRAY[@]}"; do
+        # Map package names to actual command names for checking
+        local check_cmd="$app"
+        case "$app" in
+            fd-find) check_cmd="fdfind" ;;
+            bat) check_cmd="batcat" ;;
+            ripgrep) check_cmd="rg" ;;
+            silversearcher-ag) check_cmd="ag" ;;
+            neovim) check_cmd="nvim" ;;
+        esac
+        
+        # Check if already installed
+        if command -v "$check_cmd" >/dev/null 2>&1; then
+            log "✅ $app already installed (found: $check_cmd)" "success"
+            skipped=$((skipped + 1))
+            continue
+        fi
+        
+        # Install the package
+        log "Installing $app..." "info"
+        if $pkg_install "$app" 2>&1 | tee -a "$LOG"; then
+            log "✅ Installed $app" "success"
+            installed=$((installed + 1))
+        else
+            log "❌ Failed to install $app" "error"
+            failed=$((failed + 1))
+        fi
+        
+        sleep 0.5
+    done
+    
+    log "" "info"
     log "Installation summary: $installed installed, $skipped skipped, $failed failed" "info"
     [ $failed -gt 0 ] && return 1
     return 0

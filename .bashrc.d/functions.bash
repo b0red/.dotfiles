@@ -799,18 +799,26 @@ else
         case "$choice" in
             n|N)
                 echo "Installing neofetch..."
-                if command -v install >/dev/null 2>&1; then
-                    install neofetch && neofetch
-                else
+                # Use p_install if available, otherwise fall back to direct apt
+                if command -v p_install >/dev/null 2>&1; then
+                    p_install neofetch && neofetch
+                elif command -v apt-get >/dev/null 2>&1; then
                     sudo apt-get install -y neofetch && neofetch
+                else
+                    echo "Error: Could not determine package manager"
+                    return 1
                 fi
                 ;;
             f|F)
                 echo "Installing fastfetch..."
-                if command -v install >/dev/null 2>&1; then
-                    install fastfetch && fastfetch
-                else
+                # Use p_install if available, otherwise fall back to direct apt
+                if command -v p_install >/dev/null 2>&1; then
+                    p_install fastfetch && fastfetch
+                elif command -v apt-get >/dev/null 2>&1; then
                     sudo apt-get install -y fastfetch && fastfetch
+                else
+                    echo "Error: Could not determine package manager"
+                    return 1
                 fi
                 ;;
             *)
