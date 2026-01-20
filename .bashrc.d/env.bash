@@ -1,29 +1,33 @@
 #!/usr/bin/env bash
 # =================================================================================================
-# env.bash - COMPLETE interactive shell environment tweaks
+# env.bash - Shell Environment Configuration
 # =================================================================================================
-# Purpose: shopt, history, prompt, TERM colors (loads after exports.bash).
-# Original content 100% preserved + idempotent guards.
+# Purpose: Shell options, history settings, terminal setup
+# Dependencies: exports.bash (loads after)
+# 
+# ⚠️ NO INTERACTIVE GUARD - Shell options needed in all contexts
+# Even scripts benefit from proper shell behavior settings
 # =================================================================================================
 
-# Guard: Skip non-interactive
-[[ $- == *i* ]] || return 0
+# =============================================================================
+# SHELL OPTIONS (apply to all bash contexts)
+# =============================================================================
+shopt -s checkwinsize 2>/dev/null || true    # Resize windows properly
+shopt -s cmdhist 2>/dev/null || true         # Save multi-line as one
+shopt -s histappend 2>/dev/null || true      # Append history, don't overwrite
+shopt -s cdspell 2>/dev/null || true         # Auto-correct cd typos
+shopt -s dirspell 2>/dev/null || true        # Auto-correct dir names
+shopt -s nocaseglob 2>/dev/null || true      # Case-insensitive globs
 
-#--------------------------------------
-# Shell Options (original shopt -s)
-#--------------------------------------
-shopt -s checkwinsize          # Resize windows properly
-shopt -s cmdhist               # Save multi-line as one
-shopt -s histappend            # Append history, don't overwrite
-shopt -s cdspell               # Auto-correct cd typos
-shopt -s dirspell              # Auto-correct dir names
-shopt -s nocaseglob            # Case-insensitive globs
-
-#--------------------------------------
-# History (original exports dup-safe)
-#--------------------------------------
+# =============================================================================
+# HISTORY IGNORE PATTERNS (additional to HISTIGNORE in exports.bash)
+# =============================================================================
+# This is idempotent - won't duplicate if already set
 export HISTIGNORE="${HISTIGNORE:-}:exit:history:l:ls:ll:la:lla:bg:fg:h:q:pwd:clear:cls:cd:man:pwd:x"
 
+# =============================================================================
+# TERMINAL COLOR SUPPORT DETECTION
+# =============================================================================
 case "${TERM:-}" in
     xterm*|rxvt*|screen*|tmux*)
         color_prompt=yes ;;
@@ -31,36 +35,26 @@ case "${TERM:-}" in
         color_prompt= ;;
 esac
 
-# Lesspipe (original)
+# =============================================================================
+# LESSPIPE (enhanced less for compressed files)
+# =============================================================================
 [[ -x /usr/bin/lesspipe ]] && eval "$(SHELL=/bin/sh lesspipe)"
 
-# Interactive check (original case $-)
-case $- in
-    *i*) ;;
-      *) return ;;
-esac
-
-#--------------------------------------
-# Process Aliases (conditional - dup-safe with aliases.bash)
-#--------------------------------------
+# =============================================================================
+# PROCESS ALIASES (only if not already defined)
+# =============================================================================
+# Check if psg function exists, if not create function version
 if ! command -v psg >/dev/null 2>&1; then
-    alias psg='ps aux | grep -v grep | grep -i -e VSZ -e "$1" || true'
+    psg() {
+        pgrep -i -f "$1" || true
+    }
 fi
-alias ps='procs 2>/dev/null || ps aux'
 
-# #--------------------------------------
-# # Prompt Setup (original if color_prompt)
-# #--------------------------------------
-# if [[ -n "$color_prompt" ]]; then
-#     if [[ -x /usr/bin/tput ]] && tput setaf 1 >&/dev/null; then
-#         # We have color support; assume 256color
-#         PS1='\[\033[38;5;2m\]\u\[\033[0m\]@\h \[\033[38;5;31m\]\w\[\033[0m\]\$ '
-#     else
-#         PS1='${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ '
-#     fi
-# else
-#     PS1='${debian_chroot:+($debian_chroot)}\u@\h:\w\$ '
-# fi
-# unset color_prompt
+# Modern process viewer (procs) if available, else standard ps
+if command -v procs >/dev/null 2>&1; then
+    alias ps='procs'
+else
+    alias ps='ps aux'
+fi
 
-# End - all original preserved
+# End of env.bash

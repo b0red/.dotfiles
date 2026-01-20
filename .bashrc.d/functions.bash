@@ -52,7 +52,7 @@ function ff() {
     find . -type f -name "$1"
 }
 
-quickscan() {
+function quickscan() {
     ### Quick port scan of common ports on target (default: localhost)
     local target=${1:-127.0.0.1}
     # A small sample of common ports (SSH, HTTP, HTTPS, DBs, etc.)
@@ -328,8 +328,42 @@ function authme() {
 }
 
 function ltree() {
-    ### Paginated colored tree output
-    tree -C "$@" | less -R
+    ### List tree of directory with default ignores, paged
+    # Usage:
+    #   ltree                # tree of $PWD, show dotfiles
+    #   ltree src            # tree of src
+    #   ltree -I '.git|.gitignore|.git*'  # custom ignore
+    #
+    # Default ignore pattern (override via LTreeIgnore or -I)
+    local default_ignore='.git|.git*'
+
+    # If no -I provided in args, add default (unless env overrides)
+    local have_I=false
+    for arg in "$@"; do
+        if [[ "$arg" == "-I" ]]; then
+            have_I=true
+            break
+        fi
+    done
+
+    # Build args: always color (-C), show dotfiles (-a)
+    local args=(-a -C -F -A --dirsfirst)
+
+    # Inject ignore pattern if none given
+    if ! $have_I; then
+        local pattern="${LTreeIgnore:-$default_ignore}"
+        args+=(-I "$pattern")
+    fi
+
+    # If no directory/file arguments and no explicit path-like arg, use "."
+    if [[ $# -eq 0 ]]; then
+        args+=(".")
+    else
+        args+=("$@")
+    fi
+
+    # Call real tree (bypass alias) and page output
+    command tree "${args[@]}" | less -R
 }
 
 function cdl() {
@@ -378,26 +412,51 @@ function fstr() {
 
 function mydf() {
     ### Pretty-print df output with visual bar
-    if [ -z "$1" ]; then
-        echo "Usage: mydf <folder>"
+    if [[ $# -eq 0 ]]; then
+        echo "Usage: mydf <folder> [folder2 ...]"
         return 1
     fi
+
     for fs in "$@"; do
-        if [ ! -d "$fs" ]; then
+        if [[ ! -d "$fs" ]]; then
             echo "$fs : No such file or directory"
             continue
         fi
-        local info=( $(df -P "$fs" | awk 'END{ print $2,$3,$5 }') )
-        local free=( $(df -Pkh "$fs" | awk 'END{ print $4 }') )
-        local nbstars=$(( 20 * ${info[1]} / ${info[0]} ))
-        local out="["
-        for ((j=0;j<20;j++)); do
-            if [ $j -lt $nbstars ]; then out+="*"; else out+="-"; fi
+
+        # df --block-size=1 gives raw bytes (pure numbers)
+        # Fields: Filesystem Size Used Avail Use% Mounted_on
+        local df_line
+        df_line=$(df --block-size=1 "$fs" | awk 'NR==2 {print $2, $3, $5}')
+
+        read -r total used pct <<< "$df_line"
+
+        # Human-readable free space
+        free=$(df -Ph "$fs" | awk 'NR==2 {print $4}')
+
+        # Sanity check
+        if [[ -z "$total" || -z "$used" || ! "$total" =~ ^[0-9]+$ || "$total" -eq 0 ]]; then
+            echo "Cannot compute usage for $fs (bad df output)"
+            continue
+        fi
+
+        # Compute stars (0-20)
+        local nbstars=$((20 * used / total))
+
+        # Build bar
+        local bar="["
+        for ((j = 0; j < 20; j++)); do
+            if ((j < nbstars)); then
+                bar+="*"
+            else
+                bar+="-"
+            fi
         done
-        out+=${info[2]}" ] ("${free[0]}" free on $fs)"
-        echo "$out"
+        bar+="]"
+
+        echo "$bar $pct ( $free free on $fs )"
     done
 }
+
 
 function ii() {
     ### Display detailed host info
@@ -658,14 +717,12 @@ function gs_remove() {
     echo "Submodule $1 removed"
 }
 
+# Might be better as an alias, but here for completeness
+# remove if not working as intended
 function cd() {
     ### Override cd to show ls after entering directory
-    if [[ $- == *i* ]]; then
-        cd() {
-            builtin cd "$@" || return
-            ls
-        }
-    fi
+    builtin cd "$@" || return
+    [[ $- == *i* ]] && ls
 }
 
 function get_os() {
@@ -765,23 +822,41 @@ function functions() {
     local func_file="$HOME/dotfiles/.bashrc.d/functions.bash"
     
     if [[ "$1" == "-?" || "$1" == "--help" ]]; then
-        echo "Available functions:"
-        if [ -f "$func_file" ]; then
-            awk '/^function [a-zA-Z_][a-zA-Z0-9_]*\(\)/ {
-                fname = $2
-                gsub(/\(\).*/, "", fname)
-                getline
+        if [[ -f "$func_file" ]]; then
+            local count
+            count=$(awk '/^function [a-zA-Z_][a-zA-Z0-9_-]+/ {count++} END {print count+0}' "$func_file")
+            echo "Available functions ($count) & description:"
+            
+            awk '
+            # Capture function name (no parens in output)
+            /^function [a-zA-Z_][a-zA-Z0-9_-]+/ {
+                # Extract just the function name, removing () if present
+                match($2, /^[a-zA-Z_][a-zA-Z0-9_-]+/)
+                fname = substr($2, RSTART, RLENGTH)
+                desc = "(no description)"
+                
+                # Check CURRENT line first
                 if ($0 ~ /###/) {
-                    sub(/.*###[[:space:]]*/, "")
-                    printf "  %-30s %s\n", fname, $0
+                    # Remove everything up to and including ###
+                    sub(/^[^#]*###[[:space:]]*/, "")
+                    desc = $0
+                } else {
+                    # Save current position and check next line
+                    savedline = $0
+                    if ((getline nextline) > 0 && nextline ~ /###/) {
+                        sub(/^[[:space:]]*###[[:space:]]*/, "", nextline)
+                        desc = nextline
+                    }
                 }
-            }' "$func_file"
+                printf "  %-25s %s\n", fname, desc
+                next
+            }
+            ' "$func_file"
         else
-            echo "Could not find function source file: $func_file"
+            echo "Could not find function source file: $func_file" >&2
             return 1
         fi
     else
-        # List function names, excluding system functions
         declare -F | awk '{print $3}' | sed 's/^[0-9]*://' | grep -v '^_' | column -c 80
     fi
 }

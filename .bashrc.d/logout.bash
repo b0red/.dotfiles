@@ -1,20 +1,36 @@
 #!/usr/bin/env bash
-# ------------------------------------------------------------------------
-# logout.bash - FULL EXIT HANDLER
-# ------------------------------------------------------------------------
-# Purpose: Trap cleanup on exit/logout.
-# Review: Simple trap. NO CHANGES NEEDED.
-# ------------------------------------------------------------------------
+# =================================================================================================
+# logout.bash - Session Cleanup & Exit Handlers
+# =================================================================================================
+# Purpose: Cleanup operations when exiting shell sessions
+# Dependencies: None
+# 
+# 🔒 INTERACTIVE ONLY - This file contains:
+#    - Exit traps for cleanup
+#    - Session end logging
+#    - Screen clearing on exit
+# 
+# ⚠️ WHY GUARDED?
+#    1. Exit handlers only relevant for interactive sessions
+#    2. Scripts should control their own cleanup
+#    3. Console clearing for privacy only needed in user sessions
+# =================================================================================================
 
-# Guard (runs on exit anyway)
-# Original trap (verbatim)
-trap 'clear; echo "Session ended $(date)"; history -a' EXIT
+# =============================================================================
+# INTERACTIVE SHELL GUARD
+# =============================================================================
+[[ $- == *i* ]] || return 0
 
-# Alt original (if dual)
-trap 'kill -TERM ${TMUX:-} 2>/dev/null; clear' DEBUG
+# =============================================================================
+# We're in an INTERACTIVE shell - set up logout handlers
+# =============================================================================
 
-# when leaving the console clear the screen to increase privacy
+# Exit trap - log session end and save history
+trap 'echo "Session ended $(date)" >> ~/.bash_logout_log 2>/dev/null; history -a' EXIT
+
+# Clear console for privacy when leaving (if SHLVL is 1 - top level shell)
 if [ "$SHLVL" = 1 ]; then
     [ -x /usr/bin/clear_console ] && /usr/bin/clear_console -q
 fi
 
+# End of logout.bash (Interactive Only)

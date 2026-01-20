@@ -5,7 +5,8 @@
 # Every original export preserved with [ -z "${VAR:-}" ] && export VAR=val
 # =================================================================================================
 
-[[ $- == *i* ]] || return 0
+# Remove interactive guard to allow exports in all contexts
+# [[ $- == *i* ]] || return 0
 
 # LESS/Pager (originals)
 [ -z "${LESS_TERMCAP_mb:-}" ] && export LESS_TERMCAP_mb=$'\E[1;31m'

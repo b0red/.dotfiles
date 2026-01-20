@@ -1,18 +1,21 @@
 # Dotfiles Configuration
 
-A comprehensive, cross-platform dotfiles setup with modular bash configuration, package manager abstraction, and automated installation.
+A comprehensive, cross-platform dotfiles setup with modular bash configuration, visual loading feedback, universal package management, and automated installation.
 
 ## Features
 
-- 🔧 **Modular Configuration**: Split into logical files in `.bashrc.d/`
-- 📦 **Universal Package Management**: Unified `install`, `update`, `upgrade` commands across all distros
+- 🔧 **Modular Configuration**: Split into logical files in `.bashrc.d/` with smart loading
+- 🎬 **Visual Loading Feedback**: See each file load with color-coded progress indicators
+- 📦 **Universal Package Management**: Unified `p_install`, `install`, `update`, `upgrade` commands across all distros
 - 🎨 **Smart Prompt**: Color-coded by privilege level (green for users, red for root)
 - 🎯 **Intelligent Backups**: Only backs up changed files, keeps pristine originals forever
 - 🗑️ **Automatic Cleanup**: Keeps only 3 most recent backup archives
 - 🔄 **Re-runnable**: Safe to run multiple times, skips unchanged files
 - 📝 **Comprehensive Logging**: Timestamped logs with color-coded output
 - 🚀 **One-Command Setup**: `./RunMe.sh` does everything
-- 💻 **Cross-Platform**: Supports Debian, Ubuntu, RHEL, Fedora, Arch, Gentoo, Alpine, NixOS, FreeBSD, OpenBSD, macOS
+- 💻 **Cross-Platform**: Supports Debian, Ubuntu, RHEL, Fedora, Arch, Gentoo, Alpine, Void, NixOS, FreeBSD, OpenBSD, macOS
+- 🐳 **Docker Integration**: Conditional loading - Docker shortcuts only appear when Docker is installed
+- 🔍 **Smart File Loading**: Core files load everywhere, interactive files only in interactive shells
 
 ## Quick Start
 
@@ -38,6 +41,30 @@ The script will:
 9. Clean up old archives (keeps 3 most recent)
 10. Log everything to `~/dotfiles/logs/install-YYYY-MM-DD_HH-MM-SS.log`
 
+## Visual Loading System
+
+When you reload your shell, you'll see each file loading with visual feedback:
+
+```bash
+reload
+
+# Output:
+✓ Loading: exports.bash
+✓ Loading: env.bash
+✓ Loading: functions.bash
+✓ Loading: pkg_aliases.bash
+✓ Loading: git.bash
+✓ Loading: docker.bash      # Only if Docker installed
+✓ Loading: aliases.bash
+✅ All dotfiles loaded
+```
+
+**Configuration:**
+- Adjust loading delay: Edit `BASHRC_LOAD_DELAY=1` in `~/.bashrc` (default: 1 second)
+- Files show in upper-left corner with cursor positioning
+- Green ✓ for success, Red ✗ for errors
+- Screen clears before and after loading for clean display
+
 ## Directory Structure
 
 ```
@@ -47,15 +74,21 @@ The script will:
 ├── .profile                # POSIX shell config
 ├── .inputrc                # Readline configuration
 ├── .bashrc.d/              # Modular bash configs
-│   ├── aliases.bash        # Command aliases
-│   ├── colorcodes.bash     # Color definitions
-│   ├── docker.bash         # Docker shortcuts
-│   ├── env.bash            # Environment setup
-│   ├── exports.bash        # Environment variables
-│   ├── functions.bash      # Custom functions
-│   ├── git.bash            # Git aliases/functions
-│   ├── pkg_aliases.bash    # Package manager functions
-│   └── variables.bash      # Variable definitions
+│   ├── Core Files (load everywhere - no guards):
+│   │   ├── exports.bash        # Environment variables
+│   │   ├── env.bash            # Shell options & settings
+│   │   ├── functions.bash      # Utility functions
+│   │   └── pkg_aliases.bash    # Package manager abstraction
+│   │
+│   └── Interactive Files (interactive shells only - with guards):
+│       ├── aliases.bash        # Command aliases
+│       ├── git.bash            # Git shortcuts (50+ aliases)
+│       ├── docker.bash         # Docker shortcuts (conditional)
+│       ├── colorcodes.bash     # Color definitions
+│       ├── variables.bash      # Custom variables
+│       ├── profile.bash        # Login shell settings
+│       └── logout.bash         # Exit handlers
+│
 ├── .profile.d/             # POSIX shell modules
 │   ├── browser.sh
 │   ├── pager.sh
@@ -66,15 +99,53 @@ The script will:
 │   └── install-*.log
 ├── backup-*.tar.gz         # Archive backups (auto-culled to 3 most recent)
 ├── RunMe.sh                # Installation script
+├── diagnose-dotfiles.sh    # Diagnostic tool
 └── README.md               # This file
 ```
+
+## File Loading Architecture
+
+### Core Files (No Guards - Load Everywhere)
+These files load in **both interactive and non-interactive contexts** (scripts, RunMe.sh, etc.):
+
+- **exports.bash** - Environment variables, PATH setup
+- **env.bash** - Shell options (shopt), history configuration
+- **functions.bash** - Utility functions available everywhere
+- **pkg_aliases.bash** - Package management functions (`p_*` functions)
+
+**Why no guards?** Scripts need these core features to work properly.
+
+### Interactive Files (With Guards - Interactive Only)
+These files only load in **interactive shells** (your terminal):
+
+- **aliases.bash** - User convenience aliases
+- **git.bash** - Git workflow shortcuts
+- **docker.bash** - Docker shortcuts (only loads if Docker installed)
+- **colorcodes.bash** - Color code definitions
+- **variables.bash** - Custom user variables
+- **profile.bash** - Login shell settings
+- **logout.bash** - Session cleanup handlers
+
+**Why guards?** Aliases don't work in scripts anyway, and these are user convenience features.
+
+### Conditional Loading: Docker Integration
+
+The `docker.bash` file uses **two-stage loading**:
+
+1. **First check**: Is Docker installed? (If no, skip entirely)
+2. **Second check**: Is shell interactive? (If no, skip)
+
+This means:
+- ✅ Docker installed + Interactive shell = Docker shortcuts available
+- ❌ Docker not installed = No Docker shortcuts, no clutter
+- ❌ Non-interactive script = Docker shortcuts don't load
 
 ## Installation Options
 
 ```bash
 ./RunMe.sh                  # Normal installation
 ./RunMe.sh --help           # Show help message
-./RunMe.sh --version        # Show version (v1.0.1)
+./RunMe.sh --version        # Show version
 ./RunMe.sh --revert         # Revert changes (restore backups)
 ./RunMe.sh --debug          # Enable debug mode
 ./RunMe.sh --trace          # Enable trace mode (set -x)
@@ -85,6 +156,22 @@ TRACE_DEBUG=1 ./RunMe.sh    # Trace with environment variable
 ## Package Manager Commands
 
 After installation, these commands work across **all supported distros**:
+
+### Function-Based (Work Everywhere)
+Use these in scripts, RunMe.sh, and interactive shells:
+
+```bash
+p_install <pkg>      # Install package(s)
+p_remove <pkg>       # Remove package(s)
+p_update             # Refresh package lists
+p_upgrade            # Install all updates
+p_search <query>     # Search for packages
+p_clean              # Remove orphans & cache
+p_info <pkg>         # Show package details
+```
+
+### Alias-Based (Interactive Only)
+Convenient shortcuts for interactive use:
 
 | Command | Description | Example |
 |---------|-------------|---------|
@@ -98,11 +185,12 @@ After installation, these commands work across **all supported distros**:
 | `info <pkg>` | Show package details | `info vim` |
 | `version` | Show system info | `version` |
 
+**Note:** In scripts (like RunMe.sh), use `p_install` instead of `install` to avoid conflicts with `/usr/bin/install`.
+
 ### Supported Distributions
 
 - **Debian/Ubuntu**: apt-get
 - **RHEL/Fedora/CentOS/AlmaLinux**: dnf/yum
-- **openSUSE**: zypper
 - **Arch/Manjaro**: pacman
 - **Gentoo**: emerge
 - **Alpine**: apk
@@ -131,11 +219,12 @@ vim
 
 Then run `./RunMe.sh` again - it will only install missing packages.
 
-### Package Management
+### Package Management Examples
 
 ```bash
 # Install packages (works on any distro)
-install neofetch htop
+install neofetch htop           # Interactive shell
+p_install neofetch htop         # Scripts or interactive
 
 # Update system
 update && upgrade
@@ -155,8 +244,14 @@ version
 The `.bashrc` includes a smart recursion guard that allows re-sourcing up to 3 times:
 
 ```bash
-# Quick reload
-reload           # Uses the built-in alias
+# Quick reload (with visual feedback)
+reload
+
+# Expected output:
+# ✓ Loading: exports.bash
+# ✓ Loading: env.bash
+# ... (all files load)
+# ✅ All dotfiles loaded
 
 # Or manually
 source ~/.bashrc
@@ -165,12 +260,26 @@ source ~/.bashrc
 exec bash
 ```
 
+### Docker Commands (If Docker Installed)
+
+When Docker is installed, you get 40+ shortcuts automatically:
+
+```bash
+dps              # docker ps
+dcp              # docker compose
+dex <container>  # docker exec -it <container> /bin/sh
+dkln <container> # Follow logs for container
+dclean           # Clean dangling images/volumes
+```
+
+If Docker is **not** installed, these aliases simply don't exist - keeping your shell clean.
+
 ## Smart Backup System
 
 ### How Backups Work
 
 1. **First Run**: Creates pristine originals in `oldfiles/`
-   - Files: `.bashrc.bak-2026-01-15_10-00-00`
+   - Files: `.bashrc.bak-2026-01-20_10-00-00`
    - These are **NEVER** deleted - they're your restoration point
 
 2. **Subsequent Runs**: 
@@ -187,12 +296,12 @@ exec bash
 
 ```bash
 Backing up existing dotfiles...
-⏭️  Skipping /home/user/.bashrc (unchanged from repo)
+⭐️  Skipping /home/user/.bashrc (unchanged from repo)
 ✓ Backed up: /home/user/.profile
 Backed up 1 files to /home/user/dotfiles/oldfiles/
 Skipped 1 unchanged files
 
-✓ Archived backups: backup-DESKTOP-JLMCRD0-2026-01-16_10-30-00.tar.gz
+✓ Archived backups: backup-DESKTOP-JLMCRD0-2026-01-20_10-30-00.tar.gz
 
 Cleaning up old backup archives (keeping 3 most recent)...
 🗑️  Deleted old archive: backup-DESKTOP-JLMCRD0-2026-01-10_10-00-00.tar.gz
@@ -217,6 +326,23 @@ The prompt checks multiple conditions:
 - EUID = 0
 - USER/LOGNAME = root
 - Optional: sudo/wheel/admin group membership (commented by default)
+
+## Diagnostic Tool
+
+Check your dotfiles configuration status:
+
+```bash
+cd ~/dotfiles
+bash diagnose-dotfiles.sh
+
+# Output shows:
+# - Which files exist
+# - Guard status (which files have interactive guards)
+# - Docker check status
+# - Current shell state
+# - Package functions availability
+# - Common issues detected
+```
 
 ## Reverting Changes
 
@@ -296,7 +422,7 @@ export EDITOR="vim"
 
 Edit `~/.bashrc.d/functions.bash`:
 
-Adding the tree "`###`" under the function name with a description makes it show up when you run the `function` command:
+Adding the tree "`###`" under the function name with a description makes it show up when you run the `functions` command:
 
 ```bash
 function my_function() {
@@ -306,7 +432,7 @@ function my_function() {
 }
 ```
 
-Then run `function` to see all available functions with descriptions.
+Then run `functions` to see all available functions with descriptions, or `functions -?` for detailed help.
 
 ### Modifying Package Manager Behavior
 
@@ -334,6 +460,18 @@ htop
 # One app per line, # for comments
 ```
 
+### Adjusting Visual Loading Speed
+
+Edit `~/.bashrc`:
+
+```bash
+# Change this value (in seconds)
+BASHRC_LOAD_DELAY=1     # Default (1 second per file)
+BASHRC_LOAD_DELAY=0.5   # Faster
+BASHRC_LOAD_DELAY=0.2   # Very fast
+BASHRC_LOAD_DELAY=2     # Slower (more visible)
+```
+
 ## Troubleshooting
 
 ### Colors Not Showing
@@ -345,15 +483,46 @@ echo -e "\033[0;32mGreen\033[0m \033[0;31mRed\033[0m"
 
 If no colors appear, your terminal might not support ANSI colors. Try a different terminal emulator.
 
+### Package Functions Not Working in Scripts
+
+Make sure you're using `p_install` not `install` in scripts:
+
+```bash
+# ❌ Wrong (in scripts)
+install htop
+
+# ✅ Correct (in scripts)
+p_install htop
+
+# ✅ Both work (in interactive shell)
+install htop
+p_install htop
+```
+
+### Docker Shortcuts Not Appearing
+
+Docker shortcuts only load if Docker is installed. Check:
+
+```bash
+# Is Docker installed?
+command -v docker
+
+# If not installed:
+p_install docker.io  # Ubuntu/Debian
+p_install docker     # Other distros
+
+# Then reload
+reload
+```
+
 ### Aliases Not Working
 
 ```bash
 # Check if pkg_aliases.bash is sourced
-type install
+declare -f p_install
 
 # If "not found", manually source:
 source ~/dotfiles/.bashrc.d/pkg_aliases.bash
-set_package_aliases
 
 # Then reload bashrc
 reload
@@ -402,39 +571,44 @@ ln -sf ~/dotfiles/.bashrc ~/.bashrc
    sudo apt-get install -y curl htop vim
    ```
 
+### Visual Loading Not Showing
+
+Make sure you're in an **interactive** shell:
+
+```bash
+# Check if interactive
+echo $-
+# Should contain 'i' for interactive
+
+# Loading feedback only shows in interactive mode
+# Scripts run non-interactively and don't show feedback
+```
+
 ### "Unknown OS" Error
 
 Your distribution isn't detected. Edit `pkg_aliases.bash` and add your distro to the case statement:
 
 ```bash
-case "$DISTRO_BASE_LOCAL" in
+case "$DISTROBASE" in
     yourdistro*)
-        install() { sudo your-pkg-manager install "$@"; }
-        remove() { sudo your-pkg-manager remove "$@"; }
-        update() { sudo your-pkg-manager update; }
-        upgrade() { sudo your-pkg-manager upgrade; }
-        search() { your-pkg-manager search "$@"; }
-        clean() { sudo your-pkg-manager autoremove; }
-        info() { your-pkg-manager info "$@"; }
+        p_install() { sudo your-pkg-manager install "$@"; }
+        p_remove() { sudo your-pkg-manager remove "$@"; }
+        p_update() { sudo your-pkg-manager update; }
+        p_upgrade() { sudo your-pkg-manager upgrade; }
+        p_search() { your-pkg-manager search "$@"; }
+        p_clean() { sudo your-pkg-manager autoremove; }
+        p_info() { your-pkg-manager info "$@"; }
         ;;
 ```
 
-### Script Fails with "Permission Denied"
+### Files Loading Twice
 
-The installer needs sudo for package installation. Run:
+Run the diagnostic:
 ```bash
-sudo -v  # Verify sudo access
-./RunMe.sh
+bash ~/dotfiles/diagnose-dotfiles.sh
 ```
 
-### Files Not Being Backed Up
-
-The script only backs up files that are different from the repo. To force a backup:
-```bash
-# Make a change to trigger backup
-echo "# test" >> ~/.bashrc
-./RunMe.sh
-```
+Check for duplicate loading loops in `.bashrc`. Should only have 3 loading sections.
 
 ## Advanced Configuration
 
@@ -483,7 +657,7 @@ The script clones your vim configuration:
 ```bash
 cd ~/dotfiles
 git pull origin main
-reload  # Reload configuration
+reload  # Reload configuration with visual feedback
 ```
 
 ### Backing Up Current Config
@@ -528,33 +702,35 @@ find ~/dotfiles/logs -name "*.log" -mtime +30 -delete
 - Symlink creation
 - Package installations
 - Archive creation
+- File loading progress
 
 ### Info/Warning Messages (Yellow ⚠️)
 - Skipped unchanged files
 - Missing optional files
 - Warnings about system state
 
-### Error Messages (Red ❌)
+### Error Messages (Red ✗)
 - Failed operations
 - Missing required files
 - Permission issues
+- Failed file loads
 
 Example output:
 ```bash
 =========================================
 Starting Dotfiles Installation
-Version: v1.0.1 (2026-01-15)
+Version: v15.1.0 (2026-01-20)
 =========================================
 🎨 Color output enabled
-Detected: OS=linux, Distro=ubuntu, Base=debian, Kernel=5.15.0, Arch=x86_64
-✓ Package management functions loaded for debian
+Detected: OS=linux, Distro=ubuntu, Base=ubuntu, Kernel=5.15.0, Arch=x86_64
+✅ Package functions configured for ubuntu
 ✓ Loaded 15 applications from .install_apps.inc
 
-🔐 Checking sudo access (you may be prompted for password)...
+🔓 Checking sudo access (you may be prompted for password)...
 ✓ Sudo access verified
 
 Backing up existing dotfiles...
-⏭️  Skipping /home/user/.bashrc (unchanged from repo)
+⭐️  Skipping /home/user/.bashrc (unchanged from repo)
 ✓ Backed up: /home/user/.profile
 Backed up 1 files to /home/user/dotfiles/oldfiles/
 Skipped 1 unchanged files
@@ -576,16 +752,67 @@ Original files are backed up to `~/dotfiles/oldfiles/` with timestamps.
 ## Security Notes
 
 - 🔒 The installer never modifies system files (only user home directory)
-- 🔐 Sudo is only used for package installation
+- 🔑 Sudo is only used for package installation
 - 💾 All changes are logged to timestamped log files
 - 🔄 Original files are backed up before any changes
 - ⚠️ Review `RunMe.sh` before running if you're security-conscious
 - 🛡️ Script includes recursion guard to prevent infinite loops
 - ✅ All file operations include error checking
+- 🎯 Core files load in all contexts, interactive files guarded
+- 🐳 Docker shortcuts only load when Docker is installed
+
+## Architecture Benefits
+
+### Why Split Core and Interactive Files?
+
+**Core files (no guards):**
+- Scripts like `RunMe.sh` need package management functions
+- Environment variables needed everywhere
+- Shell options improve script reliability
+- Utility functions used by automation
+
+**Interactive files (with guards):**
+- Aliases don't work in scripts anyway
+- User convenience features not needed in automation
+- Reduces overhead for non-interactive contexts
+- Prevents unexpected behavior in scripts
+
+### Function Export Pattern
+
+```bash
+# In pkg_aliases.bash
+p_install() { sudo apt-get install -y "$@"; }  # Function
+export -f p_install                            # Export for scripts
+
+# In interactive shells only
+if [[ $- == *i* ]]; then
+    alias install='p_install'                  # Convenient alias
+fi
+```
+
+**Result:**
+- `p_install` works in scripts ✓
+- `p_install` works interactively ✓
+- `install` works interactively ✓
+- `install` doesn't interfere with `/usr/bin/install` in scripts ✓
 
 ## Version History
 
-- **v1.0.1** (2026-01-15)
+- **v15.1.0** (2026-01-20)
+  - **NEW**: Visual loading feedback with cursor positioning
+  - **NEW**: Conditional Docker loading (only if Docker installed)
+  - **NEW**: Smart file loading architecture (core vs interactive)
+  - **NEW**: Diagnostic tool (`diagnose-dotfiles.sh`)
+  - **IMPROVED**: Package management with `p_*` functions and aliases
+  - **IMPROVED**: Cross-distro support with proper distro detection
+  - **IMPROVED**: Function exports for script compatibility
+  - **FIXED**: Guard logic - core files load everywhere, interactive files guarded
+  - **FIXED**: Docker shortcuts don't clutter shell when Docker not installed
+  - Configurable loading delay
+  - Better error handling in shopt commands
+  - Enhanced README with architecture documentation
+
+- **v15.0.0** (2026-01-16)
   - Added version support (`--version` flag)
   - Smart backup system (only backs up changed files)
   - Automatic cleanup (keeps 3 most recent archives)
@@ -596,13 +823,14 @@ Original files are backed up to `~/dotfiles/oldfiles/` with timestamps.
 
 ## Getting Help
 
-1. **Check logs**: `~/dotfiles/logs/install-*.log`
-2. **Review this README**: Most issues are covered above
-3. **Check bash syntax**: `bash -n ~/.bashrc`
-4. **Test in debug mode**: `DEBUG=1 ./RunMe.sh`
-5. **Test in trace mode**: `TRACE_DEBUG=1 ./RunMe.sh`
-6. **Check version**: `./RunMe.sh --version`
-7. **Open an issue**: [Your repo's issue tracker]
+1. **Check diagnostic**: `bash ~/dotfiles/diagnose-dotfiles.sh`
+2. **Check logs**: `~/dotfiles/logs/install-*.log`
+3. **Review this README**: Most issues are covered above
+4. **Check bash syntax**: `bash -n ~/.bashrc`
+5. **Test in debug mode**: `DEBUG=1 ./RunMe.sh`
+6. **Test in trace mode**: `TRACE_DEBUG=1 ./RunMe.sh`
+7. **Check version**: `./RunMe.sh --version`
+8. **Check loading**: `reload` (should show visual feedback)
 
 ## License
 
@@ -625,5 +853,5 @@ If you find this useful, consider supporting: [[PayPal](https://paypal.me/fotosb
 
 ---
 
-**Last Updated**: January 16, 2026  
-**Script Version**: v15.0.1
+**Last Updated**: January 20, 2026  
+**Script Version**: v15.1.0

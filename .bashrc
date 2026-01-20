@@ -7,20 +7,65 @@
 
 # ~/.bashrc: executed by bash(1) for non-login shells.
 
+# =============================================================================
+# CONFIGURATION
+# =============================================================================
+# Loading delay (seconds) - adjust as needed
+BASHRC_LOAD_DELAY=.2
+
+# Color codes for loading feedback
+LOAD_GREEN='\033[0;32m'
+LOAD_RED='\033[0;31m'
+LOAD_NC='\033[0m'
+
+# =============================================================================
+# LOADING FEEDBACK FUNCTION
+# =============================================================================
+show_loading() {
+    local file="$1"
+    local status="$2"  # "success" or "error"
+    
+    # Move cursor to upper left, clear line
+    printf '\033[H\033[2K'
+    
+    if [[ "$status" == "success" ]]; then
+        printf "${LOAD_GREEN}✓ Loading: %s${LOAD_NC}" "$file"
+    else
+        printf "${LOAD_RED}✗ Failed: %s${LOAD_NC}" "$file"
+    fi
+    
+    # Small pause for visibility
+    sleep "$BASHRC_LOAD_DELAY"
+}
+
+# Clear screen before loading (only in interactive mode)
+if [ -n "$PS1" ]; then
+    clear
+fi
+
+# =============================================================================
+# EARLY EXIT CHECKS
+# =============================================================================
 # If not running interactively, don't do anything
 case $- in
     *i*) ;;
     *) return;;
 esac
 
-###		Prevent infinite recursion (allow up to 3 levels for re-sourcing)
-#
+# =============================================================================
+# RECURSION GUARD
+# =============================================================================
+# Prevent infinite recursion (allow up to 3 levels for re-sourcing)
 BASHRC_SOURCED=$((${BASHRC_SOURCED:-0} + 1))
 [ "$BASHRC_SOURCED" -gt 3 ] && return
 
 # Source ENV variable file if set
+# shellcheck source=/dev/null
 [ -n "$ENV" ] && [ -f "$ENV" ] && . "$ENV"
 
+# =============================================================================
+# DIRCOLORS SETUP
+# =============================================================================
 # Setup colors for 'ls' and coreutils if dircolors available
 if [ -x /usr/bin/dircolors ]; then
     if [ -r ~/.dircolors ]; then
@@ -30,16 +75,23 @@ if [ -x /usr/bin/dircolors ]; then
     fi
 fi
 
+# =============================================================================
+# BASH COMPLETION
+# =============================================================================
 # Enable programmable completion features if not in POSIX mode
 if ! shopt -oq posix; then
     if [ -f /usr/share/bash-completion/bash_completion ]; then
+        # shellcheck disable=SC1091
         . /usr/share/bash-completion/bash_completion
     elif [ -f /etc/bash_completion ]; then
+        # shellcheck disable=SC1091
         . /etc/bash_completion
     fi
 fi
 
-# Shell options
+# =============================================================================
+# SHELL OPTIONS
+# =============================================================================
 shopt -s checkwinsize    # Update LINES and COLUMNS after each command
 shopt -s histappend      # Append to history file, don't overwrite
 shopt -s cmdhist         # Save multi-line commands as one entry
@@ -47,75 +99,144 @@ shopt -s cdspell         # Autocorrect minor spelling errors in cd
 shopt -s dirspell        # Autocorrect directory names during completion
 shopt -s nocaseglob      # Case-insensitive globbing
 
-
-
+# =============================================================================
+# LOAD BASHRC.D FILES
+# =============================================================================
 BASHRC_DIR="$HOME/dotfiles/.bashrc.d"
 
 # Track loaded files to prevent reload dupes
 declare -A loaded_files
 
 if [[ -d "$BASHRC_DIR" ]]; then
-    # Explicit order (critical: exports first, then functions/tools)
-    for file in exports.bash env.bash functions.bash git.bash docker.bash; do
+    # =============================================================================
+    # CORE FILES (NO GUARDS - must load for scripts too)
+    # =============================================================================
+    # These files load in BOTH interactive and non-interactive contexts
+    # Order matters: exports → env → functions → pkg_aliases
+    
+    for file in exports.bash env.bash functions.bash pkg_aliases.bash; do
         f="$BASHRC_DIR/$file"
-        if [[ -f "$f" && -z "${loaded_files[$file]}" ]]; then
-            source "$f" && loaded_files[$file]=1
+        if [[ -f "$f" && -z "${loaded_files[$file]:-}" ]]; then
+            # shellcheck disable=SC1090
+            if source "$f" 2>/dev/null; then
+                loaded_files[$file]=1
+                show_loading "$file" "success"
+            else
+                show_loading "$file" "error"
+            fi
         fi
     done
     
-    # Remaining .bash files (alphabetical)
-    for f in "$BASHRC_DIR"/*.bash; do
-        [[ -f "$f" ]] || continue
-        basename_f=$(basename "$f")
-        [[ -z "${loaded_files[$basename_f]}" ]] || continue
-        source "$f" && loaded_files[$basename_f]=1
+    # =============================================================================
+    # INTERACTIVE FILES (GUARDED - only for interactive shells)
+    # =============================================================================
+    # These files have [[ $- == *i* ]] guards and only load in interactive mode
+    # docker.bash has additional check: only loads if docker is installed
+    
+    for file in git.bash aliases.bash colorcodes.bash; do
+        f="$BASHRC_DIR/$file"
+        if [[ -f "$f" && -z "${loaded_files[$file]:-}" ]]; then
+            # shellcheck disable=SC1090
+            if source "$f" 2>/dev/null; then
+                loaded_files[$file]=1
+                show_loading "$file" "success"
+            else
+                show_loading "$file" "error"
+            fi
+        fi
+    done
+    
+    # Load docker.bash ONLY if Docker is installed
+    if command -v docker >/dev/null 2>&1; then
+        f="$BASHRC_DIR/docker.bash"
+        if [[ -f "$f" && -z "${loaded_files[docker.bash]:-}" ]]; then
+            # shellcheck disable=SC1090
+            if source "$f" 2>/dev/null; then
+                loaded_files[docker.bash]=1
+                show_loading "docker.bash" "success"
+            else
+                show_loading "docker.bash" "error"
+            fi
+        fi
+    fi
+    
+    # =============================================================================
+    # OPTIONAL INTERACTIVE FILES (load if exist, skip if not)
+    # =============================================================================
+    for file in variables.bash profile.bash logout.bash; do
+        f="$BASHRC_DIR/$file"
+        if [[ -f "$f" && -z "${loaded_files[$file]:-}" ]]; then
+            # shellcheck disable=SC1090
+            if source "$f" 2>/dev/null; then
+                loaded_files[$file]=1
+                show_loading "$file" "success"
+            fi
+            # Note: No error shown if these optional files fail
+        fi
+    done
+fi
+
+# =============================================================================
+# PROFILE.D FILES (non-bash, always load if interactive)
+# =============================================================================
+if [[ -d "$HOME/dotfiles/.profile.d" && $- == *i* ]]; then
+    for f in "$HOME/dotfiles/.profile.d"/*.sh; do
+        if [[ -f "$f" ]]; then
+            basename_f=$(basename "$f")
+            if [[ -z "${loaded_files[$basename_f]}" ]]; then
+                # shellcheck disable=SC1090
+                if source "$f" 2>/dev/null; then
+                    loaded_files[$basename_f]=1
+                    show_loading "$basename_f" "success"
+                else
+                    show_loading "$basename_f" "error"
+                fi
+            fi
+        fi
     done
     unset -v f basename_f
 fi
 
-# .profile.d (non-bash, always load if interactive)
-if [[ -d "$HOME/dotfiles/.profile.d" && $- == *i* ]]; then
-    for f in "$HOME/dotfiles/.profile.d"/*.sh; do
-        [[ -f "$f" ]] && source "$f"
-    done
-    unset -v f
-fi
-
 unset -v BASHRC_DIR loaded_files
 
-    # =============================================================================
-    # PROMPT SETUP - Color-coded by privilege level
-    # =============================================================================
-    setup_prompt() {
-        local is_privileged=0
-        
-        # Primary check: Are we actually root right now?
-        if [ "$EUID" -eq 0 ] || [ "$(id -u)" -eq 0 ]; then
-            is_privileged=1
-        fi
-        
-        # Secondary check: Is the USER variable set to root?
-        if [ "$USER" = "root" ] || [ "$LOGNAME" = "root" ]; then
-            is_privileged=1
-        fi
-        
-        # Optional: Check if user is in sudo/wheel/admin group (commented out by default)
-        # Uncomment if you want sudoers to also get red prompt
-        # if groups 2>/dev/null | grep -qE '\b(sudo|wheel|admin)\b'; then
-        #     is_privileged=1
-        # fi
-        
-        if [ $is_privileged -eq 1 ]; then
-            # Root/privileged prompt - RED username, hostname, and $
-            PS1='\[\033[1;31m\]\u\[\033[0;31m\]@\[\033[1;31m\]\h\[\033[0m\]:\[\033[1;34m\]\w\[\033[1;31m\]\$\[\033[0m\] '
-        else
-            # Normal user - GREEN username, hostname, and $
-            PS1='\[\033[1;32m\]\u\[\033[0;32m\]@\[\033[1;32m\]\h\[\033[0m\]:\[\033[1;34m\]\w\[\033[1;32m\]\$\[\033[0m\] '
-        fi
-        
-        # Export for subshells
-        export PS1
-    }
+# =============================================================================
+# FINAL LOADING MESSAGE
+# =============================================================================
+if [ -n "$PS1" ]; then
+    # Clear the loading message and show completion
+    printf '\033[H\033[2K'
+    echo -e "${LOAD_GREEN}✅ All dotfiles loaded${LOAD_NC}"
+    sleep 0.5
+    clear
+fi
+
+# =============================================================================
+# PROMPT SETUP - Color-coded by privilege level
+# =============================================================================
+setup_prompt() {
+    local is_privileged=0
+    
+    # Primary check: Are we actually root right now?
+    if [ "$EUID" -eq 0 ] || [ "$(id -u)" -eq 0 ]; then
+        is_privileged=1
+    fi
+    
+    # Secondary check: Is the USER variable set to root?
+    if [ "$USER" = "root" ] || [ "$LOGNAME" = "root" ]; then
+        is_privileged=1
+    fi
+    
+    if [ $is_privileged -eq 1 ]; then
+        # Root/privileged prompt - RED username, hostname, and $
+        PS1='\[\033[1;31m\]\u\[\033[0;31m\]@\[\033[1;31m\]\h\[\033[0m\]:\[\033[1;34m\]\w\[\033[1;31m\]\$\[\033[0m\] '
+    else
+        # Normal user - GREEN username, hostname, and $
+        PS1='\[\033[1;32m\]\u\[\033[0;32m\]@\[\033[1;32m\]\h\[\033[0m\]:\[\033[1;34m\]\w\[\033[1;32m\]\$\[\033[0m\] '
+    fi
+    
+    # Export for subshells
+    export PS1
+}
 
 # Set up the prompt
 setup_prompt
@@ -126,7 +247,6 @@ unset -f setup_prompt
 # =============================================================================
 if command -v get_os >/dev/null 2>&1; then
     get_os >/dev/null 2>&1
-    setting_standard_commands >/dev/null 2>&1
 fi
 
 # =============================================================================
@@ -169,17 +289,6 @@ if [[ $- == *i* ]] && [ -z "$TMUX" ]; then
     unset SSH_KEYS key k
 fi
 
-# # =============================================================================
-# # TMUX AUTO-LAUNCH
-# # =============================================================================
-# # Launch the tmux script
-# # 1. [[ $- == *i* ]]          -> Only run in interactive terminals
-# # 2. [ -z "$TMUX" ]           -> Only run if NOT already inside a tmux session (prevents nesting)
-# # 3. [ -x "$HOME/start_tmux.sh" ] -> Only run if the file exists and is executable
-# if [[ $- == *i* ]] && [ -z "$TMUX" ] && [ -x "$HOME/start_tmux.sh" ]; then
-#     bash "$HOME/start_tmux.sh"
-# fi
-
 # =============================================================================
 # TMUX GIT INTEGRATION
 # =============================================================================
@@ -192,7 +301,6 @@ fi
 # =============================================================================
 if [ -n "$PS1" ] && [ "$BASHRC_SOURCED" -eq 1 ]; then
     # Only show welcome on first load, not on re-source
-    clear
     
     # Color definitions for welcome message
     N_GREEN='\033[0;32m'
@@ -203,16 +311,6 @@ if [ -n "$PS1" ] && [ "$BASHRC_SOURCED" -eq 1 ]; then
     echo -e "${N_BLUE}$(date)${NC}\n"
     unset N_GREEN N_BLUE NC
 fi
-
-# # =============================================================================
-# # CUSTOM ALIASES
-# # =============================================================================
-# # Reload bashrc easily
-# alias reload='BASHRC_SOURCED=0 && source ~/.bashrc'
-# alias src='source ~/.bashrc'
-
-# Optional: Uncomment to enable DCP alias
-# source ~/.dcp_alias  # for alias="dcp vpn/novpn"
 
 # =============================================================================
 # FINAL STATUS MESSAGE

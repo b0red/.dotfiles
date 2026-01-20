@@ -1,44 +1,47 @@
 #!/usr/bin/env bash
-# ------------------------------------------------------------------------
-# profile.bash - FULL BASIC PROFILE SETUP
-# ------------------------------------------------------------------------
-# Purpose: umask, PS1 defaults (login shells).
-# Dependencies: None.
-# Review: Clean. Guarded. NO OMISSIONS.
-# ------------------------------------------------------------------------
-###	Now if bash is started as an interactive login shell it will read the following files:
-#
-# 1 ~/.bash_profile
-# 2 ~/.profile
-# 3 ~/.bashrc
-# and if bash is started as an interactive non-login shell:
-# ~/.bashrc
+# =================================================================================================
+# profile.bash - Login Shell Profile Settings
+# =================================================================================================
+# Purpose: Settings specific to login shells (umask, PS1 defaults)
+# Dependencies: None
+# 
+# 🔒 INTERACTIVE ONLY - This file contains:
+#    - Login shell specific settings
+#    - Default prompt configuration (fallback)
+#    - umask settings
+# 
+# ⚠️ WHY GUARDED?
+#    1. Login shell settings only needed interactively
+#    2. umask and PS1 are for user sessions, not scripts
+#    3. These settings override during login, not in subshells
+# =================================================================================================
 
-#[ -f "$HOME/.bashrc" ] && source "$HOME/.bashrc"
-# =========================================================================
+# =============================================================================
+# INTERACTIVE SHELL GUARD
+# =============================================================================
+[[ $- == *i* ]] || return 0
 
-# Guard (profile for login shells too)
-[[ -z "$PS1" && $- != *i* ]] || return 0
+# =============================================================================
+# We're in an INTERACTIVE shell - load profile settings
+# =============================================================================
 
-# Original umask/PS1 (guarded)
+# Set umask (only if not already set)
 [ -z "${UMASK_SET:-}" ] && {
-    umask 022  # Standard secure
+    umask 022  # Standard secure default
     export UMASK_SET=1
 }
 
-# Basic PS1 (orig style, color-safe)
-if [[ $EUID -eq 0 ]]; then
-    PS1='# '  # Root
-else
-    PS1='\u@\h:\w\$ '  # User
+# Basic PS1 fallback (if not set by .bashrc prompt setup)
+if [[ -z "${PS1:-}" ]]; then
+    if [[ $EUID -eq 0 ]]; then
+        PS1='# '  # Root
+    else
+        PS1='\u@\h:\w\$ '  # User
+    fi
 fi
 
-# Original extras (umask/PS1 variants preserved)
+# PS2/PS4 prompts
 export PS2='> '
 export PS4='+ '
 
-# End - FULL VERBATIM
-
-
-# End - FULL VERBATIM
-
+# End of profile.bash (Interactive Only)

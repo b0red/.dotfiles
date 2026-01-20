@@ -1,16 +1,37 @@
 #!/usr/bin/env bash
 # =================================================================================================
-# git.bash - COMPLETE Git shortcuts & helpers
+# git.bash - Git Shortcuts & Helper Functions
 # =================================================================================================
-# Purpose: 50+ aliases (gstat/gco/gpush) + functions (gcom/gacp/gnew/gsync).
-# Dependencies: functions.bash (optional helpers).
-# All original preserved + safe params/returns.
+# Purpose: 50+ git aliases and convenience functions for interactive git workflows
+# Dependencies: functions.bash (optional command_check helper)
+# 
+# 🔒 INTERACTIVE ONLY - This file contains:
+#    - Git command shortcuts (gs, gco, gpush, etc.)
+#    - Git workflow helpers (gacp, gcom, gnew, etc.)
+#    - Git information functions (gbranches, gsize, etc.)
+#    - Pretty git log formatters
+# 
+# ⚠️ WHY GUARDED?
+#    1. Aliases are for human convenience, not script automation
+#    2. Git aliases don't expand in non-interactive scripts
+#    3. These shortcuts are designed for interactive terminal work
+#    4. Scripts should use full git commands for clarity and portability
 # =================================================================================================
 
+# =============================================================================
+# INTERACTIVE SHELL GUARD
+# =============================================================================
+# Check if shell is interactive ($- contains 'i')
+# If NOT interactive → return immediately (don't load aliases/functions)
+# If interactive → continue loading below
 [[ $- == *i* ]] || return 0
 
+# =============================================================================
+# We're in an INTERACTIVE shell - load git shortcuts
+# =============================================================================
+
 #--------------------------------------
-# Status & Branch Aliases (originals)
+# Status & Branch Aliases
 #--------------------------------------
 ### Git command shortcuts
 alias g="git"
@@ -29,7 +50,7 @@ alias gba='git branch -a'
 alias gbd='git branch -d'
 
 #--------------------------------------
-# Checkout & Add (originals)
+# Checkout & Add
 #--------------------------------------
 ### Checkout aliases
 alias go='git checkout'
@@ -42,9 +63,9 @@ alias ga='git add -A .'
 alias gap='git add -p'
 
 #--------------------------------------
-# Commit & Push/Pull (originals + safe)
+# Commit & Push/Pull
 #--------------------------------------
-### Commit aliases (note: use functions for commits with messages)
+### Commit aliases (use functions for commits with messages)
 alias gc='git commit'
 alias gca='git commit --amend'
 alias gcan='git commit --amend --no-edit'
@@ -63,7 +84,7 @@ alias g_pull='git pull origin main'
 alias g_push='git push origin main'
 
 #--------------------------------------
-# Rebase/Merge/Diff/Log (originals)
+# Rebase/Merge/Diff/Log
 #--------------------------------------
 ### Rebase and merge aliases
 alias gpr='git pull --rebase'
@@ -84,14 +105,14 @@ alias glg='git log --graph --oneline --decorate --all'
 alias glga='git log --graph --all --format=format:"%C(bold blue)%h%C(reset) - %C(bold green)(%ar)%C(reset) %C(white)%s%C(reset) %C(dim white)- %an%C(reset)%C(bold yellow)%d%C(reset)" --abbrev-commit --date=relative'
 
 #--------------------------------------
-# Grep/Search (originals)
+# Grep/Search
 #--------------------------------------
 ### Search aliases
 alias gg='git grep'
 alias ggi='git grep -i'
 
 #--------------------------------------
-# Stash/Clean/Fetch & More (originals)
+# Stash/Clean/Fetch & More
 #--------------------------------------
 ### Stash aliases
 alias gst='git stash'
@@ -120,58 +141,100 @@ alias cdgit='cd "$(git rev-parse --show-toplevel 2>/dev/null)" || echo "Not in a
 alias git-pull-all='find . -name .git -type d -prune -execdir git pull -v \;'
 
 #--------------------------------------
-# Functions (originals fixed: params/quoting/returns)
+# Functions
 #--------------------------------------
+
 function gcom() {
-    if [[ -z "$1" ]]; then echo "Usage: gcom <commit message>"; return 1; fi
+    ### Commit with message
+    if [[ -z "$1" ]]; then
+        echo "Usage: gcom <commit message>"
+        return 1
+    fi
     git commit -m "$*"
 }
 
 function gacp() {
+    ### Add, commit, and push to current branch
     local current_branch
     current_branch=$(git rev-parse --abbrev-ref HEAD 2>/dev/null)
-    if [[ -z "$current_branch" ]]; then echo "Error: Not in git repo"; return 1; fi
-    if [[ -z "$1" ]]; then echo "Usage: gacp <commit msg>"; return 1; fi
+    if [[ -z "$current_branch" ]]; then
+        echo "Error: Not in git repo"
+        return 1
+    fi
+    if [[ -z "$1" ]]; then
+        echo "Usage: gacp <commit msg>"
+        return 1
+    fi
     git add -A . && git commit -m "$*" && git push origin "$current_branch"
 }
 
 function gco() {
-    if [[ -z "$1" ]]; then echo "Usage: gco <branch>"; return 1; fi
+    ### Checkout branch
+    if [[ -z "$1" ]]; then
+        echo "Usage: gco <branch>"
+        return 1
+    fi
     git checkout "$1"
 }
 
 function gcop() {
-    if [[ -z "$1" ]]; then echo "Usage: gcop <branch>"; return 1; fi
+    ### Checkout branch and pull
+    if [[ -z "$1" ]]; then
+        echo "Usage: gcop <branch>"
+        return 1
+    fi
     git checkout "$1" && git pull
 }
 
 function gnew() {
-    if [[ -z "$1" ]]; then echo "Usage: gnew <branch>"; return 1; fi
+    ### Create and checkout new branch
+    if [[ -z "$1" ]]; then
+        echo "Usage: gnew <branch>"
+        return 1
+    fi
     git checkout -b "$1"
 }
 
 function gdel() {
-    if [[ -z "$1" ]]; then echo "Usage: gdel <branch>"; return 1; fi
+    ### Delete local and remote branch
+    if [[ -z "$1" ]]; then
+        echo "Usage: gdel <branch>"
+        return 1
+    fi
     local current_branch
     current_branch=$(git rev-parse --abbrev-ref HEAD 2>/dev/null)
-    if [[ "$1" == "$current_branch" ]]; then echo "Error: Cannot delete current branch"; return 1; fi
-    echo "Delete local $1? (y/n)"; read -r confirm
+    if [[ "$1" == "$current_branch" ]]; then
+        echo "Error: Cannot delete current branch"
+        return 1
+    fi
+    echo "Delete local $1? (y/n)"
+    read -r confirm
     [[ "$confirm" =~ ^[Yy] ]] && git branch -D "$1"
-    echo "Delete remote $1? (y/n)"; read -r confirm
+    echo "Delete remote $1? (y/n)"
+    read -r confirm
     [[ "$confirm" =~ ^[Yy] ]] && git push origin --delete "$1"
 }
 
 function gclone() {
-    if [[ -z "$1" ]]; then echo "Usage: gclone <repo-url>"; return 1; fi
-    git clone "$1" && cd "$(basename "$1" .git)"
+    ### Clone repository and cd into it
+    if [[ -z "$1" ]]; then
+        echo "Usage: gclone <repo-url>"
+        return 1
+    fi
+    git clone "$1" && cd "$(basename "$1" .git)" || return 1
 }
 
 function gundo() {
-    if [[ -z "$1" ]]; then echo "Usage: gundo <n>"; return 1; fi
-    git reset --soft HEAD~$1
+    ### Undo last commit (keeps changes staged)
+    if [[ -z "$1" ]]; then
+        git reset --soft HEAD~1
+    else
+        git reset --soft HEAD~"$1"
+    fi
 }
 
 function gundohard() {
+    ### Undo last commit (discards changes)
     echo "WARNING: Discard last commit changes? (y/n)"
     read -r confirm
     [[ "$confirm" =~ ^[Yy] ]] && git reset --hard HEAD~1 || echo "Cancelled"
@@ -264,8 +327,6 @@ function gsync() {
 function gcleanup() {
     ### Remove merged branches except main/master/develop
     local protected_branches="main|master|develop"
-    local current_branch
-    current_branch="$(git rev-parse --abbrev-ref HEAD 2>/dev/null)"
     
     echo "Fetching latest changes..."
     git fetch --prune
@@ -302,117 +363,17 @@ function gfind() {
     git log --all --grep="$1"
 }
 
-### Git helper functions
-
-function gcom() {
-    ### Commit with message
-    if [ -z "$1" ]; then
-        echo "Usage: gcom \"commit message\""
-        return 1
-    fi
-    git commit -m "$1"
-}
-
-function gacp() {
-    ### Add, commit, and push to current branch
-    local current_branch
-    current_branch="$(git rev-parse --abbrev-ref HEAD 2>/dev/null)"
-    
-    if [ -z "$current_branch" ]; then
-        echo "Error: Not in a git repository"
-        return 1
-    fi
-    
-    if [ -z "$1" ]; then
-        echo "Usage: gacp \"commit message\""
-        return 1
-    fi
-    
-    git add -A . && \
-    git commit -m "$1" && \
-    git push origin "$current_branch"
-}
-
-function gco() {
-    ### Checkout branch
-    if [ -z "$1" ]; then
-        echo "Usage: gco <branch>"
-        return 1
-    fi
-    git checkout "$1"
-}
-
-function gcop() {
-    ### Checkout branch and push
-    if [ -z "$1" ]; then
-        echo "Usage: gcop <branch>"
-        return 1
-    fi
-    git checkout "$1" && git push
-}
-
-function gnew() {
-    ### Create and checkout new branch
-    if [ -z "$1" ]; then
-        echo "Usage: gnew <branch-name>"
-        return 1
-    fi
-    git checkout -b "$1"
-}
-
-function gdel() {
-    ### Delete local and remote branch
-    if [ -z "$1" ]; then
-        echo "Usage: gdel <branch-name>"
-        return 1
-    fi
-    
-    local branch="$1"
-    local current_branch
-    current_branch="$(git rev-parse --abbrev-ref HEAD 2>/dev/null)"
-    
-    if [ "$branch" = "$current_branch" ]; then
-        echo "Error: Cannot delete the currently checked out branch"
-        return 1
-    fi
-    
-    echo "Delete local branch '$branch'? (y/n)"
-    read -r confirm
-    if [[ "$confirm" == "y" ]]; then
-        git branch -d "$branch" || git branch -D "$branch"
-    fi
-    
-    echo "Delete remote branch '$branch'? (y/n)"
-    read -r confirm
-    if [[ "$confirm" == "y" ]]; then
-        git push origin --delete "$branch"
-    fi
-}
-
-function gclone() {
-    ### Clone repository and cd into it
-    if [ -z "$1" ]; then
-        echo "Usage: gclone <repository-url>"
-        return 1
-    fi
-    
-    git clone "$1" && cd "$(basename "$1" .git)" || return 1
-}
-
-function gundo() {
-    ### Undo last commit (keeps changes staged)
-    git reset --soft HEAD~1
-}
-
-function gundohard() {
-    ### Undo last commit (discards changes)
-    echo "WARNING: This will discard all changes in the last commit!"
-    echo "Continue? (y/n)"
-    read -r confirm
-    if [[ "$confirm" == "y" ]]; then
-        git reset --hard HEAD~1
+function docker() {
+    ### Custom docker wrapper for formatted ps output
+    if [[ "$1 $2" = "ps -p" ]]; then
+        command docker ps --all --format "{{.ID}}\t{{.Names}}\t{{.Image}}\t{{.Ports}}\t{{.Status}}" \
+        | (echo -e "CONTAINER_ID\tNAMES\tIMAGE\tPORTS\tSTATUS"; cat) \
+        | awk '{printf "\033[1;32m%s\t\033[01;38;5;95;38;5;196m%s\t\033[00m\033[1;34m%s\t\033[01;90m%s %s %s %s %s %s %s\033[00m\n", $1, $2, $3, $4, $5, $6, $7, $8, $9, $10;}' \
+        | column -s$'\t' -t \
+        | sort -k2
     else
-        echo "Cancelled"
+        command docker "$@"
     fi
 }
 
+# End of git.bash (Interactive Only)

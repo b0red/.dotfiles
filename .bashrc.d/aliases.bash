@@ -19,6 +19,11 @@
 
 #--------------------------------------
 # 0. Helper Functions (originals fixed)
+# =============================================================================
+# INTERACTIVE SHELL GUARD
+# =============================================================================
+[[ $- == *i* ]] || return 0
+
 #--------------------------------------
 command_exists() {
   if command -v "$1" >/dev/null 2>&1; then
@@ -83,7 +88,9 @@ alias vi='vim'
 alias less='less -R'  # Colored pipe support
 
 # Colored grep (safe, no deprecated GREP_OPTIONS)
-alias {grep,egrep,fgrep}='grep --color=always --line-number --no-messages --binary-files=without-match'
+alias grep='grep --color=always --line-number --no-messages --binary-files=without-match'
+alias egrep='grep --color=always --line-number --no-messages --binary-files=without-match'
+alias fgrep='grep --color=always --line-number --no-messages --binary-files=without-match'
 
 # Comment removal (fixed regex)
 alias nocomment="grep -Ev '^(#|$)'"
@@ -92,7 +99,10 @@ alias nocomment="grep -Ev '^(#|$)'"
 alias no_extensions='find . -type f ! -name "*.*"'
 
 # Extension lister
-alias list_extensions='find . -type f | perl -ne "print $1 if m/\.([^.\/]+)$/" | sort -u'
+# was alias, changed to function to fix quoting issue
+function list_extensions() {
+  find . -type f | perl -ne "print $1 if m/\.([^.\/]+)$/" | sort -u
+}
 
 # Chmod aliases (originals)
 alias mx='chmod a+x'
@@ -112,12 +122,16 @@ alias tree4='tree -L 4 2>/dev/null || ltree'
 # 4. System Monitoring
 #--------------------------------------
 alias df='df -h'
-alias h='history | grep "$1"'
+function h() {
+  history | grep "$1"
+}
 alias hr='history | sort -rn'
 
 # Process tools (Ubuntu ps)
 alias ps='ps aux'
-alias psg='ps aux | grep -v grep | grep -i -e VSZ -e "$1" || true'
+function psg() {
+  pgrep -af -i "$1" || true
+}
 
 # Memory/disk hogs (safe escapes)
 alias ds='du -ks * 2>/dev/null | sort -n'
@@ -127,8 +141,12 @@ alias psmem='ps -eo time,ppid,pid,pcpu,pmem,user,comm --sort=-pmem | head -15'
 alias freq='cut -f 1 -d " " ~/.bash_history | sort | uniq -c | sort -nr | head -30'
 
 # Ports/services (systemd/Ubuntu)
-alias sstatus='sudo systemctl status "$1"'
-alias srestart='sudo systemctl restart "$1"'
+function sstatus() {
+  sudo systemctl status "$1"
+}
+function srestart() {
+  sudo systemctl restart "$1"
+}
 alias services='service --status-all 2>/dev/null || systemctl list-units'
 alias services_run='service --status-all 2>/dev/null | grep running || systemctl list-units --state=running'
 alias ports='sudo netstat -tulanp 2>/dev/null || sudo ss -tulanp'
@@ -160,7 +178,9 @@ alias ip='ip -br -c a'
 alias myip='wget -qO- http://ipinfo.io/ip || curl -s http://ipinfo.io/ip'
 alias week='date +%V'
 alias diff='colordiff 2>/dev/null || diff'
-alias f='find . -type f | grep "$1"'
+function f() {
+  find . -type f | grep "$1"
+}
 alias root='sudo su -'
 alias su='sudo -i'
 alias please='sudo $(fc -ln -1)'
@@ -176,7 +196,7 @@ alias crontab='crontab -i'
 #--------------------------------------
 # 7. Git/Tmux/Dev
 #--------------------------------------
-alias {module-update,modup}='git submodule foreach "git pull origin master"'
+alias {module-update,modup}='git submodule foreach '"'"'git pull origin master'"'"
 alias tm='tmux new-session -s main \; split-window -h \; split-window -v -p 30 \;'
 alias tmx='tmux attach -t 0 2>/dev/null || tmux new-session'
 alias tmkill='tmux ls 2>/dev/null | grep : | cut -d: -f1 | xargs -r tmux kill-session -t'
@@ -189,7 +209,9 @@ alias binupdate='cd ~/bin && git pull origin master 2>/dev/null'
 # command -v yt-dlp >/dev/null 2>&1 && alias youtube='yt-dlp' || alias youtube='/usr/bin/python3 /usr/local/bin/youtube-dl'
 # Youtube (full path check)
 if [[ -x /usr/local/bin/youtube-dl ]]; then
-  alias youtube='/usr/bin/python3 /usr/local/bin/youtube-dl "$@"'
+  function youtube() {
+    /usr/bin/python3 /usr/local/bin/youtube-dl "$@"
+  }
 fi
 
 # Wireguard (path-safe)
