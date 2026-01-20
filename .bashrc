@@ -273,7 +273,7 @@ if [[ $- == *i* ]] && [ -z "$TMUX" ]; then
         
         if command -v keychain >/dev/null 2>&1; then
             # Preferred: Use keychain to manage the agent
-            eval $(keychain --eval --agents ssh --quiet "${SSH_KEYS[@]}" 2>/dev/null)
+            eval "$(keychain --eval --agents ssh --quiet "${SSH_KEYS[@]}" 2>/dev/null)"
         else
             # Fallback: Manual ssh-agent management
             if [ -z "$SSH_AUTH_SOCK" ] || ! ssh-add -l >/dev/null 2>&1; then
@@ -293,6 +293,7 @@ fi
 # TMUX GIT INTEGRATION
 # =============================================================================
 if [ -f ~/.tmux-extras/tmux-git.sh ]; then 
+    # shellcheck disable=SC1091
     source ~/.tmux-extras/tmux-git.sh
 fi
 
