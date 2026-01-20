@@ -30,7 +30,8 @@ broot
 # === FILE OPERATIONS ===
 zip
 unzip
-mc  # midnight commander
+mc      # midnight commander
+eza     # better file manager
 
 # === MODERN CLI REPLACEMENTS ===
 bat     # cat replacement

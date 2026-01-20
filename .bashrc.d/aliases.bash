@@ -256,3 +256,6 @@ alias weather2='curl v2.wttr.in'
 # comstat (original, fixed push→echo)
 alias comstat='echo "Command ran! ($(uname -n))" || echo "Command failed!" >&2'
 # mount alias commented; use `mount | column -t` manually
+
+# taskwarrior (original)
+command -v procs >/dev/null 2>&1 && alias tasks='task list'
