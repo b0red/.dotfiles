@@ -8,10 +8,14 @@
 # 
 # Functions use p_* prefix to avoid conflicts with /usr/bin/install
 # Aliases provide convenient shorthand for interactive use
+# 
+# CRITICAL: NO GUARDS - Must work in both interactive AND non-interactive contexts!
 # =================================================================================================
 
-# Helper: command_check (if not loaded)
-command_check() { command -v "$1" >/dev/null 2>&1; }
+# Helper: command_check (define locally to avoid dependencies)
+command_check() { 
+    command -v "$1" >/dev/null 2>&1
+}
 
 # SUDOCMD detect
 if command_check sudo; then
@@ -24,19 +28,24 @@ else
 fi
 export SUDOCMD
 
+# =================================================================================================
+# MAIN FUNCTION: set_package_aliases
+# =================================================================================================
 function set_package_aliases() {
     local DISTROBASE_LOCAL
     
-    # Distro detect (orig safe source)
+    # Distro detect
     if [[ -n "$DISTROBASE" ]]; then
         DISTROBASE_LOCAL="$DISTROBASE"
     else
         if [[ -f /etc/os-release ]]; then
             . /etc/os-release
-            # Use ID first, then ID_LIKE as fallback
+            # Use ID first (e.g., "opensuse-tumbleweed"), then ID_LIKE as fallback
             DISTROBASE_LOCAL="${ID:-unknown}"
             # Debug output
-            [[ -n "${DEBUG:-}" ]] && echo "DEBUG: ID=$ID, ID_LIKE=$ID_LIKE, Using: $DISTROBASE_LOCAL" >&2
+            if [[ -n "${DEBUG:-}" ]] || [[ -n "${TRACE_DEBUG:-}" ]]; then
+                echo "DEBUG: ID=$ID, ID_LIKE=$ID_LIKE, Using: $DISTROBASE_LOCAL" >&2
+            fi
         elif [[ "$(uname -s)" == "Darwin" ]]; then
             DISTROBASE_LOCAL="macos"
         else
@@ -44,12 +53,18 @@ function set_package_aliases() {
         fi
     fi
     
-    # Normalize/export (use lowercase ID for matching)
+    # Normalize/export (use lowercase for matching)
     DISTROBASE="$(echo "$DISTROBASE_LOCAL" | tr '[:upper:]' '[:lower:]')"
     export DISTROBASE
     
     # Debug output
-    [[ -n "${DEBUG:-}" ]] && echo "DEBUG: DISTROBASE_LOCAL='$DISTROBASE_LOCAL', DISTROBASE='$DISTROBASE'" >&2
+    if [[ -n "${DEBUG:-}" ]] || [[ -n "${TRACE_DEBUG:-}" ]]; then
+        echo "DEBUG: DISTROBASE_LOCAL='$DISTROBASE_LOCAL', DISTROBASE='$DISTROBASE'" >&2
+    fi
+    
+    # =================================================================================================
+    # DISTRO-SPECIFIC CONFIGURATIONS
+    # =================================================================================================
     
     case "$DISTROBASE" in
         debian|ubuntu|linuxmint|pop)
@@ -201,9 +216,9 @@ function set_package_aliases() {
             ;;
         
         *)
-            echo "Unknown OS: $DISTROBASE_LOCAL"
-            echo "Package manager functions not configured."
-            echo "Supported: Debian/Ubuntu/RHEL/Arch/Gentoo/Alpine/Void/NixOS/FreeBSD/OpenBSD/macOS/openSUSE"
+            echo "Unknown OS: $DISTROBASE_LOCAL → $DISTROBASE" >&2
+            echo "Package manager functions not configured." >&2
+            echo "Supported: Debian/Ubuntu/RHEL/Arch/Gentoo/Alpine/Void/NixOS/FreeBSD/OpenBSD/macOS/openSUSE" >&2
             return 1
             ;;
     esac
@@ -224,13 +239,20 @@ function set_package_aliases() {
         alias info='p_info'
     fi
     
-    echo "Package functions configured for $DISTROBASE_LOCAL"
+    echo "Package functions configured for $DISTROBASE"
 }
 
+# =================================================================================================
+# AUTO-INITIALIZATION
+# =================================================================================================
 # Auto-init ONLY in interactive shells
+# Scripts like RunMe.sh will call set_package_aliases() manually
 if [[ $- == *i* ]]; then
     set_package_aliases
 fi
 
-# Export the function
+# Export the main function so it's available everywhere
 export -f set_package_aliases
+export -f command_check
+
+# End of pkg_aliases.bash
