@@ -293,8 +293,10 @@ function cleanup_on_exit() {
 # SYSTEM DETECTION
 # =============================================================================
 
-function get_os_info() {
-    local os kernel mach
+get_os_info() {
+    local os kernel mach distro
+    
+    # Basic system info
     os=$(uname -s | tr '[:upper:]' '[:lower:]')
     kernel=$(uname -r)
     mach=$(uname -m)
@@ -302,18 +304,142 @@ function get_os_info() {
     DISTRO="unknown"
     DISTRO_BASE="unknown"
     
-    if [ -f /etc/os-release ]; then
-        # shellcheck disable=SC1091
-        if . /etc/os-release 2>/dev/null; then
-            DISTRO="${ID:-unknown}"
-            # Use ID (centos) not ID_LIKE (rhel fedora) for DISTRO_BASE
-            DISTRO_BASE="${ID:-unknown}"
-        fi
-    fi
+    case "$os" in
+        linux*)
+            # Linux distributions
+            if [ -f /etc/os-release ]; then
+                # shellcheck disable=SC1091
+                . /etc/os-release 2>/dev/null
+                distro="${ID:-unknown}"
+                
+                # Normalize distro name
+                case "$distro" in
+                    ubuntu|debian|linuxmint|pop|peppermint|elementary|zorin)
+                        DISTRO="$distro"
+                        DISTRO_BASE="debian"
+                        ;;
+                    rhel|centos|fedora|rocky|almalinux|ol|oraclelinux)
+                        DISTRO="$distro"
+                        DISTRO_BASE="rhel"
+                        ;;
+                    arch|manjaro|endeavouros|garuda)
+                        DISTRO="$distro"
+                        DISTRO_BASE="arch"
+                        ;;
+                    opensuse*|suse|sles)
+                        DISTRO="$distro"
+                        DISTRO_BASE="suse"
+                        ;;
+                    gentoo)
+                        DISTRO="gentoo"
+                        DISTRO_BASE="gentoo"
+                        ;;
+                    alpine)
+                        DISTRO="alpine"
+                        DISTRO_BASE="alpine"
+                        ;;
+                    void)
+                        DISTRO="void"
+                        DISTRO_BASE="void"
+                        ;;
+                    *)
+                        # Fallback: check ID_LIKE for derivative distros
+                        if [ -n "${ID_LIKE:-}" ]; then
+                            case "$ID_LIKE" in
+                                *debian*|*ubuntu*)
+                                    DISTRO="$distro"
+                                    DISTRO_BASE="debian"
+                                    ;;
+                                *rhel*|*fedora*|*centos*)
+                                    DISTRO="$distro"
+                                    DISTRO_BASE="rhel"
+                                    ;;
+                                *arch*)
+                                    DISTRO="$distro"
+                                    DISTRO_BASE="arch"
+                                    ;;
+                                *suse*)
+                                    DISTRO="$distro"
+                                    DISTRO_BASE="suse"
+                                    ;;
+                                *)
+                                    DISTRO="$distro"
+                                    DISTRO_BASE="linux"
+                                    log "Warning: Linux distribution '$distro' is not officially supported." "warn"
+                                    ;;
+                            esac
+                        else
+                            DISTRO="$distro"
+                            DISTRO_BASE="linux"
+                            log "Warning: Linux distribution '$distro' is not officially supported." "warn"
+                        fi
+                        ;;
+                esac
+            else
+                # No /etc/os-release, try legacy methods
+                if [ -f /etc/debian_version ]; then
+                    DISTRO="debian"
+                    DISTRO_BASE="debian"
+                elif [ -f /etc/redhat-release ]; then
+                    DISTRO="rhel"
+                    DISTRO_BASE="rhel"
+                elif [ -f /etc/arch-release ]; then
+                    DISTRO="arch"
+                    DISTRO_BASE="arch"
+                else
+                    DISTRO="linux"
+                    DISTRO_BASE="linux"
+                    log "Warning: Cannot determine Linux distribution" "warn"
+                fi
+            fi
+            ;;
+            
+        darwin*)
+            DISTRO="macos"
+            DISTRO_BASE="macos"
+            ;;
+            
+        freebsd*)
+            DISTRO="freebsd"
+            DISTRO_BASE="freebsd"
+            ;;
+            
+        openbsd*)
+            DISTRO="openbsd"
+            DISTRO_BASE="openbsd"
+            ;;
+            
+        netbsd*)
+            DISTRO="netbsd"
+            DISTRO_BASE="netbsd"
+            ;;
+            
+        sunos*)
+            DISTRO="solaris"
+            DISTRO_BASE="solaris"
+            ;;
+            
+        aix*)
+            DISTRO="aix"
+            DISTRO_BASE="aix"
+            ;;
+            
+        cygwin*|mingw*|msys*)
+            DISTRO="windows"
+            DISTRO_BASE="windows"
+            ;;
+            
+        *)
+            DISTRO="unknown"
+            DISTRO_BASE="unknown"
+            log "Warning: Operating system '$os' is not recognized" "warn"
+            ;;
+    esac
     
     export OS="$os" KERNEL="$kernel" MACH="$mach" DISTRO DISTRO_BASE
     log "Detected: OS=$OS, Distro=$DISTRO, Base=$DISTRO_BASE, Kernel=$KERNEL, Arch=$MACH" "info"
 }
+
 # =============================================================================
 # APPLICATION LIST MANAGEMENT
 # =============================================================================
