@@ -40,9 +40,14 @@ export SUDOCMD
 function set_package_aliases() {
     local DISTROBASE_LOCAL
     
-    # Distro detect - prioritize external DISTROBASE if set
-    if [[ -n "$DISTROBASE" ]]; then
+    # If DISTROBASE is already set externally (by RunMe.sh), use it directly
+    if [[ -n "${DISTROBASE}" ]] && [[ "${DISTROBASE}" != "unknown" ]]; then
         DISTROBASE_LOCAL="$DISTROBASE"
+        
+        # Debug output
+        if [[ -n "${DEBUG:-}" ]] || [[ -n "${TRACE_DEBUG:-}" ]]; then
+            echo "DEBUG: Using external DISTROBASE='$DISTROBASE'" >&2
+        fi
     else
         # Detect from system
         local os
@@ -140,6 +145,11 @@ function set_package_aliases() {
                 DISTROBASE_LOCAL="unknown"
                 ;;
         esac
+        
+        # Debug output
+        if [[ -n "${DEBUG:-}" ]] || [[ -n "${TRACE_DEBUG:-}" ]]; then
+            echo "DEBUG: Auto-detected DISTROBASE_LOCAL='$DISTROBASE_LOCAL'" >&2
+        fi
     fi
     
     # Normalize to lowercase
