@@ -415,7 +415,7 @@ function fstr() {
     fi
 
     find . -type f -name "${2:-*}" -print0 | \
-        xargs -0 grep --color=always -sn ${mycase} "$1" 2>/dev/null | \
+        xargs -0 grep --color=always -sn "${mycase}" "$1" 2>/dev/null | \
         less -R
 }
 
@@ -705,26 +705,26 @@ function cd() {
     [[ $- == *i* ]] && ls
 }
 
-function get_os() {
-    ### Detect OS and export global system variables
-    # shellcheck disable=SC2034
+# function get_os() {
+#     ### Detect OS and export global system variables
+#     # shellcheck disable=SC2034
 
-    OS=$(uname -s)
-    KERNEL=$(uname -r)
-    MACH=$(uname -m)
+#     OS=$(uname -s)
+#     KERNEL=$(uname -r)
+#     MACH=$(uname -m)
 
-    if [[ -f /etc/os-release ]]; then
-        # shellcheck disable=SC1091
-        source /etc/os-release
-        DISTRO=$NAME
-        DISTRO_BASE=$ID
-    else
-        DISTRO="unknown"
-        DISTRO_BASE="unknown"
-    fi
+#     if [[ -f /etc/os-release ]]; then
+#         # shellcheck disable=SC1091
+#         source /etc/os-release
+#         DISTRO=$NAME
+#         DISTRO_BASE=$ID
+#     else
+#         DISTRO="unknown"
+#         DISTRO_BASE="unknown"
+#     fi
 
-    export OS KERNEL MACH DISTRO DISTRO_BASE
-}
+#     export OS KERNEL MACH DISTRO DISTRO_BASE
+# }
 
 function functions() {
     ### List function names or descriptions with -?

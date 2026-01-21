@@ -494,13 +494,16 @@ function load_package_functions() {
     
     log "Loading package management functions from $pkg_file..." "info"
     
-    # Source the file - use 'source' not '.'
+    # Export DISTROBASE (no underscore) for pkg_aliases.bash
+    export DISTROBASE="$DISTRO_BASE"
+    
+    # Source the file
     # shellcheck disable=SC1090
     source "$pkg_file"
     
     log "✓ Package file sourced" "success"
     
-    # Now call set_package_aliases (it won't auto-run since we're non-interactive)
+    # Now call set_package_aliases
     log "Calling set_package_aliases for distro: $DISTRO_BASE..." "info"
     
     if set_package_aliases 2>&1 | tee -a "$LOG"; then
@@ -686,8 +689,10 @@ function backup_dotfiles() {
     
     for f in "${OLD_FILE_ARRAY[@]}"; do
         if [ -f "$f" ] && [ ! -L "$f" ]; then
-            local target="$DIR/$(basename "$f")"
-            local backup_name="$(basename "$f").bak-$DATE"
+            local target
+            target="$DIR/$(basename "$f")"
+            local backup_name
+            backup_name="$(basename "$f").bak-$DATE"
             
             # Check if file has changed compared to repo version
             if [ -f "$target" ] && cmp -s "$f" "$target" 2>/dev/null; then
@@ -752,7 +757,8 @@ function symlink_dotfiles() {
     
     local linked=0
     for src in "${DOT_ARRAY[@]}"; do
-        local target="$DIR/$(basename "$src")"
+        local target
+        target="$DIR/$(basename "$src")"
         if [ ! -f "$target" ]; then
             log "⚠️ Warning: $target not found, skipping $(basename "$src")" "warn"
             continue
