@@ -358,7 +358,7 @@ load_app_list() {
 # PACKAGE MANAGEMENT - FIXED VERSION
 # =============================================================================
 
-lload_package_functions() {
+function load_package_functions() {
     local pkg_file="$DIR/.bashrc.d/pkg_aliases.bash"
     
     if [ ! -r "$pkg_file" ]; then
@@ -368,15 +368,23 @@ lload_package_functions() {
     
     log "Loading package management functions from $pkg_file..." "info"
     
-    # Source the file (this auto-runs set_package_aliases)
-    if ! source "$pkg_file" 2>&1 | tee -a "$LOG"; then
-        log "❌ Failed to source $pkg_file" "error"
+    # Source the file - use 'source' not '.'
+    # shellcheck disable=SC1090
+    source "$pkg_file"
+    
+    log "✓ Package file sourced" "success"
+    
+    # Now call set_package_aliases (it won't auto-run since we're non-interactive)
+    log "Calling set_package_aliases for distro: $DISTRO_BASE..." "info"
+    
+    if set_package_aliases 2>&1 | tee -a "$LOG"; then
+        log "✅ Package functions configured for $DISTRO_BASE" "success"
+    else
+        log "❌ set_package_aliases failed" "error"
         return 1
     fi
     
-    log "✅ Package file sourced (auto-configured for $DISTRO_BASE)" "success"
-    
-    # Verify the p_install function was created
+    # Verify functions exist
     local missing_funcs=()
     for func in p_install p_remove p_update p_upgrade p_search; do
         if ! declare -f "$func" >/dev/null 2>&1; then
@@ -385,13 +393,14 @@ lload_package_functions() {
     done
     
     if [ ${#missing_funcs[@]} -gt 0 ]; then
-        log "⚠️ Warning: Some package functions not created: ${missing_funcs[*]}" "warn"
+        log "⚠️ Some functions missing: ${missing_funcs[*]}" "warn"
         return 1
     fi
     
     log "✅ All package functions verified" "success"
     return 0
 }
+
 # =============================================================================
 # APPLICATION INSTALLATION
 # =============================================================================
