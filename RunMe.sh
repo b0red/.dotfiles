@@ -10,8 +10,8 @@ unalias -a 2>/dev/null || true
 # =============================================================================
 # VERSION & CONFIGURATION
 # =============================================================================
-VERSION="15.1.0"
-VERSION_DATE="2026-01-16"
+VERSION="15.1.1"
+VERSION_DATE="2026-01-21"
 
 DEBUG=${DEBUG:-0}
 TRACE_DEBUG=${TRACE_DEBUG:-0}
@@ -368,63 +368,49 @@ load_package_functions() {
     
     log "Loading package management functions from $pkg_file..." "info"
     
-    # Source the file in current shell context (not subshell)
+    # Source the file in current shell context (this loads set_package_aliases function)
     # shellcheck disable=SC1090
     if ! source "$pkg_file" 2>&1 | tee -a "$LOG"; then
         log "❌ Failed to source $pkg_file" "error"
         return 1
     fi
     
-    # DEBUG: Show what was loaded
-    if [ "${DEBUG:-0}" -eq 1 ]; then
-        log "DEBUG: Checking what was loaded from $pkg_file..." "info"
-        log "DEBUG: File size: $(wc -l < "$pkg_file") lines" "info"
-        log "DEBUG: File permissions: $(ls -l "$pkg_file")" "info"
-        log "DEBUG: First 10 lines:" "info"
-        head -10 "$pkg_file" | tee -a "$LOG"
-    fi
-    
-    # Verify the p_install function exists after sourcing (using p_* prefix)
-    if ! declare -f p_install >/dev/null 2>&1; then
-        log "❌ p_install function not found after sourcing $pkg_file" "error"
-        log "Available functions:" "info"
-        declare -F | grep -v '^declare -f _' | tee -a "$LOG"
+    # Verify set_package_aliases function was loaded
+    if ! declare -f set_package_aliases >/dev/null 2>&1; then
+        log "❌ set_package_aliases function not found after sourcing" "error"
         return 1
     fi
     
-    log "✅ p_install function loaded successfully" "success"
+    log "✓ set_package_aliases function loaded" "success"
     
-    # Call the function to set up install/remove/etc functions
+    # NOW call set_package_aliases to create the p_install, p_remove, etc. functions
     log "Calling set_package_aliases for distro: $DISTRO_BASE..." "info"
-    if set_package_aliases 2>&1 | tee -a "$LOG"; then
-        log "✅ Package management functions configured for $DISTRO_BASE" "success"
-        
-        # Verify critical functions exist (p_* prefix)
-        local missing_funcs=()
-        for func in p_install p_remove p_update p_upgrade p_search; do
-            if ! declare -f "$func" >/dev/null 2>&1; then
-                missing_funcs+=("$func")
-            fi
-        done
-        
-        if [ ${#missing_funcs[@]} -gt 0 ]; then
-            log "⚠️ Warning: Some package functions not created: ${missing_funcs[*]}" "warn"
-            return 1
-        fi
-        
-        log "✅ All package functions verified: p_install, p_remove, p_update, p_upgrade, p_search" "success"
-        return 0
-    else
+    if ! set_package_aliases 2>&1 | tee -a "$LOG"; then
         log "❌ set_package_aliases returned error for distro: $DISTRO_BASE" "error"
         return 1
     fi
+    
+    log "✅ Package management functions configured for $DISTRO_BASE" "success"
+    
+    # Verify critical functions were created
+    local missing_funcs=()
+    for func in p_install p_remove p_update p_upgrade p_search; do
+        if ! declare -f "$func" >/dev/null 2>&1; then
+            missing_funcs+=("$func")
+        fi
+    done
+    
+    if [ ${#missing_funcs[@]} -gt 0 ]; then
+        log "⚠️ Warning: Some package functions not created: ${missing_funcs[*]}" "warn"
+        return 1
+    fi
+    
+    log "✅ All package functions verified: p_install, p_remove, p_update, p_upgrade, p_search" "success"
+    return 0
 }
 
-# Alternative: Export the function so it's available in subshells
-export -f set_package_aliases 2>/dev/null || true
-
 # =============================================================================
-# APPLICATION INSTALLATION - FIXED VERSION
+# APPLICATION INSTALLATION
 # =============================================================================
 
 install_apps() {
@@ -438,30 +424,11 @@ install_apps() {
     
     log "Processing ${#APP_ARRAY[@]} applications..." "info"
     
-    # Check if p_install function exists (p_* prefix to avoid /usr/bin/install conflict)
+    # Check if p_install function exists
     if ! declare -f p_install >/dev/null 2>&1; then
-        log "⚠️ 'p_install' function not available, falling back to apt" "warn"
-        for app in "${APP_ARRAY[@]}"; do
-            # Check if already installed (handle both regular and -find packages)
-            local check_cmd="$app"
-            case "$app" in
-                fd-find) check_cmd="fdfind" ;;
-                bat) check_cmd="batcat" ;;
-            esac
-            
-            if command -v "$check_cmd" >/dev/null 2>&1; then
-                log "✅ $app already installed" "success"
-                continue
-            fi
-            
-            log "Installing $app with apt..." "info"
-            if sudo apt-get install -y "$app" 2>&1 | tee -a "$LOG"; then
-                log "✅ Installed $app" "success"
-            else
-                log "❌ Failed to install $app" "error"
-            fi
-        done
-        return 0
+        log "⚠️ 'p_install' function not available, using install_apps_direct" "warn"
+        install_apps_direct
+        return $?
     fi
 
     # Use the p_install function from pkg_aliases.bash
@@ -474,10 +441,7 @@ install_apps() {
         local check_cmd="$app"
         case "$app" in
             fd-find) check_cmd="fdfind" ;;
-            bat) 
-                # On Debian/Ubuntu, bat is installed as batcat
-                check_cmd="batcat"
-                ;;
+            bat) check_cmd="batcat" ;;
             ripgrep) check_cmd="rg" ;;
             silversearcher-ag) check_cmd="ag" ;;
         esac
@@ -489,10 +453,9 @@ install_apps() {
             continue
         fi
         
-        # Install using p_install function (p_* prefix avoids /usr/bin/install)
+        # Install using p_install function
         log "Installing $app..." "info"
         
-        # Use p_install directly - no collision with /usr/bin/install
         if p_install "$app" 2>&1 | tee -a "$LOG"; then
             log "✅ Installed $app" "success"
             installed=$((installed + 1))
@@ -510,7 +473,7 @@ install_apps() {
     return 0
 }
 
-# Alternative approach: Call the package manager directly
+# Fallback: Call the package manager directly
 install_apps_direct() {
     log "Installing applications (direct package manager)..." "info"
     
@@ -1124,4 +1087,3 @@ case "${1:-}" in
 esac
 
 # End of RunMe.sh
-    log "
