@@ -719,7 +719,7 @@ function backup_dotfiles() {
         fi
     else
         log "Backed up $backed_up files to $OLD_FILES/" "success"
-        [ $skipped_unchanged -gt 0 ] && log "Skipped $skipped_unchanged unchanged files" "info"
+        if [ $skipped_unchanged -gt 0 ]; then log "Skipped $skipped_unchanged unchanged files" "info"; fi
     fi
 }
 
