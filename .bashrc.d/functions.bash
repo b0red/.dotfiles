@@ -34,7 +34,16 @@ function mcd() {
         echo "Usage: mcd <directory_name>"
         return 1
     fi
-    mkdir -p -- "$1" && cd -P -- "$1" || { echo "Failed to create or enter directory"; return 1; }
+    
+    if ! mkdir -p -- "$1"; then
+        echo "Failed to create directory: $1" >&2
+        return 1
+    fi
+    
+    if ! cd -P -- "$1"; then
+        echo "Failed to enter directory: $1" >&2
+        return 1
+    fi
 }
 
 function command_check() {
@@ -62,7 +71,7 @@ function quickscan() {
     
     for port in "${ports[@]}"; do
         (
-            if (echo < /dev/tcp/"$target"/"$port") &>/dev/null; then
+            if timeout 1 bash -c ": < /dev/tcp/$target/$port" 2>/dev/null; then
                 printf "[+] Found service on port: %d\n" "$port"
             fi
         ) &
@@ -608,67 +617,38 @@ function dotfind() {
 }
 
 function reverseempty() {
+    ### Find directories NOT containing specific file types
     local target="${1:-.}"
-    if [ $# -gt 1 ] || [ ! -d "$target" ]; then
+    local type="${2:-music}"
+    
+    if [ ! -d "$target" ]; then
         echo "Usage: reverseempty [folder_path] [music|movies|epub]"
         return 1
     fi
-    local type="${2:-music}" cmd depth=1 msg
+    
+    local patterns depth=1 msg
+    
     case "${type,,}" in
         music)
-            cmd='find "$1" \( -iname "*.mp3" -o -iname "*.flac" -o -iname "*.ogg" -o -iname "*.wav" -o -iname "*.m4a" \) -type f | read a'
+            patterns='-iname "*.mp3" -o -iname "*.flac" -o -iname "*.ogg" -o -iname "*.wav" -o -iname "*.m4a"'
             msg="music files";;
         movies|movie)
-            cmd='find "$1" \( -iname "*.mov" -o -iname "*.avi" -o -iname "*.mkv" -o -iname "*.vob" -o -iname "*.mp4" -o -iname "*.wmv" -o -iname "*.m4v" \) -type f | read a'
+            patterns='-iname "*.mov" -o -iname "*.avi" -o -iname "*.mkv" -o -iname "*.vob" -o -iname "*.mp4" -o -iname "*.wmv" -o -iname "*.m4v"'
             msg="movie files";;
-        epub|epubs|epubs)
-            cmd='find "$1" \( -iname "*.epub" -o -iname "*.azw" -o -iname "*.mobi" -o -iname "*.pdf" \) -type f | read a'
+        epub|epubs)
+            patterns='-iname "*.epub" -o -iname "*.azw" -o -iname "*.mobi" -o -iname "*.pdf"'
             msg="epub files"; depth=2;;
         *)
             echo "Unknown category: $type (use music|movies|epub)"
             return 1;;
     esac
+    
     echo -e "Searching for folders ${ORANGE:-}NOT${NC:-} containing $msg in $target"
-    find "$target" -maxdepth "$depth" -mindepth "$depth" -type d ! -exec sh -c "$cmd" _ {} \; -print
+    
+    find "$target" -maxdepth "$depth" -mindepth "$depth" -type d \
+        ! -exec sh -c "find \"\$1\" -maxdepth 1 \\( $patterns \\) -type f -print -quit | grep -q ." _ {} \; \
+        -print
 }
-
-# function reverseempty() {
-#     ### Find folders not containing certain media file types
-#     if [ $# -ne 1 ]; then
-#         echo "Usage: reverseempty <music|movies|epub>"
-#         return 1
-#     fi
-#     case "$1" in
-#         music)
-#             echo -e "Searching for folders ${ORANGE:-}NOT${NC:-} containing music files in $PWD"
-#             find . -maxdepth 1 -mindepth 1 -type d \! -exec sh -c \
-#                 'find "$1" \( -iname "*.mp3" -o -iname "*.flac" -o -iname "*.ogg" -o -iname "*.wav" -o -iname "*.m4a" \) -type f | read a' _ {} \; -print
-#             ;;
-#         movie|movies)
-#             echo -e "Searching for folders ${ORANGE:-}NOT${NC:-} containing movie files in $PWD"
-#             find . -maxdepth 1 -mindepth 1 -type d \! -exec sh -c \
-#                 'find "$1" \( -iname "*.mov" -o -iname "*.avi" -o -iname "*.mkv" -o -iname "*.vob" -o -iname "*.mp4" -o -iname "*.wmv" -o -iname "*.m4v" \) -type f | read a' _ {} \; -print
-#             ;;
-#         epubs|ePubs|epub)
-#             echo -e "Searching for folders ${ORANGE:-}NOT${NC:-} containing epub files in $PWD"
-#             find . -maxdepth 2 -mindepth 2 -type d \! -exec sh -c \
-#                 'find "$1" \( -iname "*.epub" -o -iname "*.azw" -o -iname "*.mobi" -o -iname "*.pdf" \) -type f | read a' _ {} \; -print
-#             ;;
-#         *)
-#             echo "Unknown category: $1"
-#             echo "Usage: reverseempty <music|movies|epub>"
-#             return 1
-#             ;;
-#     esac
-# }
-
-
-
-# function funchelp() {
-#     ### List all custom functions available
-#     echo "Custom functions available:"
-#     typeset -f | awk '/ \(\) $/ && !/^main / {print $1}' | grep -v '^_'
-# }
 
 function lockfolder() {
     ### Lock folder by making a marker file readonly
@@ -745,77 +725,6 @@ function get_os() {
 
     export OS KERNEL MACH DISTRO DISTRO_BASE
 }
-
-
-# function get_os() {
-#     ### Detect OS and distribution information
-#     OS=$(uname -s | tr '[:upper:]' '[:lower:]')
-#     KERNEL=$(uname -r)
-#     MACH=$(uname -m)
-#     DISTRO="unknown"
-#     DISTRO_BASE="unknown"
-    
-#     if [ -f /etc/os-release ]; then
-#         source /etc/os-release
-#         DISTRO="${ID:-unknown}"
-#         DISTRO_BASE="${ID_LIKE:-$DISTRO}"
-#     elif [ -f /etc/lsb-release ]; then
-#         source /etc/lsb-release
-#         DISTRO="${DISTRIB_ID:-unknown}"
-#         DISTRO_BASE="$DISTRO"
-#     fi
-    
-#     export OS KERNEL MACH DISTRO DISTRO_BASE
-    
-#     # Display the values
-#     echo "OS: $OS"
-#     echo "KERNEL: $KERNEL"
-#     echo "MACH: $MACH"
-#     echo "DISTRO: $DISTRO"
-#     echo "DISTRO_BASE: $DISTRO_BASE"
-# }
-
-# function setting_standard_commands() {
-#     ### Set package manager aliases based on distribution
-#     # Get OS info if not already set
-#     if [ -z "$DISTRO_BASE" ]; then
-#         get_os >/dev/null
-#     fi
-    
-#     case "$DISTRO_BASE" in
-#         debian*|ubuntu*)
-#             alias install="sudo apt-get install -y"
-#             alias uninstall="sudo apt-get remove -y"
-#             alias update="sudo apt-get update && sudo apt-get upgrade -y"
-#             ;;
-#         rhel*|redhat*|centos*|fedora*)
-#             if command -v dnf >/dev/null 2>&1; then
-#                 alias install="sudo dnf install -y"
-#                 alias uninstall="sudo dnf remove -y"
-#                 alias update="sudo dnf update -y"
-#             else
-#                 alias install="sudo yum install -y"
-#                 alias uninstall="sudo yum remove -y"
-#                 alias update="sudo yum update -y"
-#             fi
-#             ;;
-#         arch*)
-#             alias install="sudo pacman -Syu --noconfirm"
-#             alias uninstall="sudo pacman -Rns --noconfirm"
-#             alias update="sudo pacman -Syu --noconfirm"
-#             ;;
-#         gentoo*)
-#             alias install="sudo emerge"
-#             alias uninstall="sudo emerge --unmerge"
-#             alias update="sudo emerge --update --deep --newuse @world"
-#             ;;
-#         *)
-#             echo "Unknown OS base: $DISTRO_BASE"
-#             return 1
-#             ;;
-#     esac
-#     echo "Package manager aliases set for $DISTRO_BASE"
-# }
 
 function functions() {
     ### List function names or descriptions with -?
