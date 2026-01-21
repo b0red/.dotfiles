@@ -45,7 +45,7 @@ export RUNME_INITIATED
 # =============================================================================
 # MAIN FUNCTION
 # =============================================================================
-main() {
+function main() {
     logfile_init
     log "=========================================" "info"
     log "Starting Dotfiles Installation" "info"
@@ -105,7 +105,7 @@ main() {
 # =============================================================================
 
 # Logging function with color support
-log() {
+function log() {
     local msg="$1"
     local level="${2:-info}"
     local color=""
@@ -135,7 +135,7 @@ log() {
     echo -e "${color}${msg}${NC}"
 }
 
-logfile_init() {
+function logfile_init() {
     if ! mkdir -p "$LOG_DIR" 2>/dev/null; then
         echo -e "${RED}❌ Failed to create log directory: $LOG_DIR${NC}" >&2
         exit 1
@@ -155,7 +155,7 @@ logfile_init() {
     fi
 }
 
-check_or_add_line() {
+function check_or_add_line() {
     local line="$1" 
     local file="$2"
     
@@ -192,7 +192,7 @@ check_or_add_line() {
     return 0
 }
 
-add_file_header() {
+function add_file_header() {
     local target_file="$1"
     local creation_date="$(date '+%Y-%m-%d %H:%M:%S')"
     local hostname="${HOSTNAME:-$(hostname)}"
@@ -284,7 +284,7 @@ EOF
     fi
 }
 
-cleanup_on_exit() {
+function cleanup_on_exit() {
     # Placeholder for cleanup operations
     :
 }
@@ -293,7 +293,7 @@ cleanup_on_exit() {
 # SYSTEM DETECTION
 # =============================================================================
 
-get_os_info() {
+function get_os_info() {
     local os kernel mach
     os=$(uname -s | tr '[:upper:]' '[:lower:]')
     kernel=$(uname -r)
@@ -306,19 +306,19 @@ get_os_info() {
         # shellcheck disable=SC1091
         if . /etc/os-release 2>/dev/null; then
             DISTRO="${ID:-unknown}"
-            DISTRO_BASE="${ID_LIKE:-$ID}"
+            # Use ID (centos) not ID_LIKE (rhel fedora) for DISTRO_BASE
+            DISTRO_BASE="${ID:-unknown}"
         fi
     fi
     
     export OS="$os" KERNEL="$kernel" MACH="$mach" DISTRO DISTRO_BASE
     log "Detected: OS=$OS, Distro=$DISTRO, Base=$DISTRO_BASE, Kernel=$KERNEL, Arch=$MACH" "info"
 }
-
 # =============================================================================
 # APPLICATION LIST MANAGEMENT
 # =============================================================================
 
-load_app_list() {
+function load_app_list() {
     local app_file="$DIR/.install_apps.inc"
     
     if [ ! -r "$app_file" ]; then
@@ -405,7 +405,7 @@ function load_package_functions() {
 # APPLICATION INSTALLATION
 # =============================================================================
 
-install_apps() {
+function install_apps() {
     log "Installing applications..." "info"
     
     # Verify app list is loaded
@@ -466,7 +466,7 @@ install_apps() {
 }
 
 # Fallback: Call the package manager directly
-install_apps_direct() {
+function install_apps_direct() {
     log "Installing applications (direct package manager)..." "info"
     
     # Verify app list is loaded
@@ -547,7 +547,7 @@ install_apps_direct() {
 # BACKUP & SYMLINK MANAGEMENT
 # =============================================================================
 
-backup_dotfiles() {
+function backup_dotfiles() {
     log "Backing up existing dotfiles..." "info"
     
     if ! mkdir -p "$OLD_FILES" 2>/dev/null; then
@@ -592,7 +592,7 @@ backup_dotfiles() {
     fi
 }
 
-cleanup_symlinks() {
+function cleanup_symlinks() {
     log "Cleaning up old symlinks..." "info"
     
     for file in "${DOT_ARRAY[@]}"; do
@@ -616,7 +616,7 @@ cleanup_symlinks() {
     done
 }
 
-symlink_dotfiles() {
+function symlink_dotfiles() {
     log "Creating symlinks..." "info"
     
     if [ ! -d "$DIR" ]; then
@@ -691,7 +691,7 @@ EOF
 # REPOSITORY MANAGEMENT
 # =============================================================================
 
-archive_backup() {
+function archive_backup() {
     local archived="$DIR/backup-${HOSTNAME}-$DATE.tar.gz"
     
     # Check if there are files to archive
@@ -710,7 +710,7 @@ archive_backup() {
     fi
 }
 
-cleanup_old_archives() {
+function cleanup_old_archives() {
     log "Cleaning up old backup archives (keeping 3 most recent)..." "info"
     
     # Find all backup-*.tar.gz files in the dotfiles directory
@@ -751,7 +751,7 @@ cleanup_old_archives() {
     fi
 }
 
-update_submodules() {
+function update_submodules() {
     log "Updating git submodules..." "info"
     
     if [ ! -d "$DIR/.git" ]; then
@@ -772,7 +772,7 @@ update_submodules() {
     fi
 }
 
-clone_repos() {
+function clone_repos() {
     log "Cloning additional repositories..." "info"
     
     if ! cd "$HOME" 2>/dev/null; then
@@ -781,7 +781,7 @@ clone_repos() {
     fi
     
     # Helper to clone only when target does not exist
-    clone_if_missing() {
+    function clone_if_missing() {
         local repo_url="$1"
         local target_dir="$2"
         
@@ -811,7 +811,7 @@ clone_repos() {
     }
 
     # Clone .tmux repo
-    clone_if_missing "https://bitbucket.org/b0red/tmux.git" "$HOME/.tmux"
+    function clone_if_missing "https://bitbucket.org/b0red/tmux.git" "$HOME/.tmux"
     
     # Mark that RunMe.sh has handled tmux setup
     if [ -d "$HOME/.tmux" ]; then
@@ -823,13 +823,13 @@ clone_repos() {
     fi
 
     # Clone .vim repo
-    clone_if_missing "https://bitbucket.org/b0red/.vim.git" "$HOME/.vim"
+    function clone_if_missing "https://bitbucket.org/b0red/.vim.git" "$HOME/.vim"
 
     # Clone tpm
-    clone_if_missing "https://github.com/tmux-plugins/tpm" "$HOME/.tmux/plugins/tpm"
+    function clone_if_missing "https://github.com/tmux-plugins/tpm" "$HOME/.tmux/plugins/tpm"
 }
 
-symlink_external_repos() {
+function symlink_external_repos() {
     log "Symlinking external repo configs..." "info"
     
     local errors=0
@@ -891,7 +891,7 @@ symlink_external_repos() {
 # SHELL CONFIGURATION
 # =============================================================================
 
-source_bashrc() {
+function source_bashrc() {
     log "Configuration complete..." "info"
     
     if [ -f "$HOME/.bashrc" ]; then
@@ -909,7 +909,7 @@ source_bashrc() {
 # REVERT FUNCTIONALITY
 # =============================================================================
 
-revert_changes() {
+function revert_changes() {
     log "=========================================" "info"
     log "Reverting Dotfiles Installation" "info"
     log "=========================================" "info"
@@ -977,14 +977,14 @@ revert_changes() {
 # HELP DOCUMENTATION
 # =============================================================================
 
-show_version() {
+function show_version() {
     echo -e "${GREEN}${BOLD}RunMe.sh${NC} version ${BLUE}v${VERSION}${NC} (${VERSION_DATE})"
     echo ""
     echo "Dotfiles installer and configuration manager"
     echo "https://github.com/yourusername/dotfiles"
 }
 
-show_help() {
+function show_help() {
     echo -e "${BOLD}Usage:${NC} ./RunMe.sh [OPTIONS]"
     echo ""
     echo -e "${BOLD}Options:${NC}"
