@@ -772,7 +772,7 @@ function update_submodules() {
     fi
 }
 
-function clone_repos() {
+clone_repos() {
     log "Cloning additional repositories..." "info"
     
     if ! cd "$HOME" 2>/dev/null; then
@@ -811,7 +811,7 @@ function clone_repos() {
     }
 
     # Clone .tmux repo
-    function clone_if_missing "https://bitbucket.org/b0red/tmux.git" "$HOME/.tmux"
+    clone_if_missing "https://bitbucket.org/b0red/tmux.git" "$HOME/.tmux"
     
     # Mark that RunMe.sh has handled tmux setup
     if [ -d "$HOME/.tmux" ]; then
@@ -823,10 +823,10 @@ function clone_repos() {
     fi
 
     # Clone .vim repo
-    function clone_if_missing "https://bitbucket.org/b0red/.vim.git" "$HOME/.vim"
+    clone_if_missing "https://bitbucket.org/b0red/.vim.git" "$HOME/.vim"
 
     # Clone tpm
-    function clone_if_missing "https://github.com/tmux-plugins/tpm" "$HOME/.tmux/plugins/tpm"
+    clone_if_missing "https://github.com/tmux-plugins/tpm" "$HOME/.tmux/plugins/tpm"
 }
 
 function symlink_external_repos() {
