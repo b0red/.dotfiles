@@ -293,8 +293,8 @@ function cleanup_on_exit() {
 # SYSTEM DETECTION
 # =============================================================================
 
-get_os_info() {
-    local os kernel mach distro
+function get_os_info() {
+    local os kernel mach distro distro_base
     
     # Basic system info
     os=$(uname -s | tr '[:upper:]' '[:lower:]')
@@ -312,7 +312,7 @@ get_os_info() {
                 . /etc/os-release 2>/dev/null
                 distro="${ID:-unknown}"
                 
-                # Normalize distro name
+                # Normalize distro name to base family
                 case "$distro" in
                     ubuntu|debian|linuxmint|pop|peppermint|elementary|zorin)
                         DISTRO="$distro"
