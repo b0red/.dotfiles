@@ -358,7 +358,7 @@ load_app_list() {
 # PACKAGE MANAGEMENT - FIXED VERSION
 # =============================================================================
 
-load_package_functions() {
+lload_package_functions() {
     local pkg_file="$DIR/.bashrc.d/pkg_aliases.bash"
     
     if [ ! -r "$pkg_file" ]; then
@@ -368,31 +368,15 @@ load_package_functions() {
     
     log "Loading package management functions from $pkg_file..." "info"
     
-    # Source the file in current shell context (this loads set_package_aliases function)
-    # shellcheck disable=SC1090
+    # Source the file (this auto-runs set_package_aliases)
     if ! source "$pkg_file" 2>&1 | tee -a "$LOG"; then
         log "❌ Failed to source $pkg_file" "error"
         return 1
     fi
     
-    # Verify set_package_aliases function was loaded
-    if ! declare -f set_package_aliases >/dev/null 2>&1; then
-        log "❌ set_package_aliases function not found after sourcing" "error"
-        return 1
-    fi
+    log "✅ Package file sourced (auto-configured for $DISTRO_BASE)" "success"
     
-    log "✓ set_package_aliases function loaded" "success"
-    
-    # NOW call set_package_aliases to create the p_install, p_remove, etc. functions
-    log "Calling set_package_aliases for distro: $DISTRO_BASE..." "info"
-    if ! set_package_aliases 2>&1 | tee -a "$LOG"; then
-        log "❌ set_package_aliases returned error for distro: $DISTRO_BASE" "error"
-        return 1
-    fi
-    
-    log "✅ Package management functions configured for $DISTRO_BASE" "success"
-    
-    # Verify critical functions were created
+    # Verify the p_install function was created
     local missing_funcs=()
     for func in p_install p_remove p_update p_upgrade p_search; do
         if ! declare -f "$func" >/dev/null 2>&1; then
@@ -405,10 +389,9 @@ load_package_functions() {
         return 1
     fi
     
-    log "✅ All package functions verified: p_install, p_remove, p_update, p_upgrade, p_search" "success"
+    log "✅ All package functions verified" "success"
     return 0
 }
-
 # =============================================================================
 # APPLICATION INSTALLATION
 # =============================================================================
