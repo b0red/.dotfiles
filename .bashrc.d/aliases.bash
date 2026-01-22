@@ -22,7 +22,7 @@
 # =============================================================================
 # INTERACTIVE SHELL GUARD
 # =============================================================================
-[[ $- == *i* ]] || return 0
+# [[ $- == *i* ]] || return 0
 
 #--------------------------------------
 command_exists() {
@@ -270,3 +270,5 @@ alias comstat='echo "Command ran! ($(uname -n))" || echo "Command failed!" >&2'
 
 # taskwarrior (original)
 command -v procs >/dev/null 2>&1 && alias tasks='task list'
+
+echo "Aliases loaded successfully."

@@ -438,3 +438,5 @@ fi
 # Export the main function so it's available everywhere
 export -f set_package_aliases
 export -f command_check
+
+echo "sleep 1; Package alias setup script loaded."
