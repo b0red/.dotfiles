@@ -187,8 +187,12 @@ function set_package_aliases() {
             p_clean() { $SUDOCMD apt-get autoremove -y && $SUDOCMD apt-get autoclean; }
             p_info() { apt-cache show "$@"; }
             p_list() { dpkg -l "$@"; }
-            p_list_installed() { dpkg --get-selections | grep -v deinstall; }
+            p_installed() { dpkg --get-selections | grep -v deinstall; }
             p_which() { dpkg -S "$@"; }
+            # Debian-specific aliases
+            alias apt='sudo apt'
+            alias latest='grep " install " /var/log/dpkg.log* 2>/dev/null'
+            alias sshrestart='sudo systemctl restart ssh' # Service name is 'ssh'
             ;;
         
         rhel)
@@ -204,8 +208,12 @@ function set_package_aliases() {
                 p_clean() { $SUDOCMD dnf autoremove -y && $SUDOCMD dnf clean all; }
                 p_info() { dnf info "$@"; }
                 p_list() { dnf list "$@"; }
-                p_list_installed() { dnf list installed; }
+                p_installed() { dnf list installed; }
                 p_which() { dnf provides "$@"; }
+                # RHEL-specific aliases can be added here if needed
+                alias dnf='sudo dnf'
+                alias latest='dnf history | head -n 20'
+                # alias sshrestart='sudo systemctl restart sshd' # Service name is 'sshd'
             else
                 p_install() { $SUDOCMD yum install -y "$@"; }
                 p_remove() { $SUDOCMD yum remove -y "$@"; }
@@ -217,8 +225,12 @@ function set_package_aliases() {
                 p_clean() { $SUDOCMD yum autoremove -y && $SUDOCMD yum clean all; }
                 p_info() { yum info "$@"; }
                 p_list() { yum list "$@"; }
-                p_list_installed() { yum list installed; }
+                p_installed() { yum list installed; }
                 p_which() { yum provides "$@"; }
+                # RHEL-specific aliases can be added here if needed
+                alias dnf='sudo dnf'
+                alias latest='dnf history | head -n 20'
+                # alias sshrestart='sudo systemctl restart sshd' # Service name is 'sshd'
             fi
             ;;
         
@@ -234,8 +246,13 @@ function set_package_aliases() {
             p_clean() { $SUDOCMD pacman -Sc --noconfirm; }
             p_info() { pacman -Si "$@"; }
             p_list() { pacman -Q "$@"; }
-            p_list_installed() { pacman -Q; }
+            p_installed() { pacman -Q; }
             p_which() { pacman -Qo "$@"; }
+            # Arch-specific aliases can be added here if needed
+            alias pac='sudo pacman -S'
+            alias pacu='sudo pacman -Syu'
+            alias latest='grep "installed" /var/log/pacman.log | tail -n 20'
+            if command -v fd >/dev/null 2>&1; then alias fdf='fd'; fi
             ;;
         
         suse)
@@ -250,7 +267,7 @@ function set_package_aliases() {
             p_clean() { $SUDOCMD zypper clean -a; }
             p_info() { zypper info "$@"; }
             p_list() { zypper packages "$@"; }
-            p_list_installed() { zypper search --installed-only; }
+            p_installed() { zypper search --installed-only; }
             p_which() { zypper search --provides --match-exact "$@"; }
             ;;
         
@@ -265,7 +282,7 @@ function set_package_aliases() {
             p_clean() { $SUDOCMD emerge --depclean; }
             p_info() { emerge --info "$@"; }
             p_list() { qlist -I "$@"; }
-            p_list_installed() { qlist -I; }
+            p_installed() { qlist -I; }
             p_which() { equery belongs "$@"; }
             ;;
         
@@ -280,7 +297,7 @@ function set_package_aliases() {
             p_clean() { $SUDOCMD apk cache clean; }
             p_info() { apk info "$@"; }
             p_list() { apk list "$@"; }
-            p_list_installed() { apk info; }
+            p_installed() { apk info; }
             p_which() { apk info --who-owns "$@"; }
             ;;
         
@@ -295,7 +312,7 @@ function set_package_aliases() {
             p_clean() { $SUDOCMD xbps-remove -O; }
             p_info() { xbps-query -R "$@"; }
             p_list() { xbps-query -l "$@"; }
-            p_list_installed() { xbps-query -l; }
+            p_installed() { xbps-query -l; }
             p_which() { xbps-query -o "$@"; }
             ;;
         
@@ -311,7 +328,7 @@ function set_package_aliases() {
                 p_clean() { brew cleanup; }
                 p_info() { brew info "$@"; }
                 p_list() { brew list "$@"; }
-                p_list_installed() { brew list; }
+                p_installed() { brew list; }
                 p_which() { brew which "$@"; }
             else
                 echo "Warning: Homebrew not found. Please install from https://brew.sh" >&2
@@ -330,7 +347,7 @@ function set_package_aliases() {
             p_clean() { $SUDOCMD pkg clean -y; }
             p_info() { pkg info "$@"; }
             p_list() { pkg info "$@"; }
-            p_list_installed() { pkg info; }
+            p_installed() { pkg info; }
             p_which() { pkg which "$@"; }
             ;;
         
@@ -345,7 +362,7 @@ function set_package_aliases() {
             p_clean() { $SUDOCMD pkg_delete -a; }
             p_info() { pkg_info "$@"; }
             p_list() { pkg_info "$@"; }
-            p_list_installed() { pkg_info; }
+            p_installed() { pkg_info; }
             p_which() { pkg_info -E "$@"; }
             ;;
         
@@ -359,7 +376,7 @@ function set_package_aliases() {
             p_search() { pkg search "$@"; }
             p_info() { pkg info "$@"; }
             p_list() { pkg list "$@"; }
-            p_list_installed() { pkg list; }
+            p_installed() { pkg list; }
             ;;
         
         windows)
@@ -383,7 +400,7 @@ function set_package_aliases() {
     # EXPORT FUNCTIONS
     # =================================================================================================
     export -f p_install p_remove p_uninstall p_update p_upgrade p_search p_clean p_info 2>/dev/null || true
-    export -f p_list p_list_installed p_which 2>/dev/null || true
+    export -f p_list p_installed p_which 2>/dev/null || true
     
     # Optional exports (not all distros have these)
     export -f p_purge 2>/dev/null || true

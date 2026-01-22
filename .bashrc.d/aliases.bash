@@ -147,28 +147,39 @@ function sstatus() {
 function srestart() {
   sudo systemctl restart "$1"
 }
-alias services='service --status-all 2>/dev/null || systemctl list-units'
-alias services_run='service --status-all 2>/dev/null | grep running || systemctl list-units --state=running'
+
+# --- Universal Service Listing ---
+if command -v systemctl >/dev/null 2>&1; then
+      # Systemd (Modern Ubuntu, Fedora, Arch, Debian)
+      alias services='systemctl list-units --type=service --all'
+      alias services_run='systemctl list-units --type=service --state=running'
+  elif command -v rc-status >/dev/null 2>&1; then
+      # OpenRC (Alpine, Gentoo)
+      alias services='rc-status --all'
+      alias services_run='rc-status --started'
+  else
+      # Legacy SysVinit (Older systems)
+      alias services='service --status-all'
+      alias services_run='service --status-all 2>/dev/null | grep "\[ + \]"'
+fi
+
 alias ports='sudo netstat -tulanp 2>/dev/null || sudo ss -tulanp'
 
 #--------------------------------------
 # 5. Package/Debian Tools (Ubuntu-specific)
 #--------------------------------------
-alias apt='sudo apt'
+# Moved to pkg_aliases.bash in .bashrc.d/pkg_aliases.bash. Using more comprehensive package management aliases there.
+# Keeping this section commented out for reference.
+# # APT with sudo (Ubuntu)
+# alias apt='sudo apt'
 # clean commented out as incomplete
-alias latest='grep " install " /var/log/dpkg.log* 2>/dev/null'
-
-# # Deborphan (auto-install if missing, safe)
-# if ! command -v deborphan >/dev/null 2>&1; then
-#   echo "deborphan missing; installing..." >&2
-#   sudo apt install -y deborphan >/dev/null 2>&1 || true
-# fi
-
-# Midnight Commander
-command -v mc >/dev/null 2>&1 && alias mc='sudo mc'
+# alias latest='grep " install " /var/log/dpkg.log* 2>/dev/null'
 
 # SSH restart (Ubuntu service)
 alias sshrestart='sudo service ssh restart 2>/dev/null || sudo systemctl restart ssh'
+
+# Midnight Commander
+command -v mc >/dev/null 2>&1 && alias mc='sudo mc'
 
 #--------------------------------------
 # 6. Networking/Tools
