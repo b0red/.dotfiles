@@ -10,8 +10,8 @@ unalias -a 2>/dev/null || true
 # =============================================================================
 # VERSION & CONFIGURATION
 # =============================================================================
-VERSION="15.1.1"
-VERSION_DATE="2026-01-21"
+VERSION="15.2.0"
+VERSION_DATE="2026-01-22"
 
 DEBUG=${DEBUG:-0}
 TRACE_DEBUG=${TRACE_DEBUG:-0}
@@ -45,7 +45,7 @@ export RUNME_INITIATED
 # =============================================================================
 # MAIN FUNCTION
 # =============================================================================
-function main() {
+main() {
     logfile_init
     log "=========================================" "info"
     log "Starting Dotfiles Installation" "info"
@@ -104,38 +104,26 @@ function main() {
 # UTILITY FUNCTIONS
 # =============================================================================
 
-# Logging function with color support
-function log() {
+log() {
     local msg="$1"
     local level="${2:-info}"
     local color=""
     
-    # Write timestamped message to log file
     if [ -n "${LOG:-}" ]; then
         echo "[$(date +'%Y-%m-%d %H:%M:%S')] $msg" >> "$LOG" 2>/dev/null || true
     fi
     
-    # Determine color for screen output
     case "$level" in
-        success|ok)
-            color="$GREEN"
-            ;;
-        warn|warning|info)
-            color="$YELLOW"
-            ;;
-        error|fail)
-            color="$RED"
-            ;;
-        *)
-            color="$NC"
-            ;;
+        success|ok) color="$GREEN" ;;
+        warn|warning|info) color="$YELLOW" ;;
+        error|fail) color="$RED" ;;
+        *) color="$NC" ;;
     esac
     
-    # Print colored message to screen (no timestamp)
     echo -e "${color}${msg}${NC}"
 }
 
-function logfile_init() {
+logfile_init() {
     if ! mkdir -p "$LOG_DIR" 2>/dev/null; then
         echo -e "${RED}❌ Failed to create log directory: $LOG_DIR${NC}" >&2
         exit 1
@@ -143,29 +131,25 @@ function logfile_init() {
     
     LOG="$LOG_DIR/install-$DATE.log"
     
-    # Write initial log entry
     if ! echo "[$(date +'%Y-%m-%d %H:%M:%S')] $TITLE started (PID $$)" > "$LOG" 2>/dev/null; then
         echo -e "${RED}❌ Failed to initialize log file: $LOG${NC}" >&2
         exit 1
     fi
     
-    # Test color output
     if [ -t 1 ]; then
         log "🎨 Color output enabled" "success"
     fi
 }
 
-function check_or_add_line() {
+check_or_add_line() {
     local line="$1" 
     local file="$2"
     
-    # Validate inputs
     if [ -z "$line" ] || [ -z "$file" ]; then
         log "❌ check_or_add_line: Invalid arguments" "error"
         return 1
     fi
     
-    # Don't modify symlinked files
     if [ -L "$file" ]; then
         log "⚠️ Skipping $file (symlink to repo)" "warn"
         return 0
@@ -192,12 +176,12 @@ function check_or_add_line() {
     return 0
 }
 
-function add_file_header() {
+add_file_header() {
     local target_file="$1"
-    local creation_date="$(date '+%Y-%m-%d %H:%M:%S')"
+    local creation_date
+    creation_date="$(date '+%Y-%m-%d %H:%M:%S')"
     local hostname="${HOSTNAME:-$(hostname)}"
     
-    # Validate input
     if [ -z "$target_file" ]; then
         log "❌ add_file_header: No target file specified" "error"
         return 1
@@ -208,7 +192,6 @@ function add_file_header() {
         return 1
     fi
     
-    # Check if header already exists and remove it
     if grep -q "Created by RunMe.sh" "$target_file" 2>/dev/null; then
         log "Updating header in $(basename "$target_file")..." "info"
         
@@ -219,8 +202,6 @@ function add_file_header() {
         fi
         
         local skip_lines=0
-        
-        # Count header lines to skip
         while IFS= read -r line; do
             if [[ "$line" =~ ^###.*-\+- ]] || [[ "$line" =~ ^###.*Created\ by\ RunMe\.sh ]] || \
                [[ "$line" =~ ^###.*Host: ]] || [[ "$line" =~ ^###.*User: ]] || \
@@ -231,7 +212,6 @@ function add_file_header() {
             fi
         done < "$target_file"
         
-        # Copy file without old header
         if ! tail -n +$((skip_lines + 1)) "$target_file" > "$temp_file" 2>/dev/null; then
             log "❌ Failed to process header" "error"
             rm -f "$temp_file"
@@ -247,7 +227,6 @@ function add_file_header() {
         log "Adding header to $(basename "$target_file")..." "info"
     fi
     
-    # Create new header
     local temp_file
     if ! temp_file=$(mktemp 2>/dev/null); then
         log "❌ Failed to create temp file" "error"
@@ -264,7 +243,6 @@ function add_file_header() {
 
 EOF
     
-    # Append existing content
     if [ -f "$target_file" ]; then
         if ! cat "$target_file" >> "$temp_file" 2>/dev/null; then
             log "❌ Failed to append content" "error"
@@ -273,7 +251,6 @@ EOF
         fi
     fi
     
-    # Replace original
     if mv "$temp_file" "$target_file" 2>/dev/null; then
         log "✓ Header updated in $(basename "$target_file")" "success"
         return 0
@@ -284,8 +261,7 @@ EOF
     fi
 }
 
-function cleanup_on_exit() {
-    # Placeholder for cleanup operations
+cleanup_on_exit() {
     :
 }
 
@@ -293,10 +269,9 @@ function cleanup_on_exit() {
 # SYSTEM DETECTION
 # =============================================================================
 
-function get_os_info() {
-    local os kernel mach distro distro_base
+get_os_info() {
+    local os kernel mach distro
     
-    # Basic system info
     os=$(uname -s | tr '[:upper:]' '[:lower:]')
     kernel=$(uname -r)
     mach=$(uname -m)
@@ -306,13 +281,11 @@ function get_os_info() {
     
     case "$os" in
         linux*)
-            # Linux distributions
             if [ -f /etc/os-release ]; then
                 # shellcheck disable=SC1091
                 . /etc/os-release 2>/dev/null
                 distro="${ID:-unknown}"
                 
-                # Normalize distro name to base family
                 case "$distro" in
                     ubuntu|debian|linuxmint|pop|peppermint|elementary|zorin)
                         DISTRO="$distro"
@@ -343,7 +316,6 @@ function get_os_info() {
                         DISTRO_BASE="void"
                         ;;
                     *)
-                        # Fallback: check ID_LIKE for derivative distros
                         if [ -n "${ID_LIKE:-}" ]; then
                             case "$ID_LIKE" in
                                 *debian*|*ubuntu*)
@@ -376,7 +348,6 @@ function get_os_info() {
                         ;;
                 esac
             else
-                # No /etc/os-release, try legacy methods
                 if [ -f /etc/debian_version ]; then
                     DISTRO="debian"
                     DISTRO_BASE="debian"
@@ -393,42 +364,13 @@ function get_os_info() {
                 fi
             fi
             ;;
-            
-        darwin*)
-            DISTRO="macos"
-            DISTRO_BASE="macos"
-            ;;
-            
-        freebsd*)
-            DISTRO="freebsd"
-            DISTRO_BASE="freebsd"
-            ;;
-            
-        openbsd*)
-            DISTRO="openbsd"
-            DISTRO_BASE="openbsd"
-            ;;
-            
-        netbsd*)
-            DISTRO="netbsd"
-            DISTRO_BASE="netbsd"
-            ;;
-            
-        sunos*)
-            DISTRO="solaris"
-            DISTRO_BASE="solaris"
-            ;;
-            
-        aix*)
-            DISTRO="aix"
-            DISTRO_BASE="aix"
-            ;;
-            
-        cygwin*|mingw*|msys*)
-            DISTRO="windows"
-            DISTRO_BASE="windows"
-            ;;
-            
+        darwin*) DISTRO="macos"; DISTRO_BASE="macos" ;;
+        freebsd*) DISTRO="freebsd"; DISTRO_BASE="freebsd" ;;
+        openbsd*) DISTRO="openbsd"; DISTRO_BASE="openbsd" ;;
+        netbsd*) DISTRO="netbsd"; DISTRO_BASE="netbsd" ;;
+        sunos*) DISTRO="solaris"; DISTRO_BASE="solaris" ;;
+        aix*) DISTRO="aix"; DISTRO_BASE="aix" ;;
+        cygwin*|mingw*|msys*) DISTRO="windows"; DISTRO_BASE="windows" ;;
         *)
             DISTRO="unknown"
             DISTRO_BASE="unknown"
@@ -444,7 +386,7 @@ function get_os_info() {
 # APPLICATION LIST MANAGEMENT
 # =============================================================================
 
-function load_app_list() {
+load_app_list() {
     local app_file="$DIR/.install_apps.inc"
     
     if [ ! -r "$app_file" ]; then
@@ -454,19 +396,11 @@ function load_app_list() {
         return 1
     fi
     
-    # Read file, filter comments and empty lines
     local apps=()
     while IFS= read -r line || [ -n "$line" ]; do
-        # Remove inline comments
         line="${line%%#*}"
-        
-        # Trim whitespace
         line=$(echo "$line" | xargs 2>/dev/null || echo "$line")
-        
-        # Skip empty lines
         [ -z "$line" ] && continue
-        
-        # Add to array
         apps+=("$line")
     done < "$app_file"
     
@@ -481,10 +415,10 @@ function load_app_list() {
 }
 
 # =============================================================================
-# PACKAGE MANAGEMENT - FIXED VERSION
+# PACKAGE MANAGEMENT
 # =============================================================================
 
-function load_package_functions() {
+load_package_functions() {
     local pkg_file="$DIR/.bashrc.d/pkg_aliases.bash"
     
     if [ ! -r "$pkg_file" ]; then
@@ -494,16 +428,13 @@ function load_package_functions() {
     
     log "Loading package management functions from $pkg_file..." "info"
     
-    # Export DISTROBASE (no underscore) for pkg_aliases.bash
     export DISTROBASE="$DISTRO_BASE"
     
-    # Source the file
     # shellcheck disable=SC1090
     source "$pkg_file"
     
     log "✓ Package file sourced" "success"
     
-    # Now call set_package_aliases
     log "Calling set_package_aliases for distro: $DISTRO_BASE..." "info"
     
     if set_package_aliases 2>&1 | tee -a "$LOG"; then
@@ -513,7 +444,6 @@ function load_package_functions() {
         return 1
     fi
     
-    # Verify functions exist
     local missing_funcs=()
     for func in p_install p_remove p_update p_upgrade p_search; do
         if ! declare -f "$func" >/dev/null 2>&1; then
@@ -534,10 +464,9 @@ function load_package_functions() {
 # APPLICATION INSTALLATION
 # =============================================================================
 
-function install_apps() {
+install_apps() {
     log "Installing applications..." "info"
     
-    # Verify app list is loaded
     if [ -z "${APP_ARRAY+x}" ] || [ ${#APP_ARRAY[@]} -eq 0 ]; then
         log "❌ APP_ARRAY not loaded or empty" "error"
         return 1
@@ -545,20 +474,15 @@ function install_apps() {
     
     log "Processing ${#APP_ARRAY[@]} applications..." "info"
     
-    # Check if p_install function exists
     if ! declare -f p_install >/dev/null 2>&1; then
         log "⚠️ 'p_install' function not available, using install_apps_direct" "warn"
         install_apps_direct
         return $?
     fi
 
-    # Use the p_install function from pkg_aliases.bash
-    local installed=0
-    local skipped=0
-    local failed=0
+    local installed=0 skipped=0 failed=0
     
     for app in "${APP_ARRAY[@]}"; do
-        # Map package names to actual command names for checking
         local check_cmd="$app"
         case "$app" in
             fd-find) check_cmd="fdfind" ;;
@@ -567,14 +491,12 @@ function install_apps() {
             silversearcher-ag) check_cmd="ag" ;;
         esac
         
-        # Check if the actual command exists
         if command -v "$check_cmd" >/dev/null 2>&1; then
             log "✅ $app already installed (found: $check_cmd)" "success"
             skipped=$((skipped + 1))
             continue
         fi
         
-        # Install using p_install function
         log "Installing $app..." "info"
         
         if p_install "$app" 2>&1 | tee -a "$LOG"; then
@@ -590,15 +512,15 @@ function install_apps() {
     
     log "" "info"
     log "Installation summary: $installed installed, $skipped skipped, $failed failed" "info"
-    [ $failed -gt 0 ] && return 1
+    if [ $failed -gt 0 ]; then
+        return 1
+    fi
     return 0
 }
 
-# Fallback: Call the package manager directly
-function install_apps_direct() {
+install_apps_direct() {
     log "Installing applications (direct package manager)..." "info"
     
-    # Verify app list is loaded
     if [ -z "${APP_ARRAY+x}" ] || [ ${#APP_ARRAY[@]} -eq 0 ]; then
         log "❌ APP_ARRAY not loaded or empty" "error"
         return 1
@@ -606,16 +528,11 @@ function install_apps_direct() {
     
     log "Processing ${#APP_ARRAY[@]} applications..." "info"
     
-    local installed=0
-    local skipped=0
-    local failed=0
-    
-    # Detect package manager based on DISTRO_BASE
+    local installed=0 skipped=0 failed=0
     local pkg_install=""
+    
     case "${DISTRO_BASE:-unknown}" in
-        debian|ubuntu)
-            pkg_install="sudo apt-get install -y"
-            ;;
+        debian|ubuntu) pkg_install="sudo apt-get install -y" ;;
         redhat|fedora|centos|rhel)
             if command -v dnf >/dev/null 2>&1; then
                 pkg_install="sudo dnf install -y"
@@ -623,12 +540,8 @@ function install_apps_direct() {
                 pkg_install="sudo yum install -y"
             fi
             ;;
-        opensuse|suse)
-            pkg_install="sudo zypper install -y"
-            ;;
-        arch|manjaro)
-            pkg_install="sudo pacman -S --noconfirm"
-            ;;
+        opensuse|suse) pkg_install="sudo zypper install -y" ;;
+        arch|manjaro) pkg_install="sudo pacman -S --noconfirm" ;;
         *)
             log "❌ Unknown distro: $DISTRO_BASE" "error"
             return 1
@@ -636,7 +549,6 @@ function install_apps_direct() {
     esac
     
     for app in "${APP_ARRAY[@]}"; do
-        # Map package names to actual command names for checking
         local check_cmd="$app"
         case "$app" in
             fd-find) check_cmd="fdfind" ;;
@@ -646,14 +558,12 @@ function install_apps_direct() {
             neovim) check_cmd="nvim" ;;
         esac
         
-        # Check if already installed
         if command -v "$check_cmd" >/dev/null 2>&1; then
             log "✅ $app already installed (found: $check_cmd)" "success"
             skipped=$((skipped + 1))
             continue
         fi
         
-        # Install the package
         log "Installing $app..." "info"
         if $pkg_install "$app" 2>&1 | tee -a "$LOG"; then
             log "✅ Installed $app" "success"
@@ -668,7 +578,9 @@ function install_apps_direct() {
     
     log "" "info"
     log "Installation summary: $installed installed, $skipped skipped, $failed failed" "info"
-    [ $failed -gt 0 ] && return 1
+    if [ $failed -gt 0 ]; then
+        return 1
+    fi
     return 0
 }
 
@@ -676,7 +588,7 @@ function install_apps_direct() {
 # BACKUP & SYMLINK MANAGEMENT
 # =============================================================================
 
-function backup_dotfiles() {
+backup_dotfiles() {
     log "Backing up existing dotfiles..." "info"
     
     if ! mkdir -p "$OLD_FILES" 2>/dev/null; then
@@ -684,8 +596,7 @@ function backup_dotfiles() {
         exit 1
     fi
     
-    local backed_up=0
-    local skipped_unchanged=0
+    local backed_up=0 skipped_unchanged=0
     
     for f in "${OLD_FILE_ARRAY[@]}"; do
         if [ -f "$f" ] && [ ! -L "$f" ]; then
@@ -694,14 +605,12 @@ function backup_dotfiles() {
             local backup_name
             backup_name="$(basename "$f").bak-$DATE"
             
-            # Check if file has changed compared to repo version
             if [ -f "$target" ] && cmp -s "$f" "$target" 2>/dev/null; then
                 log "⏭️  Skipping $f (unchanged from repo)" "info"
                 skipped_unchanged=$((skipped_unchanged + 1))
                 continue
             fi
             
-            # Backup the file
             if cp -p "$f" "$OLD_FILES/$backup_name" 2>/dev/null; then
                 log "✓ Backed up: $f" "success"
                 backed_up=$((backed_up + 1))
@@ -719,17 +628,18 @@ function backup_dotfiles() {
         fi
     else
         log "Backed up $backed_up files to $OLD_FILES/" "success"
-        if [ $skipped_unchanged -gt 0 ]; then log "Skipped $skipped_unchanged unchanged files" "info"; fi
+        if [ $skipped_unchanged -gt 0 ]; then
+            log "Skipped $skipped_unchanged unchanged files" "info"
+        fi
     fi
 }
 
-function cleanup_symlinks() {
+cleanup_symlinks() {
     log "Cleaning up old symlinks..." "info"
     
     for file in "${DOT_ARRAY[@]}"; do
         if [ -L "$file" ]; then
             if [ ! -e "$file" ]; then
-                # Broken symlink
                 if rm -f "$file" 2>/dev/null; then
                     log "✓ Removed broken symlink: $file" "success"
                 else
@@ -737,7 +647,6 @@ function cleanup_symlinks() {
                 fi
             fi
         elif [ -e "$file" ]; then
-            # Regular file exists
             if mv "$file" "$OLD_FILES/$(basename "$file").moved-$DATE" 2>/dev/null; then
                 log "✓ Moved existing file: $file -> $OLD_FILES/" "success"
             else
@@ -747,7 +656,7 @@ function cleanup_symlinks() {
     done
 }
 
-function symlink_dotfiles() {
+symlink_dotfiles() {
     log "Creating symlinks..." "info"
     
     if [ ! -d "$DIR" ]; then
@@ -780,13 +689,11 @@ function symlink_dotfiles() {
     done
     log "Created $linked symlinks" "success"
     
-    # Add/update headers in repo files
     log "Managing file headers..." "info"
-    [ -f "$DIR/.bashrc" ] && add_file_header "$DIR/.bashrc"
-    [ -f "$DIR/.profile" ] && add_file_header "$DIR/.profile"
-    [ -f "$DIR/.bash_profile" ] && add_file_header "$DIR/.bash_profile"
+    if [ -f "$DIR/.bashrc" ]; then add_file_header "$DIR/.bashrc"; fi
+    if [ -f "$DIR/.profile" ]; then add_file_header "$DIR/.profile"; fi
+    if [ -f "$DIR/.bash_profile" ]; then add_file_header "$DIR/.bash_profile"; fi
     
-    # Call external symlink.sh with distro info
     if [ -x "$DIR/symlink.sh" ]; then
         log "Running distro-specific symlink script..." "info"
         if "$DIR/symlink.sh" "$DISTRO" "$DISTRO_BASE" 2>&1 | tee -a "$LOG"; then
@@ -798,7 +705,6 @@ function symlink_dotfiles() {
         log "⚠️ symlink.sh not found or not executable" "warn"
     fi
     
-    # Ensure bash_profile loads bashrc
     local bash_profile_target="$DIR/.bash_profile"
     if [ -f "$bash_profile_target" ]; then
         if ! grep -qE 'source.*bashrc|\..*bashrc' "$bash_profile_target" 2>/dev/null; then
@@ -823,15 +729,12 @@ EOF
 # REPOSITORY MANAGEMENT
 # =============================================================================
 
-function archive_backup() {
+archive_backup() {
     local archived="$DIR/backup-${HOSTNAME}-$DATE.tar.gz"
     
-    # Check if there are files to archive
     if [ -d "$OLD_FILES" ] && [ -n "$(ls -A "$OLD_FILES" 2>/dev/null)" ]; then
         if tar -czf "$archived" -C "$DIR" "oldfiles" 2>/dev/null; then
             log "✓ Archived backups: $archived" "success"
-            
-            # Clean up old archive files (keep only 3 most recent)
             cleanup_old_archives
         else
             log "⚠️ Failed to create archive" "warn"
@@ -842,10 +745,9 @@ function archive_backup() {
     fi
 }
 
-function cleanup_old_archives() {
+cleanup_old_archives() {
     log "Cleaning up old backup archives (keeping 3 most recent)..." "info"
     
-    # Find all backup-*.tar.gz files in the dotfiles directory
     shopt -s nullglob
     local archives=("$DIR"/backup-*-[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]_[0-9][0-9]-[0-9][0-9]-[0-9][0-9].tar.gz)
     shopt -u nullglob
@@ -857,11 +759,8 @@ function cleanup_old_archives() {
         return 0
     fi
     
-    # Sort archives by modification time (oldest first) and get files to delete
     local to_delete=$((count - 3))
     local deleted=0
-    
-    # Use ls -t to sort by time (newest first), then tail to get oldest
     local old_archives
     mapfile -t old_archives < <(ls -t "$DIR"/backup-*-[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]_[0-9][0-9]-[0-9][0-9]-[0-9][0-9].tar.gz 2>/dev/null | tail -n $to_delete)
     
@@ -883,7 +782,7 @@ function cleanup_old_archives() {
     fi
 }
 
-function update_submodules() {
+update_submodules() {
     log "Updating git submodules..." "info"
     
     if [ ! -d "$DIR/.git" ]; then
@@ -904,69 +803,240 @@ function update_submodules() {
     fi
 }
 
+# =============================================================================
+# REPOSITORY CLONING - IMPROVED VERSION
+# =============================================================================
+
 clone_repos() {
     log "Cloning additional repositories..." "info"
+    
+    local original_dir
+    original_dir=$(pwd)
     
     if ! cd "$HOME" 2>/dev/null; then
         log "❌ Failed to cd to $HOME" "error"
         return 1
     fi
     
-    # Helper to clone only when target does not exist
-    function clone_if_missing() {
+    clone_if_missing() {
         local repo_url="$1"
         local target_dir="$2"
+        local repo_name
+        repo_name=$(basename "$target_dir")
         
-        # Validate inputs
-        if [ -z "$repo_url" ] || [ -z "$target_dir" ]; then
-            log "❌ clone_if_missing: Invalid arguments" "error"
+        if [ -z "$repo_url" ]; then
+            log "❌ clone_if_missing: No repository URL provided" "error"
+            return 1
+        fi
+        
+        if [ -z "$target_dir" ]; then
+            log "❌ clone_if_missing: No target directory provided" "error"
             return 1
         fi
         
         if [ -e "$target_dir" ]; then
             if [ -d "$target_dir/.git" ]; then
-                log "✓ $target_dir exists and is a git repo; skipping clone" "success"
+                log "✓ $repo_name exists and is a git repo" "success"
+                
+                local current_remote
+                current_remote=$(git -C "$target_dir" config --get remote.origin.url 2>/dev/null || echo "")
+                
+                if [ -n "$current_remote" ]; then
+                    local normalized_current normalized_expected
+                    normalized_current=$(echo "$current_remote" | sed 's/\.git$//' | tr '[:upper:]' '[:lower:]')
+                    normalized_expected=$(echo "$repo_url" | sed 's/\.git$//' | tr '[:upper:]' '[:lower:]')
+                    
+                    if [[ "$normalized_current" == "$normalized_expected" ]] || \
+                       [[ "$normalized_current" == *"${normalized_expected##*/}" ]] || \
+                       [[ "$normalized_expected" == *"${normalized_current##*/}" ]]; then
+                        log "  Remote URL matches expected repository" "info"
+                    else
+                        log "⚠️  Warning: Remote URL differs from expected" "warn"
+                        log "  Current:  $current_remote" "warn"
+                        log "  Expected: $repo_url" "warn"
+                    fi
+                else
+                    log "⚠️  Warning: Could not verify remote URL" "warn"
+                fi
+                
+                if git -C "$target_dir" diff-index --quiet HEAD -- 2>/dev/null; then
+                    log "  Repository is clean (no uncommitted changes)" "info"
+                else
+                    log "⚠️  Repository has uncommitted changes" "warn"
+                fi
+                
+                return 0
             else
-                log "⚠️ $target_dir exists (not a git repo); skipping clone to avoid overwrite" "warn"
+                log "⚠️  $target_dir exists but is not a git repository" "warn"
+                log "  Skipping clone to avoid overwriting existing directory" "warn"
+                log "  To fix: mv $target_dir ${target_dir}.backup && re-run script" "warn"
+                return 1
             fi
-            return 0
         fi
         
-        log "Cloning $(basename "$target_dir") repository..." "info"
+        log "Cloning $repo_name repository..." "info"
+        log "  Source: $repo_url" "info"
+        log "  Target: $target_dir" "info"
+        
         if GIT_TERMINAL_PROMPT=0 git clone --recurse-submodules "$repo_url" "$target_dir" 2>&1 | tee -a "$LOG"; then
-            log "✓ Cloned $target_dir" "success"
-            return 0
+            log "✓ Successfully cloned $repo_name" "success"
+            
+            if [ -d "$target_dir/.git" ]; then
+                log "  ✓ Git repository structure verified" "success"
+                
+                if [ -f "$target_dir/.gitmodules" ]; then
+                    log "  Repository contains submodules" "info"
+                    
+                    if git -C "$target_dir" submodule status 2>/dev/null | grep -q '^-'; then
+                        log "⚠️  Some submodules may not be initialized" "warn"
+                        log "  Initializing submodules..." "info"
+                        if git -C "$target_dir" submodule update --init --recursive 2>&1 | tee -a "$LOG"; then
+                            log "  ✓ Submodules initialized" "success"
+                        else
+                            log "  ⚠️  Failed to initialize some submodules" "warn"
+                        fi
+                    else
+                        log "  ✓ Submodules initialized" "success"
+                    fi
+                fi
+                
+                return 0
+            else
+                log "❌ Clone appeared to succeed but git directory not found" "error"
+                return 1
+            fi
         else
-            log "⚠️ Failed to clone $target_dir (network/credentials?)" "warn"
+            local exit_code=$?
+            log "❌ Failed to clone $repo_name (exit code: $exit_code)" "error"
+            
+            case $exit_code in
+                128)
+                    log "  Common causes:" "error"
+                    log "    • Repository URL is incorrect" "error"
+                    log "    • No network connectivity" "error"
+                    log "    • SSH key not configured (for git@ URLs)" "error"
+                    log "    • Repository doesn't exist or is private" "error"
+                    ;;
+                *)
+                    log "  Check network connectivity and repository access" "error"
+                    ;;
+            esac
+            
+            if [ -d "$target_dir" ] && [ ! -d "$target_dir/.git" ]; then
+                log "  Cleaning up incomplete clone directory..." "warn"
+                if rm -rf "$target_dir" 2>/dev/null; then
+                    log "  ✓ Cleaned up incomplete directory" "success"
+                else
+                    log "  ⚠️  Failed to clean up $target_dir" "warn"
+                fi
+            fi
+            
             return 1
         fi
     }
-
-    # Clone .tmux repo
-    clone_if_missing "https://bitbucket.org/b0red/tmux.git" "$HOME/.tmux"
     
-    # Mark that RunMe.sh has handled tmux setup
-    if [ -d "$HOME/.tmux" ]; then
-        if echo "$(date +'%Y-%m-%d %H:%M:%S')" > "$HOME/.tmux/.installed-by-runme" 2>/dev/null; then
-            log "✓ Created marker: .tmux/.installed-by-runme" "success"
+    log "" "info"
+    log "Processing tmux repository..." "info"
+    
+    if clone_if_missing "git@bitbucket.org:b0red/tmux.git" "$HOME/.tmux"; then
+        if [ -d "$HOME/.tmux" ]; then
+            local marker_file="$HOME/.tmux/.installed-by-runme"
+            local install_timestamp
+            install_timestamp=$(date +'%Y-%m-%d %H:%M:%S')
+            
+            if echo "$install_timestamp" > "$marker_file" 2>/dev/null; then
+                log "✓ Created installation marker: .tmux/.installed-by-runme" "success"
+                log "  Timestamp: $install_timestamp" "info"
+            else
+                log "⚠️  Failed to create installation marker" "warn"
+                log "  This is not critical but TmuxInstaller.sh won't detect RunMe.sh installation" "warn"
+            fi
+            
+            if [ -f "$HOME/.tmux/.tmux.conf" ]; then
+                log "✓ Found .tmux.conf in repository" "success"
+            else
+                log "⚠️  .tmux.conf not found in repository" "warn"
+                log "  Symlink creation may fail later" "warn"
+            fi
         else
-            log "⚠️ Failed to create marker file" "warn"
+            log "⚠️  .tmux directory doesn't exist after clone" "warn"
+        fi
+    else
+        log "⚠️  tmux repository clone failed or was skipped" "warn"
+        log "  You can clone it manually with:" "warn"
+        log "    git clone git@bitbucket.org:b0red/tmux.git ~/.tmux" "warn"
+    fi
+    
+    log "" "info"
+    log "Processing vim repository..." "info"
+    
+    if clone_if_missing "git@bitbucket.org:b0red/.vim.git" "$HOME/.vim"; then
+        if [ -f "$HOME/.vim/.vimrc" ]; then
+            log "✓ Found .vimrc in repository" "success"
+        else
+            log "⚠️  .vimrc not found in repository" "warn"
+            log "  Symlink creation may fail later" "warn"
+        fi
+    else
+        log "⚠️  vim repository clone failed or was skipped" "warn"
+        log "  You can clone it manually with:" "warn"
+        log "    git clone git@bitbucket.org:b0red/.vim.git ~/.vim" "warn"
+    fi
+    
+    log "" "info"
+    log "Processing TPM (Tmux Plugin Manager)..." "info"
+    
+    if [ ! -d "$HOME/.tmux/plugins" ]; then
+        if mkdir -p "$HOME/.tmux/plugins" 2>/dev/null; then
+            log "✓ Created plugins directory: ~/.tmux/plugins" "success"
+        else
+            log "⚠️  Failed to create plugins directory" "warn"
+            log "  TPM installation will be skipped" "warn"
         fi
     fi
-
-    # Clone .vim repo
-    clone_if_missing "https://bitbucket.org/b0red/.vim.git" "$HOME/.vim"
-
-    # Clone tpm
-    clone_if_missing "https://github.com/tmux-plugins/tpm" "$HOME/.tmux/plugins/tpm"
+    
+    if clone_if_missing "https://github.com/tmux-plugins/tpm" "$HOME/.tmux/plugins/tpm"; then
+        log "✓ TPM installation complete" "success"
+        log "  Press prefix + I (capital i) in tmux to install plugins" "info"
+    else
+        log "⚠️  TPM clone failed or was skipped" "warn"
+        log "  You can install it manually with:" "warn"
+        log "    git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm" "warn"
+    fi
+    
+    log "" "info"
+    log "Repository clone summary:" "info"
+    
+    local tmux_status="❌ Not cloned"
+    local vim_status="❌ Not cloned"
+    local tpm_status="❌ Not cloned"
+    
+    [ -d "$HOME/.tmux/.git" ] && tmux_status="✓ Cloned"
+    [ -d "$HOME/.vim/.git" ] && vim_status="✓ Cloned"
+    [ -d "$HOME/.tmux/plugins/tpm/.git" ] && tpm_status="✓ Cloned"
+    
+    log "  tmux: $tmux_status" "info"
+    log "  vim:  $vim_status" "info"
+    log "  TPM:  $tpm_status" "info"
+    
+    if ! cd "$original_dir" 2>/dev/null; then
+        log "⚠️  Warning: Failed to return to original directory" "warn"
+        log "  Current directory: $(pwd)" "warn"
+    fi
+    
+    if [ -d "$HOME/.tmux/.git" ]; then
+        return 0
+    else
+        log "⚠️  Primary repository (tmux) was not successfully cloned" "warn"
+        return 1
+    fi
 }
 
-function symlink_external_repos() {
+symlink_external_repos() {
     log "Symlinking external repo configs..." "info"
     
     local errors=0
     
-    # Symlink .tmux.conf from .tmux repo
     if [ -d "$HOME/.tmux" ]; then
         if [ -f "$HOME/.tmux/.tmux.conf" ]; then
             if [ -e "$HOME/.tmux.conf" ] || [ -L "$HOME/.tmux.conf" ]; then
@@ -990,7 +1060,6 @@ function symlink_external_repos() {
         log "⚠️ ~/.tmux directory not found, skipping .tmux.conf symlink" "warn"
     fi
     
-    # Symlink .vimrc from .vim repo
     if [ -d "$HOME/.vim" ]; then
         if [ -f "$HOME/.vim/.vimrc" ]; then
             if [ -e "$HOME/.vimrc" ] || [ -L "$HOME/.vimrc" ]; then
@@ -1023,7 +1092,7 @@ function symlink_external_repos() {
 # SHELL CONFIGURATION
 # =============================================================================
 
-function source_bashrc() {
+source_bashrc() {
     log "Configuration complete..." "info"
     
     if [ -f "$HOME/.bashrc" ]; then
@@ -1041,7 +1110,7 @@ function source_bashrc() {
 # REVERT FUNCTIONALITY
 # =============================================================================
 
-function revert_changes() {
+revert_changes() {
     log "=========================================" "info"
     log "Reverting Dotfiles Installation" "info"
     log "=========================================" "info"
@@ -1052,14 +1121,13 @@ function revert_changes() {
         return 1
     fi
     
-    local reverted=0
-    local failed=0
+    local reverted=0 failed=0
     
-    # Restore backup files
-    shopt -s nullglob  # Handle case when no files match
+    shopt -s nullglob
     for f in "$OLD_FILES"/*.bak-* "$OLD_FILES"/*.moved-*; do
         [ -f "$f" ] || continue
-        local basename_file=$(basename "$f" | sed 's/\.\(bak\|moved\)-.*$//')
+        local basename_file
+        basename_file=$(basename "$f" | sed 's/\.\(bak\|moved\)-.*$//')
         
         if cp -pf "$f" "$HOME/$basename_file" 2>/dev/null; then
             log "✓ Restored: $basename_file" "success"
@@ -1069,9 +1137,8 @@ function revert_changes() {
             failed=$((failed + 1))
         fi
     done
-    shopt -u nullglob  # Restore default behavior
+    shopt -u nullglob
     
-    # Remove symlinks
     local removed=0
     for src in "${DOT_ARRAY[@]}"; do
         if [ -L "$src" ]; then
@@ -1089,7 +1156,9 @@ function revert_changes() {
     log "Revert Summary:" "info"
     log "  Files restored: $reverted" "info"
     log "  Symlinks removed: $removed" "info"
-    [ $failed -gt 0 ] && log "  Failed operations: $failed" "error"
+    if [ $failed -gt 0 ]; then
+        log "  Failed operations: $failed" "error"
+    fi
     log "=========================================" "info"
     
     if [ $reverted -eq 0 ] && [ $removed -eq 0 ]; then
@@ -1109,14 +1178,14 @@ function revert_changes() {
 # HELP DOCUMENTATION
 # =============================================================================
 
-function show_version() {
+show_version() {
     echo -e "${GREEN}${BOLD}RunMe.sh${NC} version ${BLUE}v${VERSION}${NC} (${VERSION_DATE})"
     echo ""
     echo "Dotfiles installer and configuration manager"
     echo "https://github.com/yourusername/dotfiles"
 }
 
-function show_help() {
+show_help() {
     echo -e "${BOLD}Usage:${NC} ./RunMe.sh [OPTIONS]"
     echo ""
     echo -e "${BOLD}Options:${NC}"
@@ -1152,12 +1221,10 @@ function show_help() {
     echo -e "${BOLD}For detailed documentation, see:${NC} README.md"
 }
 
-
 # =============================================================================
 # SCRIPT INITIALIZATION
 # =============================================================================
 
-# Setup cleanup trap
 trap cleanup_on_exit EXIT
 
 if [ "${TRACE_DEBUG:-0}" -eq 1 ]; then 
