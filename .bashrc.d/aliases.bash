@@ -271,6 +271,7 @@ alias comstat='echo "Command ran! ($(uname -n))" || echo "Command failed!" >&2'
 # mount alias commented; use `mount | column -t` manually
 
 # taskwarrior (original)
-command -v procs >/dev/null 2>&1 && alias tasks='task list'
+command -v taskwarrior >/dev/null 2>&1 && alias tasks='task list'
 
+sleep 5
 echo "Aliases loaded successfully."

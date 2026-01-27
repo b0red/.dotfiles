@@ -17,6 +17,10 @@
 [x] fixa casesatsen för de olika aliasen @done (19-04-27 22:44)
 [x] fixa så logfilen skrivs snyggt @done (19-04-27 22:44)
 
+### Install:
+
+curl -sSL https://raw.githubusercontent.com/Gu1llaum-3/sshm/main/install/unix.sh | bash sshm
+
 ### add alias as per os using $_myos ###
 case $_myos in
     Linux) alias foo='/path/to/linux/bin/foo';;

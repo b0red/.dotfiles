@@ -10,8 +10,8 @@ unalias -a 2>/dev/null || true
 # =============================================================================
 # VERSION & CONFIGURATION
 # =============================================================================
-VERSION="15.2.0"
-VERSION_DATE="2026-01-22"
+VERSION="15.5.0"
+VERSION_DATE="2026-01-27"
 
 DEBUG=${DEBUG:-0}
 TRACE_DEBUG=${TRACE_DEBUG:-0}
@@ -142,8 +142,6 @@ logfile_init() {
 }
 
 # Corrected version with shellcheck best practices
-# Note: This function is currently unused but kept for future use
-# shellcheck disable=SC2329
 check_or_add_line() {
     local line="$1" 
     local file="$2"

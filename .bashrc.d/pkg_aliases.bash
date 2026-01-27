@@ -20,6 +20,7 @@ command_check() {
     command -v "$1" >/dev/null 2>&1
 }
 
+export ENABLE_SHORT_ALIASES=1
 
 # Determine sudo command - check for sudo, doas, or run as root
 if [[ $EUID -eq 0 ]]; then
