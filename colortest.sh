@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Bash Color Table Generator
 
 # Reset code

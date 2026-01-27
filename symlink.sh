@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # symlink.sh - Distro-specific profile symlink management
 # Called from RunMe.sh with distro information as arguments
