@@ -69,7 +69,9 @@ fi
 alias l='ls -CF'
 alias la='ls -A'
 alias lll='ls -alFGH --color=always | less -R'
-alias {kk,ll,oo}='ls -alF --group-directories-first'  # öö -> oo for portability
+alias kk='ls -alF --group-directories-first'
+alias ll='ls -alF --group-directories-first'
+alias oo='ls -alF --group-directories-first'
 alias lsd='ls -alF | grep "/$"'
 alias lf='ls -l | egrep -v "^d"'
 alias ldir='ls -l | egrep "^d"'

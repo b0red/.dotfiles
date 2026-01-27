@@ -293,7 +293,7 @@ fi
 # TMUX GIT INTEGRATION
 # =============================================================================
 if [ -f ~/.tmux-extras/tmux-git.sh ]; then 
-    # shellcheck disable=SC1091
+    # shellcheck source=/dev/null
     source ~/.tmux-extras/tmux-git.sh
 fi
 
@@ -306,7 +306,9 @@ if [ -n "$PS1" ] && [ "$BASHRC_SOURCED" -eq 1 ]; then
     # Color definitions for welcome message
     N_GREEN='\033[0;32m'
     N_BLUE='\033[0;34m'
-    NC='\033[0m'
+    if [[ -z "${NC+x}" ]]; then
+        readonly NC='\033[0m'
+    fi
     
     echo -e "\n${N_GREEN}Welcome to $(hostname)${NC}"
     echo -e "${N_BLUE}$(date)${NC}\n"
