@@ -273,5 +273,4 @@ alias comstat='echo "Command ran! ($(uname -n))" || echo "Command failed!" >&2'
 # taskwarrior (original)
 command -v task >/dev/null 2>&1 && alias tasks='task list'
 
-sleep 5
 echo "Aliases loaded successfully."
