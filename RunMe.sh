@@ -10,8 +10,8 @@ unalias -a 2>/dev/null || true
 # =============================================================================
 # VERSION & CONFIGURATION
 # =============================================================================
-VERSION="15.2.0"
-VERSION_DATE="2026-01-22"
+VERSION="15.3.0"
+VERSION_DATE="2026-01-28"
 
 DEBUG=${DEBUG:-0}
 TRACE_DEBUG=${TRACE_DEBUG:-0}
@@ -81,6 +81,7 @@ main() {
     update_submodules
     clone_repos
     symlink_external_repos
+    symlink_config_folders
     source_bashrc
     
     log "" "info"
@@ -1099,6 +1100,125 @@ symlink_external_repos() {
 }
 
 # =============================================================================
+# CONFIG FOLDER SYMLINKING
+# =============================================================================
+
+symlink_config_folders() {
+    log "" "info"
+    log "=========================================" "info"
+    log "Symlinking Config Folders" "info"
+    log "=========================================" "info"
+    
+    local dotfiles_configs="$DIR/.configs"
+    local target_config="$HOME/.config"
+    local errors=0
+    local linked=0
+    local skipped=0
+    
+    # Validate source directory exists
+    if [ ! -d "$dotfiles_configs" ]; then
+        log "⚠️ Source directory does not exist: $dotfiles_configs" "warn"
+        log "Skipping config folder symlinking" "warn"
+        return 0
+    fi
+    
+    # Create ~/.config if it doesn't exist
+    if [ ! -d "$target_config" ]; then
+        if ! mkdir -p "$target_config" 2>/dev/null; then
+            log "❌ Failed to create directory: $target_config" "error"
+            return 1
+        fi
+        log "✓ Created directory: $target_config" "success"
+    fi
+    
+    # Iterate through all items in dotfiles/.configs
+    shopt -s nullglob dotglob
+    for item in "$dotfiles_configs"/*; do
+        [ -e "$item" ] || continue
+        
+        local basename_item
+        basename_item=$(basename "$item")
+        local target_path="$target_config/$basename_item"
+        
+        # Skip if not a directory
+        if [ ! -d "$item" ]; then
+            log "⚠️ Skipping non-directory: $basename_item" "warn"
+            skipped=$((skipped + 1))
+            continue
+        fi
+        
+        # Check if target already exists
+        if [ -e "$target_path" ] || [ -L "$target_path" ]; then
+            # If it's already a symlink pointing to our source, skip
+            if [ -L "$target_path" ]; then
+                local current_target
+                if current_target=$(readlink "$target_path" 2>/dev/null); then
+                    if [ "$current_target" = "$item" ]; then
+                        log "✓ Already linked: $basename_item" "success"
+                        linked=$((linked + 1))
+                        continue
+                    fi
+                fi
+            fi
+            
+            # Backup existing file/directory/symlink
+            local backup_name="${basename_item}.bak-$DATE"
+            local backup_path="$OLD_FILES/$backup_name"
+            
+            log "Backing up existing: $basename_item -> $backup_name" "info"
+            
+            if [ -L "$target_path" ]; then
+                # If it's a symlink, just remove it
+                if ! rm -f "$target_path" 2>/dev/null; then
+                    log "❌ Failed to remove existing symlink: $target_path" "error"
+                    errors=$((errors + 1))
+                    continue
+                fi
+            else
+                # If it's a real file/directory, back it up
+                if ! mv "$target_path" "$backup_path" 2>/dev/null; then
+                    log "❌ Failed to backup: $basename_item" "error"
+                    errors=$((errors + 1))
+                    continue
+                fi
+                log "✓ Backed up: $basename_item" "success"
+            fi
+        fi
+        
+        # Create the symlink
+        if ln -sf "$item" "$target_path" 2>/dev/null; then
+            log "✓ Linked: $basename_item -> $target_config/$basename_item" "success"
+            linked=$((linked + 1))
+        else
+            log "❌ Failed to create symlink: $basename_item" "error"
+            errors=$((errors + 1))
+        fi
+    done
+    shopt -u nullglob dotglob
+    
+    log "" "info"
+    log "Config Symlinking Summary:" "info"
+    log "  Folders linked: $linked" "info"
+    if [ $skipped -gt 0 ]; then
+        log "  Items skipped: $skipped" "info"
+    fi
+    if [ $errors -gt 0 ]; then
+        log "  Errors encountered: $errors" "error"
+    fi
+    
+    if [ $linked -eq 0 ] && [ $errors -eq 0 ]; then
+        log "⚠️ No config folders found to link in $dotfiles_configs" "warn"
+    fi
+    
+    if [ $errors -gt 0 ]; then
+        log "⚠️ $errors error(s) occurred during config folder symlinking" "warn"
+        return 1
+    fi
+    
+    return 0
+}
+
+# =============================================================================
 # SHELL CONFIGURATION
 # =============================================================================
 
@@ -1212,6 +1332,7 @@ show_help() {
     echo "    3. Installing essential applications"
     echo "    4. Updating git submodules"
     echo "    5. Cloning additional repos (.tmux, .vim)"
+    echo "    6. Symlinking config folders from ~/.config"
     echo ""
     echo -e "${BOLD}Environment Variables:${NC}"
     echo "  DEBUG=1         Enable debug output"
