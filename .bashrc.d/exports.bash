@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+!/usr/bin/env bash
 # =================================================================================================
 # exports.bash - COMPLETE original with idempotent guards (NO OMISSIONS)
 # =================================================================================================
@@ -57,5 +57,8 @@ export TLDR_QUOTE='italic'
 export TLDR_DESCRIPTION='green'
 export TLDR_CODE='red'
 export TLDR_PARAM='blue'
+
+# Coffe pluginmanager for tmux
+export PATH="$HOME/.local/share/coffee/bin:$PATH"
 
 # End - no deletions, fully idempotent
