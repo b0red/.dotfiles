@@ -47,11 +47,16 @@ function mcd() {
 }
 
 function command_check() {
-    ### Check if command or app exists and print colored status
+    ### Check if command or app exists and print colored status (silent in non-interactive shells)
+    if [[ $- != *i* ]]; then
+        command -v "$1" >/dev/null 2>&1
+        return
+    fi
+    
     if command -v "$1" >/dev/null 2>&1; then
-        echo -e "\033[32mcommand exists\033[0m"  # Green [web:13][cite:5]
+        echo -e "\033[32mcommand exists\033[0m"
     else
-        echo -e "\033[31mcommand not found\033[0m"  # Red [web:13][cite:5]
+        echo -e "\033[31mcommand not found\033[0m"
     fi
 }
 

@@ -142,6 +142,10 @@ alias big-files='ls -1Rhs 2>/dev/null | sed -e "s/^ *//" | grep "^[0-9]" | sort 
 alias psmem='ps -eo time,ppid,pid,pcpu,pmem,user,comm --sort=-pmem | head -15'
 alias freq='cut -f 1 -d " " ~/.bash_history | sort | uniq -c | sort -nr | head -30'
 
+if command -v lazyports > /dev/null 2>&1; then
+    alias lzp='lazyports'
+fi
+
 # Ports/services (systemd/Ubuntu)
 function sstatus() {
   sudo systemctl status "$1"
