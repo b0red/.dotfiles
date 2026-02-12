@@ -1,3 +1,10 @@
+### -+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+###                                             Created by RunMe.sh 2026-01-27 20:42:36
+###                                             Host: DESKTOP-JLMCRD0
+###                                             User: patrick
+###                                             Distro: ubuntu
+### -+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
 #!/usr/bin/env bash
 ### -+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ###                                             Created by RunMe.sh 2026-01-22 21:43:07
@@ -9,67 +16,9 @@
 # ~/.bashrc: executed by bash(1) for non-login shells.
 
 # =============================================================================
-# TMUX BEHAVIOR CONTROL
-# =============================================================================
-# Control whether .bashrc is sourced in tmux panes/windows
-#
-# BASHRC_SKIP_IN_TMUX Options:
-#   "yes"   - Skip loading .bashrc when already in tmux (DEFAULT)
-#             Only load on initial terminal start, not in new tmux panes/windows
-#   "no"    - Always load .bashrc, even in tmux panes/windows
-#   "ask"   - Prompt user on first tmux pane whether to load
-#
-# To change behavior:
-#   1. Edit this variable below, OR
-#   2. Set in your environment: export BASHRC_SKIP_IN_TMUX="no"
-#   3. Use 'reload' alias to force reload regardless of setting
-# =============================================================================
-: "${BASHRC_SKIP_IN_TMUX:=yes}"  # Default: skip in tmux
-
-# =============================================================================
-# TMUX GUARD - Skip loading if configured and in tmux
-# =============================================================================
-# This guard prevents re-sourcing .bashrc when tmux creates new panes/windows
-# The 'reload' alias bypasses this by unsetting TMUX temporarily
-
-if [[ -n "$TMUX" && "$BASHRC_SKIP_IN_TMUX" == "yes" && "$BASHRC_FORCE_LOAD" != "1" ]]; then
-    # We're in tmux and configured to skip - exit early
-    # Note: BASHRC_FORCE_LOAD is set by the 'reload' alias to override this guard
-    return 0
-fi
-
-# Interactive "ask" mode - prompt on first tmux pane only
-if [[ -n "$TMUX" && "$BASHRC_SKIP_IN_TMUX" == "ask" && "$BASHRC_FORCE_LOAD" != "1" ]]; then
-    if [[ ! -f "$HOME/.bashrc_tmux_choice" ]]; then
-        echo -e "\n\033[1;33m❯ You're in tmux. Load full .bashrc in new panes?\033[0m"
-        echo "  [y] Yes, always load"
-        echo "  [n] No, only on terminal start (recommended)"
-        echo "  [o] Once - load this time only"
-        read -r -p "Choice [y/n/o]: " choice
-        case "$choice" in
-            y|Y) 
-                echo "yes" > "$HOME/.bashrc_tmux_choice"
-                echo -e "\033[0;32m✓ Will always load in tmux panes\033[0m"
-                ;;
-            o|O)
-                echo -e "\033[0;32m✓ Loading this time only\033[0m"
-                ;;
-            *)
-                echo "no" > "$HOME/.bashrc_tmux_choice"
-                echo -e "\033[0;32m✓ Will skip loading in future tmux panes\033[0m"
-                return 0
-                ;;
-        esac
-    elif [[ "$(cat "$HOME/.bashrc_tmux_choice" 2>/dev/null)" == "no" ]]; then
-        return 0
-    fi
-fi
-
-# =============================================================================
 # CONFIGURATION
 # =============================================================================
 # Loading delay (seconds) - adjust as needed
-
 BASHRC_LOAD_DELAY=.2
 
 # Color codes for loading feedback

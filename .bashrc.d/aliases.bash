@@ -40,14 +40,103 @@ command_check() {
 }
 
 #--------------------------------------
-# 1. Reload and Sourcing
+# 1. Reload and Sourcing - IMPROVED FOR TMUX
 #--------------------------------------
-alias reload='unset BASHRC_SOURCED 2>/dev/null && source ~/.bashrc && clear'
-alias src='source ~/.bashrc'
+# Standard reload - forces load even in tmux using BOTH methods
+alias reload='unset BASHRC_SOURCED 2>/dev/null; BASHRC_FORCE_LOAD=1 source ~/.bashrc && clear'
+
+# Alternative reload methods
+alias src='unset BASHRC_SOURCED 2>/dev/null; BASHRC_FORCE_LOAD=1 source ~/.bashrc'  # Force reload without clear
+alias bashrc='${EDITOR:-vim} ~/.bashrc'                    # Edit .bashrc
+alias srcquiet='BASHRC_FORCE_LOAD=1 source ~/.bashrc 2>/dev/null'  # Silent reload
+
+# Toggle tmux behavior without editing files
+alias bashrc-toggle-tmux='_bashrc_toggle_tmux_behavior'
+
+# Reset ask-mode decision
+alias bashrc-reset-choice='_bashrc_reset_tmux_choice'
 
 #--------------------------------------
-# 2. Navigation and Directory Listings (Ubuntu ls defaults)
+# 1.1 Functions for TMUX behavior control
 #--------------------------------------
+
+_bashrc_toggle_tmux_behavior() {
+    ### Toggle BASHRC_SKIP_IN_TMUX setting interactively
+    local current="${BASHRC_SKIP_IN_TMUX:-yes}"
+    echo "Current TMUX behavior: $current"
+    echo ""
+    echo "Choose new behavior:"
+    echo "  [1] Skip in tmux (load only on terminal start) - RECOMMENDED"
+    echo "  [2] Always load in tmux panes/windows"
+    echo "  [3] Ask on first pane"
+    echo "  [c] Cancel"
+    echo ""
+    read -r -p "Choice [1/2/3/c]: " choice
+    
+    case "$choice" in
+        1)
+            export BASHRC_SKIP_IN_TMUX="yes"
+            echo "✓ Set to skip in tmux. Add to ~/.bash_profile to persist:"
+            echo '  export BASHRC_SKIP_IN_TMUX="yes"'
+            ;;
+        2)
+            export BASHRC_SKIP_IN_TMUX="no"
+            echo "✓ Set to always load in tmux. Add to ~/.bash_profile to persist:"
+            echo '  export BASHRC_SKIP_IN_TMUX="no"'
+            ;;
+        3)
+            export BASHRC_SKIP_IN_TMUX="ask"
+            rm -f "$HOME/.bashrc_tmux_choice" 2>/dev/null
+            echo "✓ Set to ask mode. Add to ~/.bash_profile to persist:"
+            echo '  export BASHRC_SKIP_IN_TMUX="ask"'
+            ;;
+        *)
+            echo "Cancelled - no changes made"
+            return 0
+            ;;
+    esac
+    
+    echo ""
+    echo "Run 'reload' to apply changes to current shell"
+}
+
+_bashrc_reset_tmux_choice() {
+    ### Reset the ask-mode decision so you'll be prompted again
+    if [[ -f "$HOME/.bashrc_tmux_choice" ]]; then
+        local old_choice
+        old_choice=$(cat "$HOME/.bashrc_tmux_choice" 2>/dev/null)
+        rm -f "$HOME/.bashrc_tmux_choice"
+        echo "✓ Reset ask-mode decision (was: $old_choice)"
+        echo "Next tmux pane will prompt you again"
+        
+        # Offer to change mode
+        echo ""
+        read -r -p "Change BASHRC_SKIP_IN_TMUX mode now? [y/N]: " answer
+        if [[ "$answer" =~ ^[Yy] ]]; then
+            _bashrc_toggle_tmux_behavior
+        fi
+    else
+        echo "No stored choice found"
+        echo "Current mode: ${BASHRC_SKIP_IN_TMUX:-yes}"
+        
+        if [[ "${BASHRC_SKIP_IN_TMUX}" == "ask" ]]; then
+            echo "Next tmux pane will prompt you"
+        else
+            echo ""
+            read -r -p "Switch to ask mode? [y/N]: " answer
+            if [[ "$answer" =~ ^[Yy] ]]; then
+                export BASHRC_SKIP_IN_TMUX="ask"
+                echo "✓ Switched to ask mode"
+                echo "Add to ~/.bash_profile to persist:"
+                echo '  export BASHRC_SKIP_IN_TMUX="ask"'
+            fi
+        fi
+    fi
+}
+
+#----------------------------------------------------------------------------
+# 2. Navigation and Directory Listings (Ubuntu ls defaults)
+#----------------------------------------------------------------------------
 alias ..='cd ..'
 alias ...='cd ../..'
 alias ....='cd ../../..'
@@ -80,9 +169,9 @@ alias ldir='ls -l | egrep "^d"'
 alias ltree="ls -R | grep ':$' | sed -e 's/:$//' -e 's/[^-][^/]*\//--/g' -e 's/^/   /' -e 's/-/|/'"
 alias treels='find . -type d | sed "s/[^-][^/]*/  /g;s/^-/\ |/"'
 
-#--------------------------------------
+#----------------------------------------------------------------------------
 # 3. File Operations
-#--------------------------------------
+#----------------------------------------------------------------------------
 alias mv='mv -v'
 alias rm='rm -i'  # Interactive confirm
 alias nano='nano -c'
@@ -120,9 +209,9 @@ alias tree2='tree -L 2 2>/dev/null || ltree'
 alias tree3='tree -L 3 2>/dev/null || ltree'
 alias tree4='tree -L 4 2>/dev/null || ltree'
 
-#--------------------------------------
+#----------------------------------------------------------------------------
 # 4. System Monitoring
-#--------------------------------------
+#----------------------------------------------------------------------------
 alias df='df -h'
 function h() {
   history | grep "$1"
@@ -171,9 +260,9 @@ fi
 
 alias ports='sudo netstat -tulanp 2>/dev/null || sudo ss -tulanp'
 
-#--------------------------------------
+#----------------------------------------------------------------------------
 # 5. Package/Debian Tools (Ubuntu-specific)
-#--------------------------------------
+#----------------------------------------------------------------------------
 # Moved to pkg_aliases.bash in .bashrc.d/pkg_aliases.bash. Using more comprehensive package management aliases there.
 # Keeping this section commented out for reference.
 # # APT with sudo (Ubuntu)
@@ -187,9 +276,9 @@ alias sshrestart='sudo service ssh restart 2>/dev/null || sudo systemctl restart
 # Midnight Commander
 command -v mc >/dev/null 2>&1 && alias mc='sudo mc'
 
-#--------------------------------------
+#----------------------------------------------------------------------------
 # 6. Networking/Tools
-#--------------------------------------
+#----------------------------------------------------------------------------
 alias ifconfig='ip -c a'
 alias ip='ip -br -c a'
 alias myip='wget -qO- http://ipinfo.io/ip || curl -s http://ipinfo.io/ip'
@@ -210,9 +299,9 @@ alias ssh='if [ "$(ssh-add -l 2>/dev/null)" = "The agent has no identities." ]; 
 # Crontab interactive
 alias crontab='crontab -i'
 
-#--------------------------------------
+#----------------------------------------------------------------------------
 # 7. Git/Tmux/Dev
-#--------------------------------------
+#----------------------------------------------------------------------------
 alias {module-update,modup}='git submodule foreach '"'"'git pull origin master'"'"
 alias tm='tmux new-session -s main \; split-window -h \; split-window -v -p 30 \;'
 alias tmx='tmux attach -t 0 2>/dev/null || tmux new-session'
@@ -235,9 +324,9 @@ fi
 alias wgup='sudo wg-quick up ~/wireguard/conf/SeStockholm.conf 2>/dev/null'
 alias wgdown='sudo wg-quick down ~/wireguard/conf/SeStockholm.conf 2>/dev/null'
 
-#--------------------------------------
+#----------------------------------------------------------------------------
 # 8. Modern Alternatives (Non-Ubuntu preferred; conditional overrides)
-#--------------------------------------
+#----------------------------------------------------------------------------
 # eza (modern ls replacement)
 command -v eza >/dev/null 2>&1 && {
   alias ls='eza'
@@ -265,9 +354,9 @@ command -v ncdu >/dev/null 2>&1 && alias du='ncdu'
 # prettyping
 command -v prettyping >/dev/null 2>&1 && alias ping='prettyping --nolegend'
 
-#--------------------------------------
+#----------------------------------------------------------------------------
 # 9. Misc Utilities
-#--------------------------------------
+#----------------------------------------------------------------------------
 alias weather='curl wttr.in/Stockholm'
 alias weather2='curl v2.wttr.in'
 # comstat (original, fixed push→echo)

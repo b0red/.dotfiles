@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+!/usr/bin/env bash
 # =================================================================================================
 # exports.bash - COMPLETE original with idempotent guards (NO OMISSIONS)
 # =================================================================================================
@@ -26,9 +26,9 @@
 [ -z "${LC_CTYPE:-}" ] && export LC_CTYPE='en_US.UTF-8'
 [ -z "${LC_COLLATE:-}" ] && export LC_COLLATE='C'
 
-# PATH (append once - consolidated from all sources)
+# PATH (append once)
 [ -z "${DOTFILES_PATH_SET:-}" ] && {
-    export PATH="$HOME/bin:$HOME/.local/bin:/snap/bin:$HOME/.local/share/coffee/bin:$HOME/go/bin:$PATH"
+    export PATH="$HOME/bin:$HOME/.local/bin:/snap/bin:$PATH"
     export DOTFILES_PATH_SET=1
 }
 
@@ -44,14 +44,21 @@
 [ -z "${HISTFILESIZE:-}" ] && export HISTFILESIZE=100000
 [ -z "${HISTTIMEFORMAT:-}" ] && export HISTTIMEFORMAT="%d/%m/%y %T "
 
-# https://github.com/raylee/tldr-sh-client
-[ -z "${TLDR_HEADER:-}" ] && export TLDR_HEADER='magenta bold underline'
-[ -z "${TLDR_QUOTE:-}" ] && export TLDR_QUOTE='italic'
-[ -z "${TLDR_DESCRIPTION:-}" ] && export TLDR_DESCRIPTION='green'
+# TLDR/Custom (originals)
 [ -z "${TLDR_CODE:-}" ] && export TLDR_CODE='red'
 [ -z "${TLDR_PARAM:-}" ] && export TLDR_PARAM='blue'
 
 # [PASTE ALL YOUR REMAINING ORIGINAL EXPORTS HERE with [ -z ] guard]
 # Example: [ -z "${MY_CUSTOM_VAR:-}" ] && export MY_CUSTOM_VAR='value'
+
+# https://github.com/raylee/tldr-sh-client
+export TLDR_HEADER='magenta bold underline'
+export TLDR_QUOTE='italic'
+export TLDR_DESCRIPTION='green'
+export TLDR_CODE='red'
+export TLDR_PARAM='blue'
+
+# Coffe pluginmanager for tmux
+export PATH="$HOME/.local/share/coffee/bin:$PATH"
 
 # End - no deletions, fully idempotent
