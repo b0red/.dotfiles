@@ -326,6 +326,6 @@ fi
 # =============================================================================
 # FINAL STATUS MESSAGE
 # =============================================================================
-echo "✅ ~/.bashrc (re)loaded successfully (level: $BASHRC_SOURCED)"
+#echo "✅ ~/.bashrc (re)loaded successfully (level: $BASHRC_SOURCED)"
 # Added by Lazyports installer
 export PATH=$PATH:/home/patrick/go/bin

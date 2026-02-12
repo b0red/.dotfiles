@@ -440,4 +440,4 @@ fi
 export -f set_package_aliases
 export -f command_check
 
-echo "sleep 1; Package alias setup script loaded."
+#echo "sleep 1; Package alias setup script loaded."
