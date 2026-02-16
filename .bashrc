@@ -1,3 +1,10 @@
+### -+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+###                                             Created by RunMe.sh 2026-02-16 21:37:56
+###                                             Host: DESKTOP-JLMCRD0
+###                                             User: patrick
+###                                             Distro: ubuntu
+### -+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
 #!/usr/bin/env bash
 ### -+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ###                                             Created by RunMe.sh 2026-01-22 21:43:07
@@ -57,7 +64,7 @@ unset -f setup_prompt
 #   2. Set in your environment: export BASHRC_SKIP_IN_TMUX="no"
 #   3. Use 'reload' alias to force reload regardless of setting
 # =============================================================================
-: "${BASHRC_SKIP_IN_TMUX:=yes}"  # Default: skip in tmux
+: "${BASHRC_SKIP_IN_TMUX:=no}"  # Default: skip in tmux
 
 # =============================================================================
 # TMUX GUARD - Skip loading if configured and in tmux

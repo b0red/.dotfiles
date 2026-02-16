@@ -10,7 +10,7 @@ unalias -a 2>/dev/null || true
 # =============================================================================
 # VERSION & CONFIGURATION
 # =============================================================================
-VERSION="15.3.0"
+VERSION="16.0.0"
 VERSION_DATE="2026-02-18"
 
 DEBUG=${DEBUG:-0}
@@ -200,48 +200,60 @@ add_file_header() {
         return 1
     fi
     
-    if grep -q "Created by RunMe.sh" "$target_file" 2>/dev/null; then
-        log "Updating header in $(basename "$target_file")..." "info"
-        
-        local temp_file
-        if ! temp_file=$(mktemp 2>/dev/null); then
-            log "❌ Failed to create temp file" "error"
-            return 1
-        fi
-        
-        local skip_lines=0
-        while IFS= read -r line; do
-            if [[ "$line" =~ ^###.*-\+- ]] || [[ "$line" =~ ^###.*Created\ by\ RunMe\.sh ]] || \
-               [[ "$line" =~ ^###.*Host: ]] || [[ "$line" =~ ^###.*User: ]] || \
-               [[ "$line" =~ ^###.*Distro: ]] || [[ "$line" =~ ^$ && $skip_lines -lt 7 ]]; then
-                skip_lines=$((skip_lines + 1))
-            else
-                break
-            fi
-        done < "$target_file"
-        
-        if ! tail -n +$((skip_lines + 1)) "$target_file" > "$temp_file" 2>/dev/null; then
-            log "❌ Failed to process header" "error"
-            rm -f "$temp_file"
-            return 1
-        fi
-        
-        if ! mv "$temp_file" "$target_file" 2>/dev/null; then
-            log "❌ Failed to update file" "error"
-            rm -f "$temp_file"
-            return 1
-        fi
-    else
-        log "Adding header to $(basename "$target_file")..." "info"
-    fi
-    
     local temp_file
     if ! temp_file=$(mktemp 2>/dev/null); then
         log "❌ Failed to create temp file" "error"
         return 1
     fi
     
-    cat > "$temp_file" << EOF
+    # Check if file starts with shebang
+    local has_shebang=0
+    local shebang_line=""
+    if head -n 1 "$target_file" | grep -q '^#!'; then
+        has_shebang=1
+        shebang_line=$(head -n 1 "$target_file")
+    fi
+    
+    # Remove old header if exists
+    local content_start=1
+    if grep -q "Created by RunMe.sh" "$target_file" 2>/dev/null; then
+        log "Updating header in $(basename "$target_file")..." "info"
+        
+        # Skip shebang if present
+        if [ "$has_shebang" -eq 1 ]; then
+            content_start=2
+        fi
+        
+        # Find where old header ends
+        local line_num=$content_start
+        while IFS= read -r line; do
+            if [[ "$line" =~ ^###.*-\+- ]] || [[ "$line" =~ ^###.*Created\ by\ RunMe\.sh ]] || \
+               [[ "$line" =~ ^###.*Host: ]] || [[ "$line" =~ ^###.*User: ]] || \
+               [[ "$line" =~ ^###.*Distro: ]] || [[ "$line" =~ ^$ && $line_num -lt 10 ]]; then
+                line_num=$((line_num + 1))
+            else
+                break
+            fi
+        done < <(tail -n +$content_start "$target_file")
+        
+        content_start=$line_num
+    else
+        log "Adding header to $(basename "$target_file")..." "info"
+        # If no old header, skip just the shebang
+        if [ "$has_shebang" -eq 1 ]; then
+            content_start=2
+        fi
+    fi
+    
+    # Build new file
+    {
+        # 1. Write shebang if present
+        if [ "$has_shebang" -eq 1 ]; then
+            echo "$shebang_line"
+        fi
+        
+        # 2. Write new header
+        cat << EOF
 ### -+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ###                                             Created by RunMe.sh $creation_date
 ###                                             Host: $hostname
@@ -250,15 +262,12 @@ add_file_header() {
 ### -+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 
 EOF
+        
+        # 3. Write remaining content (skip header and shebang)
+        tail -n +$content_start "$target_file"
+    } > "$temp_file"
     
-    if [ -f "$target_file" ]; then
-        if ! cat "$target_file" >> "$temp_file" 2>/dev/null; then
-            log "❌ Failed to append content" "error"
-            rm -f "$temp_file"
-            return 1
-        fi
-    fi
-    
+    # Replace original file
     if mv "$temp_file" "$target_file" 2>/dev/null; then
         log "✓ Header updated in $(basename "$target_file")" "success"
         return 0

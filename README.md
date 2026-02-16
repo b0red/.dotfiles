@@ -853,5 +853,5 @@ If you find this useful, consider supporting: [[PayPal](https://paypal.me/fotosb
 
 ---
 
-**Last Updated**: January 20, 2026  
-**Script Version**: v15.1.0
+**Last Updated**: February 16, 2026  
+**Script Version**: v15.5.0
