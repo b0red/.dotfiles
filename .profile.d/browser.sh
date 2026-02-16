@@ -1,3 +1,4 @@
+#!/bin/sh
 # Set command-linie browser to lynx; ~/.xinitrc will change this to something
 # graphical instead
 BROWSER=lynx

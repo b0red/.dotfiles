@@ -4,17 +4,18 @@
 curl
 wget
 git
+cargo       # Rust package manager/build tool
 
 # === EDITORS ===
 vim
-# nano  # commented out - using vim only
+# nano      # commented out - using vim only
 
 # === TERMINAL MULTIPLEXERS ===
 tmux
 
 # === SYSTEM MONITORING ===
 htop
-btop      # better top
+btop        # better top
 atop
 
 # === DISK UTILITIES ===
@@ -30,19 +31,19 @@ broot
 # === FILE OPERATIONS ===
 zip
 unzip
-mc      # midnight commander
-eza     # better file manager
+mc          # midnight commander
+eza         # better file manager
 
 # === MODERN CLI REPLACEMENTS ===
-bat     # cat replacement
-tldr    # man page summaries
+bat         # cat replacement
+tldr        # man page summaries
 
 # === DATA PROCESSING ===
-jq      # JSON processor
-yq      # YAML processor
+jq          # JSON processor
+yq          # YAML processor
 
 # === AUTOMATION ===
-entr    # file watcher for automation
+entr        # file watcher for automation
 
 # === DOCKER/CONTAINER TOOLS (uncomment if needed) ===
 # docker.io

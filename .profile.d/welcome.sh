@@ -1,4 +1,5 @@
-# Onnly if shell is interactive
+#!/bin/sh
+# Only if shell is interactive
 case $- in
     *i*) ;;
     *) return ;;

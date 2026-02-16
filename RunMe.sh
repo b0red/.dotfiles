@@ -11,7 +11,7 @@ unalias -a 2>/dev/null || true
 # VERSION & CONFIGURATION
 # =============================================================================
 VERSION="15.3.0"
-VERSION_DATE="2026-01-28"
+VERSION_DATE="2026-02-18"
 
 DEBUG=${DEBUG:-0}
 TRACE_DEBUG=${TRACE_DEBUG:-0}

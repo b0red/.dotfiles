@@ -33,6 +33,7 @@ case $_myos in
 ---------------------------------------------------------------------------------
 [Package Management on Linux, BSD, and Solaris](https://cromwell-intl.com/open-source/package-management.html)
 [Zypper usage](https://en.opensuse.org/SDB:Zypper_usage)
+[envtrace](https://github.com/FlerAlex/envtrace) 
 
 ### Not in use, but might be useful later:
 ```

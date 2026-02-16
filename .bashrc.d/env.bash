@@ -3,7 +3,7 @@
 # env.bash - Shell Environment Configuration
 # =================================================================================================
 # Purpose: Shell options, history settings, terminal setup
-# Dependencies: exports.bash (loads after)
+# Dependencies: exports.bash (loads before)
 # 
 # ⚠️ NO INTERACTIVE GUARD - Shell options needed in all contexts
 # Even scripts benefit from proper shell behavior settings
@@ -18,12 +18,6 @@ shopt -s histappend 2>/dev/null || true      # Append history, don't overwrite
 shopt -s cdspell 2>/dev/null || true         # Auto-correct cd typos
 shopt -s dirspell 2>/dev/null || true        # Auto-correct dir names
 shopt -s nocaseglob 2>/dev/null || true      # Case-insensitive globs
-
-# =============================================================================
-# HISTORY IGNORE PATTERNS (additional to HISTIGNORE in exports.bash)
-# =============================================================================
-# This is idempotent - won't duplicate if already set
-export HISTIGNORE="${HISTIGNORE:-}:exit:history:l:ls:ll:la:lla:bg:fg:h:q:pwd:clear:cls:cd:man:pwd:x"
 
 # =============================================================================
 # TERMINAL COLOR SUPPORT DETECTION

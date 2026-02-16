@@ -10,7 +10,7 @@
 
 # ------------------------------------------------
 # Skip source'ing .bashrc in tmux (recommended)
-export BASHRC_SKIP_IN_TMUX="yes"
+export BASHRC_SKIP_IN_TMUX="no"
 
 # # OR: Always load in tmux
 # export BASHRC_SKIP_IN_TMUX="no"
@@ -27,3 +27,4 @@ fi
 # shellcheck disable=SC1091
 source /home/patrick/.config/broot/launcher/bash/br
 
+. "$HOME/.cargo/env"

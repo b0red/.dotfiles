@@ -9,6 +9,39 @@
 # ~/.bashrc: executed by bash(1) for non-login shells.
 
 # =============================================================================
+# PROMPT SETUP - Always set, even in tmux panes
+# =============================================================================
+# Set prompt BEFORE TMUX guard so it's always available
+setup_prompt() {
+    local is_privileged=0
+    
+    # Primary check: Are we actually root right now?
+    if [ "$EUID" -eq 0 ] || [ "$(id -u)" -eq 0 ]; then
+        is_privileged=1
+    fi
+    
+    # Secondary check: Is the USER variable set to root?
+    if [ "$USER" = "root" ] || [ "$LOGNAME" = "root" ]; then
+        is_privileged=1
+    fi
+    
+    if [ $is_privileged -eq 1 ]; then
+        # Root/privileged prompt - RED username, hostname, and $
+        PS1='\[\033[1;31m\]\u\[\033[0;31m\]@\[\033[1;31m\]\h\[\033[0m\]:\[\033[1;34m\]\w\[\033[1;31m\]\$\[\033[0m\] '
+    else
+        # Normal user - GREEN username, hostname, and $
+        PS1='\[\033[1;32m\]\u\[\033[0;32m\]@\[\033[1;32m\]\h\[\033[0m\]:\[\033[1;34m\]\w\[\033[1;32m\]\$\[\033[0m\] '
+    fi
+    
+    # Export for subshells
+    export PS1
+}
+
+# Set up the prompt (always, even if skipping rest of .bashrc)
+setup_prompt
+unset -f setup_prompt
+
+# =============================================================================
 # TMUX BEHAVIOR CONTROL
 # =============================================================================
 # Control whether .bashrc is sourced in tmux panes/windows
@@ -31,7 +64,6 @@
 # =============================================================================
 # This guard prevents re-sourcing .bashrc when tmux creates new panes/windows
 # The 'reload' alias bypasses this by unsetting TMUX temporarily
-
 if [[ -n "$TMUX" && "$BASHRC_SKIP_IN_TMUX" == "yes" && "$BASHRC_FORCE_LOAD" != "1" ]]; then
     # We're in tmux and configured to skip - exit early
     # Note: BASHRC_FORCE_LOAD is set by the 'reload' alias to override this guard
@@ -69,7 +101,6 @@ fi
 # CONFIGURATION
 # =============================================================================
 # Loading delay (seconds) - adjust as needed
-
 BASHRC_LOAD_DELAY=.2
 
 # Color codes for loading feedback
@@ -270,38 +301,6 @@ if [ -n "$PS1" ]; then
 fi
 
 # =============================================================================
-# PROMPT SETUP - Color-coded by privilege level
-# =============================================================================
-setup_prompt() {
-    local is_privileged=0
-    
-    # Primary check: Are we actually root right now?
-    if [ "$EUID" -eq 0 ] || [ "$(id -u)" -eq 0 ]; then
-        is_privileged=1
-    fi
-    
-    # Secondary check: Is the USER variable set to root?
-    if [ "$USER" = "root" ] || [ "$LOGNAME" = "root" ]; then
-        is_privileged=1
-    fi
-    
-    if [ $is_privileged -eq 1 ]; then
-        # Root/privileged prompt - RED username, hostname, and $
-        PS1='\[\033[1;31m\]\u\[\033[0;31m\]@\[\033[1;31m\]\h\[\033[0m\]:\[\033[1;34m\]\w\[\033[1;31m\]\$\[\033[0m\] '
-    else
-        # Normal user - GREEN username, hostname, and $
-        PS1='\[\033[1;32m\]\u\[\033[0;32m\]@\[\033[1;32m\]\h\[\033[0m\]:\[\033[1;34m\]\w\[\033[1;32m\]\$\[\033[0m\] '
-    fi
-    
-    # Export for subshells
-    export PS1
-}
-
-# Set up the prompt
-setup_prompt
-unset -f setup_prompt
-
-# =============================================================================
 # OS DETECTION & PACKAGE MANAGER SETUP
 # =============================================================================
 if command -v get_os >/dev/null 2>&1; then
@@ -378,5 +377,5 @@ fi
 # FINAL STATUS MESSAGE
 # =============================================================================
 #echo "✅ ~/.bashrc (re)loaded successfully (level: $BASHRC_SOURCED)"
-# Added by Lazyports installer
-export PATH=$PATH:/home/patrick/go/bin
+
+. "$HOME/.cargo/env"

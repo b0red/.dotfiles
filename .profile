@@ -44,15 +44,4 @@ if [ -d $HOME/dotfiles/.profile.d ]; then
 	done
 	unset -v config
 fi
-
-###     Check if .cargo exists, then add to path
-#
-if [ -d "$HOME"/.cargo ]; then
-	export PATH="$HOME/.cargo/bin:$PATH"
-fi
-
-### Add Go binaries directory to PATH if it exists
-# 
-if [ -d "/usr/local/go/bin" ]; then
-    export PATH="$PATH:/usr/local/go/bin"
-fi
+. "$HOME/.cargo/env"

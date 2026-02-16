@@ -363,17 +363,4 @@ function gfind() {
     git log --all --grep="$1"
 }
 
-function docker() {
-    ### Custom docker wrapper for formatted ps output
-    if [[ "$1 $2" = "ps -p" ]]; then
-        command docker ps --all --format "{{.ID}}\t{{.Names}}\t{{.Image}}\t{{.Ports}}\t{{.Status}}" \
-        | (echo -e "CONTAINER_ID\tNAMES\tIMAGE\tPORTS\tSTATUS"; cat) \
-        | awk '{printf "\033[1;32m%s\t\033[01;38;5;95;38;5;196m%s\t\033[00m\033[1;34m%s\t\033[01;90m%s %s %s %s %s %s %s\033[00m\n", $1, $2, $3, $4, $5, $6, $7, $8, $9, $10;}' \
-        | column -s$'\t' -t \
-        | sort -k2
-    else
-        command docker "$@"
-    fi
-}
-
 # End of git.bash (Interactive Only)
