@@ -779,44 +779,72 @@ function functions() {
     fi
 }
 
-# Set up version command (fastfetch or neofetch)
-if command -v fastfetch >/dev/null 2>&1; then
-    version() { fastfetch "$@"; }
-elif command -v neofetch >/dev/null 2>&1; then
-    version() { neofetch "$@"; }
-else
-    version() {
-        ### Shows system information using neofetch or fastfetch
-        echo "⚠️  'version' command not found. Install neofetch or fastfetch?"
-        read -r -p "Install (n)eofetch, (f)astfetch, or (c)ancel? [n/f/c]: " choice
-        case "$choice" in
-            n|N)
-                echo "Installing neofetch..."
-                # Use p_install if available, otherwise fall back to direct apt
-                if command -v p_install >/dev/null 2>&1; then
-                    p_install neofetch && neofetch
-                elif command -v apt-get >/dev/null 2>&1; then
-                    sudo apt-get install -y neofetch && neofetch
-                else
-                    echo "Error: Could not determine package manager"
-                    return 1
-                fi
-                ;;
-            f|F)
-                echo "Installing fastfetch..."
-                # Use p_install if available, otherwise fall back to direct apt
-                if command -v p_install >/dev/null 2>&1; then
-                    p_install fastfetch && fastfetch
-                elif command -v apt-get >/dev/null 2>&1; then
-                    sudo apt-get install -y fastfetch && fastfetch
-                else
-                    echo "Error: Could not determine package manager"
-                    return 1
-                fi
-                ;;
-            *)
-                echo "Installation cancelled."
-                ;;
-        esac
+# ~/.bashrc.d/functions.bash
+# -------------------------------------------
+# version() - Display system or repo information
+# - Uses onefetch inside git repos (if installed)
+# - Otherwise prefers fastfetch > neofetch
+# - Silently installs fastfetch if nothing available
+# -------------------------------------------
+
+version() {
+    # Check if inside a git repository
+    in_git_repo() {
+        git rev-parse --is-inside-work-tree >/dev/null 2>&1
     }
-fi
+
+    # Attempt to install a package (silent; descriptive if failed)
+    install_tool() {
+        local pkg="$1"
+        echo "📦 Attempting to install $pkg..."
+        if command -v p_install >/dev/null 2>&1; then
+            if p_install "$pkg"; then
+                echo "✅ $pkg installed successfully."
+            else
+                echo "❌ p_install failed to install $pkg. Please check logs or install manually."
+                return 1
+            fi
+        elif command -v apt-get >/dev/null 2>&1; then
+            if sudo apt-get install -y "$pkg"; then
+                echo "✅ $pkg installed successfully."
+            else
+                echo "❌ apt-get failed to install $pkg. Please check your network or apt configuration."
+                return 1
+            fi
+        else
+            echo "❌ Error: Could not determine package manager."
+            return 1
+        fi
+    }
+
+    # Detect available tools
+    local has_onefetch has_fastfetch has_neofetch
+    command -v onefetch >/dev/null 2>&1 && has_onefetch=1
+    command -v fastfetch >/dev/null 2>&1 && has_fastfetch=1
+    command -v neofetch >/dev/null 2>&1 && has_neofetch=1
+
+    # Inside git repo and onefetch available
+    if in_git_repo && [[ -n "$has_onefetch" ]]; then
+        onefetch "$@"
+        return
+    fi
+
+    # Prefer fastfetch > neofetch
+    if [[ -n "$has_fastfetch" ]]; then
+        fastfetch "$@"
+        return
+    elif [[ -n "$has_neofetch" ]]; then
+        neofetch "$@"
+        return
+    fi
+
+    # None found → try auto-installing fastfetch
+    echo "⚠️  None of the display tools (onefetch, fastfetch, neofetch) are installed."
+    echo "Auto-installing fastfetch..."
+    if install_tool fastfetch; then
+        fastfetch "$@"
+    else
+        echo "❌ Failed to install fastfetch. Please install manually or use neofetch/onefetch."
+        return 1
+    fi
+}
