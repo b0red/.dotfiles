@@ -27,10 +27,10 @@
 #--------------------------------------
 command_exists() {
   if command -v "$1" >/dev/null 2>&1; then
-    echo -e "${N_GREEN}$1${NC} is installed!"
+    echo -e "${ORANGE}$1 ${RESET}${GREEN}is installed/found!${RESET}"
     return 0
   else
-    echo -e "${N_RED}$1${NC} is not installed!"
+    echo -e "${ORANGE}$1${RESET} ${RED}is not installed/found!${RESET}"
     return 1
   fi
 }
