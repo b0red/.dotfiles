@@ -33,6 +33,7 @@ zip
 unzip
 mc          # midnight commander
 eza         # better file manager
+most        # alternative to less/more
 
 # === MODERN CLI REPLACEMENTS ===
 bat         # cat replacement
