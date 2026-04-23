@@ -19,7 +19,7 @@
 [ -z "${LESS_TERMCAP_us:-}" ] && export LESS_TERMCAP_us=$'\E[1;32m'
 [ -z "${LESS_TERMCAP_ue:-}" ] && export LESS_TERMCAP_ue=$'\E[0m'
 [ -z "${GREP_COLORS:-}" ] && export GREP_COLORS='mt=1;32'
-[ -z "${PAGER:-}" ] && export PAGER='less'
+[ -z "${PAGER:-}" ] && export PAGER='most'
 [ -z "${LESS:-}" ] && export LESS='-R -S'
 
 # =============================================================================
