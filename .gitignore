@@ -1,0 +1,9 @@
+###     Folders
+resurrect/
+
+###     Files
+.installed-by-runme
+VALIDATION_CHECKLIST.md
+DEPENDENCIES.md
+
+*lock.json
