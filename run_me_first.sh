@@ -941,26 +941,55 @@ update_submodules() {
 }
 
 # =============================================================================
-# REPOSITORY CLONING - IMPROVED VERSION
+# REPO SYMLINKING (tmux + vim now live inside this repo as subtrees)
 # =============================================================================
 
 clone_repos() {
-    log_info "Cloning additional repositories..."
+    log_info "Linking tmux and vim configs from repo..."
 
     if [ "${DRY_RUN:-0}" -eq 1 ]; then
-        log_info "  [dry-run] would clone: .tmux and .vim companion repos"
+        log_info "  [dry-run] would link: $DIR/tmux -> ~/.tmux"
+        log_info "  [dry-run] would link: $DIR/vim  -> ~/.vim"
         return 0
     fi
 
-    local original_dir
-    original_dir=$(pwd)
-    
-    if ! cd "$HOME" 2>/dev/null; then
-        log_error "❌ Failed to cd to $HOME"
-        return 1
-    fi
-    
-    clone_if_missing() {
+    local errors=0
+
+    _link_repo_dir() {
+        local src="$1" dest="$2" label="$3"
+        if [ ! -d "$src" ]; then
+            log_error "❌ Source directory not found: $src"
+            return 1
+        fi
+        if [ -e "$dest" ] && [ ! -L "$dest" ]; then
+            log_warning "⚠️  $dest exists and is not a symlink — backing up"
+            safe_exec mv "$dest" "${dest}.bak-$DATE"
+        fi
+        if safe_exec ln -sfn "$src" "$dest"; then
+            log_success "✓ Linked: $src -> $dest"
+            return 0
+        else
+            log_error "❌ Failed to link $label"
+            return 1
+        fi
+    }
+
+    _link_repo_dir "$DIR/tmux" "$HOME/.tmux" "tmux" || errors=$((errors + 1))
+    _link_repo_dir "$DIR/vim"  "$HOME/.vim"  "vim"  || errors=$((errors + 1))
+
+    log_info ""
+    log_info "Repo link summary:"
+    [ -L "$HOME/.tmux" ] && log_success "  tmux : ✓ Linked ($DIR/tmux)" \
+                         || log_warning  "  tmux : ❌ Not linked"
+    [ -L "$HOME/.vim"  ] && log_success "  vim  : ✓ Linked ($DIR/vim)"  \
+                         || log_warning  "  vim  : ❌ Not linked"
+    log_success "  TPM  : ✓ Included in repo (tmux/plugins/tpm)"
+
+    return $errors
+}
+
+# --- dead code preserved for reference during migration ---
+_clone_if_missing_UNUSED() {
         local repo_url="$1"
         local target_dir="$2"
         local repo_name
@@ -1075,104 +1104,7 @@ clone_repos() {
             
             return 1
         fi
-    }
-    
-    log_info ""
-    log_info "Processing tmux repository..."
-    
-    if clone_if_missing "git@bitbucket.org:b0red/tmux.git" "$HOME/.tmux"; then
-        if [ -d "$HOME/.tmux" ]; then
-            local marker_file="$HOME/.tmux/.installed-by-runme"
-            local install_timestamp
-            install_timestamp=$(date +'%Y-%m-%d %H:%M:%S')
-            
-            if echo "$install_timestamp" > "$marker_file" 2>/dev/null; then
-                log_success "✓ Created installation marker: .tmux/.installed-by-runme"
-                log_info "  Timestamp: $install_timestamp"
-            else
-                log_warning "⚠️  Failed to create installation marker"
-                log_warning "  This is not critical but TmuxInstaller.sh won't detect run_me_first.sh installation"
-            fi
-            
-            if [ -f "$HOME/.tmux/.tmux.conf" ]; then
-                log_success "✓ Found .tmux.conf in repository"
-            else
-                log_warning "⚠️  .tmux.conf not found in repository"
-                log_warning "  Symlink creation may fail later"
-            fi
-        else
-            log_warning "⚠️  .tmux directory doesn't exist after clone"
-        fi
-    else
-        log_warning "⚠️  tmux repository clone failed or was skipped"
-        log_warning "  You can clone it manually with:"
-        log_warning "    git clone git@bitbucket.org:b0red/tmux.git ~/.tmux"
-    fi
-    
-    log_info ""
-    log_info "Processing vim repository..."
-    
-    if clone_if_missing "git@bitbucket.org:b0red/.vim.git" "$HOME/.vim"; then
-        if [ -f "$HOME/.vim/.vimrc" ]; then
-            log_success "✓ Found .vimrc in repository"
-        else
-            log_warning "⚠️  .vimrc not found in repository"
-            log_warning "  Symlink creation may fail later"
-        fi
-    else
-        log_warning "⚠️  vim repository clone failed or was skipped"
-        log_warning "  You can clone it manually with:"
-        log_warning "    git clone git@bitbucket.org:b0red/.vim.git ~/.vim"
-    fi
-    
-    log_info ""
-    log_info "Processing TPM (Tmux Plugin Manager)..."
-    
-    if [ ! -d "$HOME/.tmux/plugins" ]; then
-        if mkdir -p "$HOME/.tmux/plugins" 2>/dev/null; then
-            log_success "✓ Created plugins directory: ~/.tmux/plugins"
-        else
-            log_warning "⚠️  Failed to create plugins directory"
-            log_warning "  TPM installation will be skipped"
-        fi
-    fi
-    
-    if clone_if_missing "https://github.com/tmux-plugins/tpm" "$HOME/.tmux/plugins/tpm"; then
-        log_success "✓ TPM installation complete"
-        log_info "  Press prefix + I (capital i) in tmux to install plugins"
-    else
-        log_warning "⚠️  TPM clone failed or was skipped"
-        log_warning "  You can install it manually with:"
-        log_warning "    git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm"
-    fi
-    
-    log_info ""
-    log_info "Repository clone summary:"
-    
-    local tmux_status="❌ Not cloned"
-    local vim_status="❌ Not cloned"
-    local tpm_status="❌ Not cloned"
-    
-    [ -d "$HOME/.tmux/.git" ] && tmux_status="✓ Cloned"
-    [ -d "$HOME/.vim/.git" ] && vim_status="✓ Cloned"
-    [ -d "$HOME/.tmux/plugins/tpm/.git" ] && tpm_status="✓ Cloned"
-    
-    log_info "  tmux: $tmux_status"
-    log_info "  vim:  $vim_status"
-    log_info "  TPM:  $tpm_status"
-    
-    if ! cd "$original_dir" 2>/dev/null; then
-        log_warning "⚠️  Warning: Failed to return to original directory"
-        log_warning "  Current directory: $(pwd)"
-    fi
-    
-    if [ -d "$HOME/.tmux/.git" ]; then
-        return 0
-    else
-        log_warning "⚠️  Primary repository (tmux) was not successfully cloned"
-        return 1
-    fi
-}
+} # end _clone_if_missing_UNUSED
 
 symlink_external_repos() {
     log_info "Symlinking external repo configs..."
