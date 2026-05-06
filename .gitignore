@@ -17,3 +17,6 @@ old-files/
 
 # Machine-specific app lists (optional)
 .install_apps.inc.local
+
+# Claude Code working directory
+.claude/

@@ -1,0 +1,16 @@
+[user]
+	name = b0red
+	email = mr.akita@gmail.com
+
+[core]
+	editor = vim
+	pager = most
+
+[push]
+	default = simple
+
+[pull]
+	rebase = false
+
+[color]
+	ui = auto
