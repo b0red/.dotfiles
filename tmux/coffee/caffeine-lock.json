@@ -1,0 +1,185 @@
+{
+    "plugins": [
+        {
+            "name": "tmux-menus",
+            "source": [
+                "/home/patrick/.tmux/coffee/plugins/tmux-menus/menus.tmux"
+            ],
+            "enabled": true,
+            "install_path": "/home/patrick/.tmux/coffee/plugins/tmux-menus",
+            "skip_auto_update": false,
+            "git": {
+                "repo": "jaclu/tmux-menus",
+                "tag": "v2.2.34",
+                "commit_hash": "f60e791e80d066ef7463ab2a746f5f89a5683dc0",
+                "last_pull": "2026-04-23T23:18:59.386854+00:00"
+            }
+        },
+        {
+            "name": "tmux-cpu",
+            "source": [
+                "/home/patrick/.tmux/coffee/plugins/tmux-cpu/cpu.tmux"
+            ],
+            "enabled": true,
+            "install_path": "/home/patrick/.tmux/coffee/plugins/tmux-cpu",
+            "skip_auto_update": false,
+            "git": {
+                "repo": "tmux-plugins/tmux-cpu",
+                "tag": null,
+                "commit_hash": "bcb110d754ab2417de824c464730c412a3eb2769",
+                "last_pull": "2026-01-29 12:19:58.469609+00:00"
+            }
+        },
+        {
+            "name": "tmux-resurrect",
+            "source": [
+                "/home/patrick/.tmux/coffee/plugins/tmux-resurrect/resurrect.tmux"
+            ],
+            "enabled": true,
+            "install_path": "/home/patrick/.tmux/coffee/plugins/tmux-resurrect",
+            "skip_auto_update": false,
+            "git": {
+                "repo": "tmux-plugins/tmux-resurrect",
+                "tag": "v4.0.0",
+                "commit_hash": "e87d7d592cac97fa38c12395ebec042c154a1844",
+                "last_pull": "2026-01-29 12:19:59.079680+00:00"
+            }
+        },
+        {
+            "name": "tmux-online-status",
+            "source": [
+                "/home/patrick/.tmux/coffee/plugins/tmux-online-status/online_status.tmux"
+            ],
+            "enabled": true,
+            "install_path": "/home/patrick/.tmux/coffee/plugins/tmux-online-status",
+            "skip_auto_update": false,
+            "git": {
+                "repo": "tmux-plugins/tmux-online-status",
+                "tag": "v1.0.0",
+                "commit_hash": "a3e95b8c0fd1eb97f1d74f14c1f333a8520e70c5",
+                "last_pull": "2026-01-29 12:20:00.665010+00:00"
+            }
+        },
+        {
+            "name": "tmux-prefix-highlight",
+            "source": [
+                "/home/patrick/.tmux/coffee/plugins/tmux-prefix-highlight/prefix_highlight.tmux"
+            ],
+            "enabled": true,
+            "install_path": "/home/patrick/.tmux/coffee/plugins/tmux-prefix-highlight",
+            "skip_auto_update": false,
+            "git": {
+                "repo": "tmux-plugins/tmux-prefix-highlight",
+                "tag": null,
+                "commit_hash": "06cbb4ecd3a0a918ce355c70dc56d79debd455c7",
+                "last_pull": "2026-01-29 12:20:01.198451+00:00"
+            }
+        },
+        {
+            "name": "tmux-battery",
+            "source": [
+                "/home/patrick/.tmux/coffee/plugins/tmux-battery/battery.tmux",
+                "/home/patrick/.tmux/coffee/plugins/tmux-battery/battery_enabled.tmux"
+            ],
+            "enabled": true,
+            "install_path": "/home/patrick/.tmux/coffee/plugins/tmux-battery",
+            "skip_auto_update": false,
+            "git": {
+                "repo": "tmux-plugins/tmux-battery",
+                "tag": "v2.0.0",
+                "commit_hash": "43832651ede43f54dcf0588727c1957fe648d57d",
+                "last_pull": "2026-01-29 12:20:02.042430+00:00"
+            }
+        },
+        {
+            "name": "tmux-continuum",
+            "source": [
+                "/home/patrick/.tmux/coffee/plugins/tmux-continuum/continuum.tmux"
+            ],
+            "enabled": true,
+            "install_path": "/home/patrick/.tmux/coffee/plugins/tmux-continuum",
+            "skip_auto_update": false,
+            "git": {
+                "repo": "tmux-plugins/tmux-continuum",
+                "tag": "v3.1.0",
+                "commit_hash": "46e0e0023476018ddb4cc0d44783eede27e5a8ec",
+                "last_pull": "2026-01-29 12:20:02.607516+00:00"
+            }
+        },
+        {
+            "name": "tmux-power-zoom",
+            "source": [
+                "/home/patrick/.tmux/coffee/plugins/tmux-power-zoom/power-zoom.tmux"
+            ],
+            "enabled": true,
+            "install_path": "/home/patrick/.tmux/coffee/plugins/tmux-power-zoom",
+            "skip_auto_update": false,
+            "git": {
+                "repo": "jaclu/tmux-power-zoom",
+                "tag": "v1.0.0",
+                "commit_hash": "6d618af224229ae653ffcc6d12c2146d536af79b",
+                "last_pull": "2026-01-29 12:20:03.222794+00:00"
+            }
+        },
+        {
+            "name": "tmux-nerd-font-window-name",
+            "source": [
+                "/home/patrick/.tmux/coffee/plugins/tmux-nerd-font-window-name/tmux-nerd-font-window-name.tmux"
+            ],
+            "enabled": true,
+            "install_path": "/home/patrick/.tmux/coffee/plugins/tmux-nerd-font-window-name",
+            "skip_auto_update": false,
+            "git": {
+                "repo": "joshmedeski/tmux-nerd-font-window-name",
+                "tag": "v3.1.0",
+                "commit_hash": "0af812a228e1b9f538b8d220c6c59d82d7228973",
+                "last_pull": "2026-04-23T23:19:00.047011+00:00"
+            }
+        },
+        {
+            "name": "tmux-sidebar",
+            "source": [
+                "/home/patrick/.tmux/coffee/plugins/tmux-sidebar/sidebar.tmux"
+            ],
+            "enabled": true,
+            "install_path": "/home/patrick/.tmux/coffee/plugins/tmux-sidebar",
+            "skip_auto_update": false,
+            "git": {
+                "repo": "tmux-plugins/tmux-sidebar",
+                "tag": "v0.7.0",
+                "commit_hash": "21f26f914244b6f8a954dda8e79308539a228085",
+                "last_pull": "2026-01-29 18:23:20.602668+00:00"
+            }
+        },
+        {
+            "name": "tmux-weather",
+            "source": [
+                "/home/patrick/.tmux/coffee/plugins/tmux-weather/weather.tmux"
+            ],
+            "enabled": true,
+            "install_path": "/home/patrick/.tmux/coffee/plugins/tmux-weather",
+            "skip_auto_update": false,
+            "git": {
+                "repo": "aaronpowell/tmux-weather",
+                "tag": null,
+                "commit_hash": "829b7031952f1c27eaf08e06001861b66b4de81e",
+                "last_pull": "2026-04-24 15:02:20.936893+00:00"
+            }
+        },
+        {
+            "name": "tmux-task-monitor",
+            "source": [
+                "/home/patrick/.tmux/coffee/plugins/tmux-task-monitor/tmux_resource_monitor.tmux"
+            ],
+            "enabled": true,
+            "install_path": "/home/patrick/.tmux/coffee/plugins/tmux-task-monitor",
+            "skip_auto_update": false,
+            "git": {
+                "repo": "YlanAllouche/tmux-task-monitor",
+                "tag": null,
+                "commit_hash": "e886288d848283a871fcc0777927e83f306a289b",
+                "last_pull": "2026-04-24 23:27:23.635580+00:00"
+            }
+        }
+    ]
+}

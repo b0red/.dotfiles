@@ -1,0 +1,12 @@
+/home/patrick	40
+/home/patrick	40
+/home/patrick/.config/tmux	40
+/home/patrick/.config/tmux	40
+/home/patrick	40
+/home/patrick/bin	40
+/home/patrick/bin	40
+/home/patrick/.tmux	40
+/home/patrick	40
+/home/patrick	40
+/home/patrick/bin	40
+/home/patrick/.tmux/coffee/plugins/tmux-menus/items/custom_items	10
