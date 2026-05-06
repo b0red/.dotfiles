@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 ### -+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-###                                             Created by RunMe.sh 2026-04-25 01:01:43
+###                                             Created by RunMe.sh 2026-05-05 23:40:36
 ###                                             Host: DESKTOP-JLMCRD0
 ###                                             User: patrick
 ###                                             Distro: ubuntu
@@ -26,6 +26,6 @@ if [ -f ~/.bashrc ]; then
 fi
 
 # shellcheck disable=SC1091
-source /home/patrick/.config/broot/launcher/bash/br
+source $HOME/.config/broot/launcher/bash/br
 
 . "$HOME/.cargo/env"

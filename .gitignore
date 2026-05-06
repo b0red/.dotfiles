@@ -1,4 +1,5 @@
 .bashrc.d/local_alias.bash
+.bashrc.d/extra_alias.bash
 
 #Ignore logs
 **/logs

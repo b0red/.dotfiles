@@ -45,8 +45,8 @@ add_file_header() {
         content_start_line=2
     fi
     
-    # Check if there's an old RunMe.sh header to skip
-    if grep -q "Created by RunMe.sh" "$target_file" 2>/dev/null; then
+    # Check if there's an old run_me_first.sh header to skip
+    if grep -q "Created by run_me_first.sh" "$target_file" 2>/dev/null; then
         log "Updating header in $(basename "$target_file")..." "info"
         
         # Read file line by line starting after shebang
@@ -89,7 +89,7 @@ add_file_header() {
         # Write new header
         cat << EOF
 ### -+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-###                                             Created by RunMe.sh $creation_date
+###                                             Created by run_me_first.sh $creation_date
 ###                                             Host: $hostname
 ###                                             User: ${USER:-$(whoami)}
 ###                                             Distro: $DISTRO
@@ -122,7 +122,7 @@ echo "========================================="
 cat > test1.sh << 'EOF'
 #!/usr/bin/env bash
 ### -+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-###                                             Created by RunMe.sh 2026-01-22 21:43:07
+###                                             Created by run_me_first.sh 2026-01-22 21:43:07
 ###                                             Host: DESKTOP-JLMCRD0
 ###                                             User: patrick
 ###                                             Distro: ubuntu
@@ -145,7 +145,7 @@ cat test1.sh
 echo ""
 
 echo "--- VERIFICATION ---"
-header_count=$(grep -c "Created by RunMe.sh" test1.sh)
+header_count=$(grep -c "Created by run_me_first.sh" test1.sh)
 echo "Number of headers: $header_count (should be 1)"
 shebang_line=$(head -n 1 test1.sh)
 echo "Line 1: $shebang_line (should be shebang)"
@@ -164,7 +164,7 @@ cat test1.sh
 echo ""
 
 echo "--- VERIFICATION ---"
-header_count=$(grep -c "Created by RunMe.sh" test1.sh)
+header_count=$(grep -c "Created by run_me_first.sh" test1.sh)
 echo "Number of headers: $header_count (should STILL be 1)"
 shebang_line=$(head -n 1 test1.sh)
 echo "Line 1: $shebang_line (should be shebang)"

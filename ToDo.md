@@ -19,7 +19,9 @@
 
 ### Install:
 
-curl -sSL https://raw.githubusercontent.com/Gu1llaum-3/sshm/main/install/unix.sh | bash sshm
+curl -sSL https://raw.githubusercontent.com/Gu1llaum-3/sshm/main/install/unix.sh | bash
+curl -LO https://github.com/ClementTsang/bottom/releases/download/0.12.3/bottom_0.12.3-1_amd64.deb
+sudo dpkg -i bottom_0.12.3-1_amd64.deb
 
 ### add alias as per os using $_myos ###
 case $_myos in

@@ -41,7 +41,7 @@ export SUDOCMD
 function set_package_aliases() {
     local DISTROBASE_LOCAL
     
-    # If DISTROBASE is already set externally (by RunMe.sh), use it directly
+    # If DISTROBASE is already set externally (by run_me_first.sh), use it directly
     if [[ -n "${DISTROBASE}" ]] && [[ "${DISTROBASE}" != "unknown" ]]; then
         DISTROBASE_LOCAL="$DISTROBASE"
         
@@ -431,7 +431,7 @@ function set_package_aliases() {
 # AUTO-INITIALIZATION
 # =================================================================================================
 # Auto-init ONLY in interactive shells
-# Scripts like RunMe.sh will call set_package_aliases() manually
+# Scripts like run_me_first.sh will call set_package_aliases() manually
 if [[ $- == *i* ]]; then
     set_package_aliases
 fi

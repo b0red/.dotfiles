@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # symlink.sh - Distro-specific profile symlink management
-# Called from RunMe.sh with distro information as arguments
+# Called from run_me_first.sh with distro information as arguments
 
 set -euo pipefail
 

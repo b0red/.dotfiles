@@ -70,8 +70,8 @@
 # =============================================================================
 # USER DIRECTORIES (from variables.bash - consolidated here)
 # =============================================================================
-[ -z "${DOTFILES_DIR:-}" ] && export DOTFILES_DIR="$HOME/dotfiles"
-[ -z "${DOTFILES_REPO:-}" ] && export DOTFILES_REPO="git@bitbucket.org:b0red/dotfiles.git"
+[ -z "${DOTFILES_DIR:-}" ] && export DOTFILES_DIR="$HOME/.dotfiles"
+[ -z "${DOTFILES_REPO:-}" ] && export DOTFILES_REPO="git@bitbucket.org:b0red/.dotfiles.git"
 [ -z "${CUSTOM_TMP:-}" ] && export CUSTOM_TMP="$HOME/tmp"
 [ -z "${LOG_DIR:-}" ] && export LOG_DIR="$HOME/log"
 

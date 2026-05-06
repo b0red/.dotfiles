@@ -308,7 +308,7 @@ alias tmx='tmux attach -t 0 2>/dev/null || tmux new-session'
 alias tmkill='tmux ls 2>/dev/null | grep : | cut -d: -f1 | xargs -r tmux kill-session -t'
 
 # Updates (dotfiles/bin)
-alias dotupdate='cd ~/dotfiles && git pull && source ~/.bashrc'
+alias dotupdate='cd ~/.dotfiles && git pull && source ~/.bashrc'
 alias binupdate='cd ~/bin && git pull origin master 2>/dev/null'
 
 # Youtube-dl (fixed path/args)
@@ -345,7 +345,7 @@ command -v fdfind >/dev/null 2>&1 && alias fd='fdfind'
 
 # btop/bottom/procs (modern top/ps)
 command -v btop >/dev/null 2>&1 && alias top='btop'
-command -v bottom >/dev/null 2>&1 && alias btm='bottom'
+command -v bottom >/dev/null 2>&1 && alias btm='bottom'  
 command -v procs >/dev/null 2>&1 && alias ps='procs'
 
 # ncdu (modern du)

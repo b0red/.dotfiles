@@ -6,7 +6,7 @@ echo "Shell interactive status: $-"
 echo ""
 
 # Test 1: Check file exists
-if [ -f ~/dotfiles/.bashrc.d/pkg_aliases.bash ]; then
+if [ -f ~/.dotfiles/.bashrc.d/pkg_aliases.bash ]; then
     echo "✓ File exists"
 else
     echo "✗ File NOT found"
@@ -16,17 +16,17 @@ fi
 # Test 2: Check first 20 lines
 echo ""
 echo "=== First 20 lines of file ==="
-head -20 ~/dotfiles/.bashrc.d/pkg_aliases.bash
+head -20 ~/.dotfiles/.bashrc.d/pkg_aliases.bash
 echo ""
 
 # Test 3: Look for guards
 echo "=== Checking for guards ==="
-grep -n "^\[\[.*\]\].*return" ~/dotfiles/.bashrc.d/pkg_aliases.bash || echo "No guards found"
+grep -n "^\[\[.*\]\].*return" ~/.dotfiles/.bashrc.d/pkg_aliases.bash || echo "No guards found"
 echo ""
 
 # Test 4: Source the file
 echo "=== Sourcing file ==="
-source ~/dotfiles/.bashrc.d/pkg_aliases.bash
+source ~/.dotfiles/.bashrc.d/pkg_aliases.bash
 echo "Source completed (exit code: $?)"
 echo ""
 
@@ -57,4 +57,4 @@ if declare -f set_package_aliases >/dev/null 2>&1; then
     fi
 else
     echo "✗ Cannot call set_package_aliases (not defined)"
-fi  
+fi

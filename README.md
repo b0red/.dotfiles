@@ -2,410 +2,464 @@
 
 A comprehensive, cross-platform dotfiles setup with modular bash configuration, visual loading feedback, universal package management, and automated installation.
 
+> **Migration note**: This repo is being moved from `~/dotfiles` (Bitbucket, current canonical) to `~/.dotfiles` at **https://github.com/b0red/.dotfiles** and merged with `~/.tmux` and `~/.vim`. Several files already reference `~/.dotfiles` (`.bashrc`, `aliases.bash`, `helpers/debug.sh`). The installer (`run_me_first.sh`) and `exports.bash` still reference the old `~/dotfiles` path — update those when completing the migration. See [Known Issues / Migration TODOs](#known-issues--migration-todos).
+
+---
+
 ## Features
 
-- 🔧 **Modular Configuration**: Split into logical files in `.bashrc.d/` with smart loading
-- 🎬 **Visual Loading Feedback**: See each file load with color-coded progress indicators
-- 📦 **Universal Package Management**: Unified `p_install`, `install`, `update`, `upgrade` commands across all distros
-- 🎨 **Smart Prompt**: Color-coded by privilege level (green for users, red for root)
-- 🎯 **Intelligent Backups**: Only backs up changed files, keeps pristine originals forever
-- 🗑️ **Automatic Cleanup**: Keeps only 3 most recent backup archives
-- 🔄 **Re-runnable**: Safe to run multiple times, skips unchanged files
-- 📝 **Comprehensive Logging**: Timestamped logs with color-coded output
-- 🚀 **One-Command Setup**: `./RunMe.sh` does everything
-- 💻 **Cross-Platform**: Supports Debian, Ubuntu, RHEL, Fedora, Arch, Gentoo, Alpine, Void, NixOS, FreeBSD, OpenBSD, macOS
-- 🐳 **Docker Integration**: Conditional loading - Docker shortcuts only appear when Docker is installed
-- 🔍 **Smart File Loading**: Core files load everywhere, interactive files only in interactive shells
+- **Modular Configuration**: Split into logical files in `.bashrc.d/` with smart loading
+- **Visual Loading Feedback**: See each file load with color-coded progress indicators
+- **Universal Package Management**: Unified `p_install`, `install`, `update`, `upgrade` commands across all distros
+- **Smart Prompt**: Color-coded by privilege level (green for users, red for root)
+- **Intelligent Backups**: Only backs up changed files, keeps pristine originals forever
+- **Automatic Cleanup**: Keeps only 3 most recent backup archives
+- **Re-runnable**: Safe to run multiple times, skips unchanged files
+- **Comprehensive Logging**: Timestamped logs with color-coded output
+- **One-Command Setup**: `./run_me_first.sh` does everything
+- **Cross-Platform**: Supports Debian, Ubuntu, RHEL, Fedora, Arch, Gentoo, Alpine, Void, FreeBSD, OpenBSD, macOS
+- **Docker Integration**: Conditional loading — Docker shortcuts only appear when Docker is installed
+- **Smart File Loading**: Core files load everywhere, interactive files only in interactive shells
+
+---
 
 ## Quick Start
 
 ```bash
 # Clone the repository
-cd ~
-git clone git@bitbucket.org:b0red/dotfiles.git ~/dotfiles
-cd dotfiles
+git clone git@bitbucket.org:b0red/dotfiles.git ~/.dotfiles
+cd ~/.dotfiles
 
 # Run the installer
-./RunMe.sh
+./run_me_first.sh
 ```
 
 The script will:
 1. Detect your OS and distribution
-2. Backup existing dotfiles to `~/dotfiles/oldfiles/` (only if changed)
+2. Backup existing dotfiles to `~/.dotfiles/oldfiles/` (only if changed)
 3. Create symlinks from `~/.bashrc`, `~/.profile`, etc. to repo files
 4. Load package manager functions for your distro
 5. Install essential applications from `.install_apps.inc`
 6. Update git submodules
-7. Clone additional repos (.tmux, .vim, tpm)
+7. Clone additional repos (`.tmux`, `.vim`, `tpm`)
 8. Create archived backups (tar.gz)
 9. Clean up old archives (keeps 3 most recent)
-10. Log everything to `~/dotfiles/logs/install-YYYY-MM-DD_HH-MM-SS.log`
+10. Log everything to `~/.dotfiles/logs/install-YYYY-MM-DD_HH-MM-SS.log`
 
-## Visual Loading System
-
-When you reload your shell, you'll see each file loading with visual feedback:
-
-```bash
-reload
-
-# Output:
-✓ Loading: exports.bash
-✓ Loading: env.bash
-✓ Loading: functions.bash
-✓ Loading: pkg_aliases.bash
-✓ Loading: git.bash
-✓ Loading: docker.bash      # Only if Docker installed
-✓ Loading: aliases.bash
-✅ All dotfiles loaded
-```
-
-**Configuration:**
-- Adjust loading delay: Edit `BASHRC_LOAD_DELAY=1` in `~/.bashrc` (default: 1 second)
-- Files show in upper-left corner with cursor positioning
-- Green ✓ for success, Red ✗ for errors
-- Screen clears before and after loading for clean display
-
-## Directory Structure
-
-```
-~/dotfiles/
-├── .bashrc                 # Main bash configuration (with smart recursion guard)
-├── .bash_profile           # Login shell config
-├── .profile                # POSIX shell config
-├── .inputrc                # Readline configuration
-├── .bashrc.d/              # Modular bash configs
-│   ├── Core Files (load everywhere - no guards):
-│   │   ├── exports.bash        # Environment variables
-│   │   ├── env.bash            # Shell options & settings
-│   │   ├── functions.bash      # Utility functions
-│   │   └── pkg_aliases.bash    # Package manager abstraction
-│   │
-│   └── Interactive Files (interactive shells only - with guards):
-│       ├── aliases.bash        # Command aliases
-│       ├── git.bash            # Git shortcuts (50+ aliases)
-│       ├── docker.bash         # Docker shortcuts (conditional)
-│       ├── colorcodes.bash     # Color definitions
-│       ├── variables.bash      # Custom variables
-│       ├── profile.bash        # Login shell settings
-│       └── logout.bash         # Exit handlers
-│
-├── .profile.d/             # POSIX shell modules
-│   ├── browser.sh
-│   ├── pager.sh
-│   └── timezone.sh
-├── .install_apps.inc       # List of applications to install
-├── oldfiles/               # Backup directory (pristine originals - never deleted)
-├── logs/                   # Installation logs
-│   └── install-*.log
-├── backup-*.tar.gz         # Archive backups (auto-culled to 3 most recent)
-├── RunMe.sh                # Installation script
-├── diagnose-dotfiles.sh    # Diagnostic tool
-└── README.md               # This file
-```
-
-## File Loading Architecture
-
-### Core Files (No Guards - Load Everywhere)
-These files load in **both interactive and non-interactive contexts** (scripts, RunMe.sh, etc.):
-
-- **exports.bash** - Environment variables, PATH setup
-- **env.bash** - Shell options (shopt), history configuration
-- **functions.bash** - Utility functions available everywhere
-- **pkg_aliases.bash** - Package management functions (`p_*` functions)
-
-**Why no guards?** Scripts need these core features to work properly.
-
-### Interactive Files (With Guards - Interactive Only)
-These files only load in **interactive shells** (your terminal):
-
-- **aliases.bash** - User convenience aliases
-- **git.bash** - Git workflow shortcuts
-- **docker.bash** - Docker shortcuts (only loads if Docker installed)
-- **colorcodes.bash** - Color code definitions
-- **variables.bash** - Custom user variables
-- **profile.bash** - Login shell settings
-- **logout.bash** - Session cleanup handlers
-
-**Why guards?** Aliases don't work in scripts anyway, and these are user convenience features.
-
-### Conditional Loading: Docker Integration
-
-The `docker.bash` file uses **two-stage loading**:
-
-1. **First check**: Is Docker installed? (If no, skip entirely)
-2. **Second check**: Is shell interactive? (If no, skip)
-
-This means:
-- ✅ Docker installed + Interactive shell = Docker shortcuts available
-- ❌ Docker not installed = No Docker shortcuts, no clutter
-- ❌ Non-interactive script = Docker shortcuts don't load
+---
 
 ## Installation Options
 
 ```bash
-./RunMe.sh                  # Normal installation
-./RunMe.sh --help           # Show help message
-./RunMe.sh --version        # Show version
-./RunMe.sh --revert         # Revert changes (restore backups)
-./RunMe.sh --debug          # Enable debug mode
-./RunMe.sh --trace          # Enable trace mode (set -x)
-DEBUG=1 ./RunMe.sh          # Debug with environment variable
-TRACE_DEBUG=1 ./RunMe.sh    # Trace with environment variable
+./run_me_first.sh                   # Normal installation
+./run_me_first.sh --help            # Show help message
+./run_me_first.sh --version         # Show version (v15.6.0)
+./run_me_first.sh --revert          # Revert changes (restore backups)
+./run_me_first.sh --debug           # Enable debug mode
+./run_me_first.sh --trace           # Enable trace mode (set -x)
+DEBUG=1 ./run_me_first.sh           # Debug with environment variable
+TRACE_DEBUG=1 ./run_me_first.sh     # Trace with environment variable
 ```
 
-## Package Manager Commands
+> **Note:** `-h`, `-?`, `--dry-run`, and `-d` short flags are not yet implemented. See [Known Issues / Migration TODOs](#known-issues--migration-todos).
 
-After installation, these commands work across **all supported distros**:
+---
 
-### Function-Based (Work Everywhere)
-Use these in scripts, RunMe.sh, and interactive shells:
+## Files Modified by Installer
 
-```bash
-p_install <pkg>      # Install package(s)
-p_remove <pkg>       # Remove package(s)
-p_update             # Refresh package lists
-p_upgrade            # Install all updates
-p_search <query>     # Search for packages
-p_clean              # Remove orphans & cache
-p_info <pkg>         # Show package details
+The installer creates these symlinks in your home directory. Your originals are backed up to `~/.dotfiles/oldfiles/` with timestamps before any change is made.
+
+| Symlink | Points to |
+|---------|-----------|
+| `~/.bashrc` | `~/.dotfiles/.bashrc` |
+| `~/.bash_profile` | `~/.dotfiles/.bash_profile` |
+| `~/.profile` | `~/.dotfiles/.profile` |
+| `~/.inputrc` | `~/.dotfiles/.inputrc` |
+| `~/.tmux.conf` | `~/.tmux/.tmux.conf` |
+| `~/.vimrc` | `~/.vim/.vimrc` |
+
+---
+
+## Script Output Key
+
+Understanding the installer's output at a glance:
+
+| Symbol | Color | Meaning |
+|--------|-------|---------|
+| `✔` | Green | Success — file backed up, symlink created, package installed |
+| `⚠️` | Yellow | Warning — skipped unchanged file, missing optional dependency |
+| `✗` | Red | Error — failed operation, missing required file, permission issue |
+| `⏭️` | — | Skipped — file unchanged from repo version, no backup needed |
+
+Example install run:
 ```
+=========================================
+Starting Dotfiles Installation
+Version: v15.6.0 (2026-05-06)
+=========================================
+🎨 Color output enabled
+Detected: OS=linux, Distro=ubuntu, Base=debian, Kernel=6.6.87, Arch=x86_64
+✅ Package functions configured for debian
+✔ Loaded 25 applications from .install_apps.inc
 
-### Alias-Based (Interactive Only)
-Convenient shortcuts for interactive use:
+🔐 Checking sudo access...
+✔ Sudo access verified
 
-| Command | Description | Example |
-|---------|-------------|---------|
-| `install <pkg>` | Install package(s) | `install vim htop` |
-| `remove <pkg>` | Remove package(s) | `remove vim` |
-| `uninstall <pkg>` | Alias for remove | `uninstall vim` |
-| `update` | Refresh package lists | `update` |
-| `upgrade` | Install all updates | `upgrade` |
-| `search <query>` | Search for packages | `search python` |
-| `clean` | Remove orphans & cache | `clean` |
-| `info <pkg>` | Show package details | `info vim` |
-| `version` | Show system info | `version` |
-
-**Note:** In scripts (like RunMe.sh), use `p_install` instead of `install` to avoid conflicts with `/usr/bin/install`.
-
-### Supported Distributions
-
-- **Debian/Ubuntu**: apt-get
-- **RHEL/Fedora/CentOS/AlmaLinux**: dnf/yum
-- **Arch/Manjaro**: pacman
-- **Gentoo**: emerge
-- **Alpine**: apk
-- **Void Linux**: xbps
-- **NixOS**: nix-env
-- **FreeBSD**: pkg
-- **OpenBSD**: pkg_add
-- **macOS**: Homebrew (if installed)
-
-## Daily Usage
-
-### Installing Applications
-
-Applications are defined in `.install_apps.inc`:
-
-```bash
-# Edit the file to add/remove apps
-vim ~/dotfiles/.install_apps.inc
-
-# Add one app per line, comments allowed
-curl
-htop
-vim
-# tmux  <- commented out, won't install
-```
-
-Then run `./RunMe.sh` again - it will only install missing packages.
-
-### Package Management Examples
-
-```bash
-# Install packages (works on any distro)
-install neofetch htop           # Interactive shell
-p_install neofetch htop         # Scripts or interactive
-
-# Update system
-update && upgrade
-
-# Search for packages
-search python
-
-# Clean up
-clean
-
-# Show system info
-version
-```
-
-### Reloading Configuration
-
-The `.bashrc` includes a smart recursion guard that allows re-sourcing up to 3 times:
-
-```bash
-# Quick reload (with visual feedback)
-reload
-
-# Expected output:
-# ✓ Loading: exports.bash
-# ✓ Loading: env.bash
-# ... (all files load)
-# ✅ All dotfiles loaded
-
-# Or manually
-source ~/.bashrc
-
-# Or restart your shell
-exec bash
-```
-
-### Docker Commands (If Docker Installed)
-
-When Docker is installed, you get 40+ shortcuts automatically:
-
-```bash
-dps              # docker ps
-dcp              # docker compose
-dex <container>  # docker exec -it <container> /bin/sh
-dkln <container> # Follow logs for container
-dclean           # Clean dangling images/volumes
-```
-
-If Docker is **not** installed, these aliases simply don't exist - keeping your shell clean.
-
-## Smart Backup System
-
-### How Backups Work
-
-1. **First Run**: Creates pristine originals in `oldfiles/`
-   - Files: `.bashrc.bak-2026-01-20_10-00-00`
-   - These are **NEVER** deleted - they're your restoration point
-
-2. **Subsequent Runs**: 
-   - Compares files byte-by-byte with repo versions
-   - Only backs up if changed (skips unnecessary backups)
-   - Creates tar.gz archive: `backup-HOSTNAME-DATE.tar.gz`
-
-3. **Automatic Cleanup**:
-   - Keeps pristine originals forever
-   - Keeps only 3 most recent tar.gz archives
-   - Deletes older archives automatically
-
-### Backup Output Example
-
-```bash
 Backing up existing dotfiles...
-⭐️  Skipping /home/user/.bashrc (unchanged from repo)
-✓ Backed up: /home/user/.profile
-Backed up 1 files to /home/user/dotfiles/oldfiles/
-Skipped 1 unchanged files
-
-✓ Archived backups: backup-DESKTOP-JLMCRD0-2026-01-20_10-30-00.tar.gz
-
-Cleaning up old backup archives (keeping 3 most recent)...
-🗑️  Deleted old archive: backup-DESKTOP-JLMCRD0-2026-01-10_10-00-00.tar.gz
-✓ Cleaned up 1 old archive(s), kept 3 most recent
+⏭️  Skipping /home/user/.bashrc (unchanged from repo)
+✔ Backed up: /home/user/.profile
+Backed up 1 files to /home/user/.dotfiles/oldfiles/
 ```
+
+---
+
+## Visual Loading System
+
+When you open a new shell or run `reload`, each config file loads with visual feedback:
+
+```
+✔ Loading: exports.bash
+✔ Loading: env.bash
+✔ Loading: functions.bash
+✔ Loading: pkg_aliases.bash
+✔ Loading: git.bash
+✔ Loading: docker.bash      # Only if Docker is installed
+✔ Loading: aliases.bash
+✅ All dotfiles loaded
+```
+
+- Files appear in the upper-left corner with cursor positioning
+- Green `✔` for success, Red `✗` for errors
+- Screen clears before and after loading for a clean display
+
+### Adjusting Loading Speed
+
+Edit `BASHRC_LOAD_DELAY` in `~/.bashrc`:
+
+```bash
+BASHRC_LOAD_DELAY=.2     # Default (fast)
+BASHRC_LOAD_DELAY=0.5    # More visible
+BASHRC_LOAD_DELAY=1      # One second per file
+BASHRC_LOAD_DELAY=2      # Slowest
+```
+
+---
 
 ## Color-Coded Prompt
 
 The prompt automatically adjusts based on privilege level:
 
-- **Green prompt**: Normal user
-  ```
-  user@hostname:~/path$ 
-  ```
+- **Green** — Normal user: `user@hostname:~/path$`
+- **Red** — Root/privileged: `root@hostname:~/path#`
 
-- **Red prompt**: Root/privileged user
-  ```
-  root@hostname:~/path# 
-  ```
+Checks EUID, USER, and LOGNAME to determine privilege.
 
-The prompt checks multiple conditions:
-- EUID = 0
-- USER/LOGNAME = root
-- Optional: sudo/wheel/admin group membership (commented by default)
+---
 
-## Diagnostic Tool
+## Directory Structure
 
-Check your dotfiles configuration status:
-
-```bash
-cd ~/dotfiles
-bash diagnose-dotfiles.sh
-
-# Output shows:
-# - Which files exist
-# - Guard status (which files have interactive guards)
-# - Docker check status
-# - Current shell state
-# - Package functions availability
-# - Common issues detected
+```
+~/.dotfiles/
+├── .bashrc                 # Main bash config (tmux guard, recursion guard, SSH agent)
+├── .bash_profile           # Login shell config (sources .bashrc, sets BASHRC_SKIP_IN_TMUX)
+├── .profile                # POSIX shell config (loads .bashrc.d and .profile.d)
+├── .bashrc.d/              # Modular bash configs
+│   ├── Core Files (load everywhere — no interactive guard):
+│   │   ├── exports.bash        # Environment variables, PATH, locale, history
+│   │   ├── env.bash            # Shell options (shopt), settings
+│   │   ├── functions.bash      # Utility functions
+│   │   └── pkg_aliases.bash    # Cross-distro package manager abstraction
+│   │
+│   └── Interactive Files (guarded — interactive shells only):
+│       ├── aliases.bash        # Command aliases + tmux behaviour controls
+│       ├── extra_alias.bash    # Local aliases (gitignored — safe for customization)
+│       ├── git.bash            # Git shortcuts (50+ aliases)
+│       ├── docker.bash         # Docker shortcuts (conditional on Docker being installed)
+│       ├── colorcodes.bash     # ANSI color code definitions
+│       ├── variables.bash      # Custom variables
+│       ├── profile.bash        # Login shell settings
+│       └── logout.bash         # Exit handlers
+│
+├── .profile.d/             # POSIX shell modules (sourced by .bashrc and .profile)
+│   ├── browser.sh
+│   ├── pager.sh
+│   ├── timezone.sh
+│   └── welcome.sh          # Optional: fortune, rem, verse (if installed)
+│
+├── helpers/
+│   └── debug.sh            # Standalone test script for pkg_aliases.bash (run manually)
+│
+├── .install_apps.inc       # Application list for run_me_first.sh
+├── .gitignore              # Excludes: extra_alias.bash, local_alias.bash, logs, oldfiles
+├── symlink.sh              # Distro-specific symlink helper (called by run_me_first.sh)
+├── system_detector.sh      # Standalone POSIX system info reporter
+├── run_me_first.sh         # Main installer script (v15.6.0)
+├── oldfiles/               # Backup directory (pristine originals + archived old scripts)
+├── logs/                   # Installation logs (gitignored)
+│   └── install-*.log
+└── README.md               # This file
 ```
 
-## Reverting Changes
+---
 
-### Automatic Revert
+## File Loading Architecture
+
+### Core Files (No Guards — Load Everywhere)
+
+These load in **both interactive and non-interactive contexts** (scripts, `run_me_first.sh`, cron):
+
+| File | Purpose |
+|------|---------|
+| `exports.bash` | Environment variables, PATH, locale, history settings |
+| `env.bash` | Shell options (`shopt`), completion |
+| `functions.bash` | Utility functions available everywhere |
+| `pkg_aliases.bash` | Package management `p_*` functions |
+
+**Why no guards?** `run_me_first.sh` and other scripts need `p_install`, env vars, and utility functions to operate correctly.
+
+### Interactive Files (With Guards — Interactive Only)
+
+These only load when `[[ $- == *i* ]]`:
+
+| File | Purpose |
+|------|---------|
+| `aliases.bash` | Convenience aliases, tmux behaviour toggles |
+| `extra_alias.bash` | Your local aliases (gitignored) |
+| `git.bash` | Git workflow shortcuts |
+| `docker.bash` | Docker shortcuts (also checks if Docker is installed) |
+| `colorcodes.bash` | ANSI color definitions |
+| `variables.bash` | Custom variables |
+| `profile.bash` | Login shell settings |
+| `logout.bash` | Session cleanup |
+
+**Why guards?** Aliases don't work in scripts. Convenience features add overhead in non-interactive contexts and can cause unexpected behaviour in automation.
+
+### Conditional Loading: Docker
+
+`docker.bash` uses two-stage loading:
+1. Is Docker installed? If no — skip entirely
+2. Is the shell interactive? If no — skip
+
+Result: Docker shortcuts appear only when Docker is present and you're in an interactive session. No clutter otherwise.
+
+### Function Export Pattern
 
 ```bash
-./RunMe.sh --revert
+# pkg_aliases.bash — works everywhere
+p_install() { sudo apt-get install -y "$@"; }
+export -f p_install
+
+# Interactive alias (via ENABLE_SHORT_ALIASES=1)
+alias install='p_install'
 ```
 
-This will:
-- Restore original dotfiles from `oldfiles/` backups
-- Remove all symlinks created by the installer
-- Show summary of restored files and removed symlinks
-- Leave installed packages in place
+- `p_install` works in scripts ✔
+- `p_install` works interactively ✔
+- `install` works interactively ✔
+- `install` does not shadow `/usr/bin/install` in scripts ✔
 
-### Manual Revert
+---
 
-If `--revert` doesn't work or you need more control:
+## Package Manager Commands
 
-1. **Restore backups manually:**
-   ```bash
-   cd ~/dotfiles/oldfiles/
-   
-   # Find your pristine backups (earliest .bak-* files)
-   ls -lt *.bak-* | tail -n 4
-   
-   # Restore them
-   for f in .bashrc.bak-* .profile.bak-* .bash_profile.bak-* .inputrc.bak-*; do
-       [ -f "$f" ] || continue
-       # Take the earliest backup (pristine original)
-       original=$(echo "$f" | sed 's/\.bak-.*$//')
-       cp "$f" ~/"$original"
-       echo "Restored: $original"
-   done
-   ```
+### Function-Based (Work Everywhere)
 
-2. **Remove symlinks:**
-   ```bash
-   cd ~
-   rm -f .bashrc .bash_profile .profile .inputrc
-   ```
+Use these in scripts and interactive shells:
 
-3. **Delete dotfiles repo** (optional):
-   ```bash
-   rm -rf ~/dotfiles
-   ```
+```bash
+p_install <pkg>      # Install package(s)
+p_remove <pkg>       # Remove package(s)
+p_uninstall <pkg>    # Alias for remove
+p_purge <pkg>        # Purge including config (Debian)
+p_update             # Refresh package lists
+p_upgrade            # Install all updates
+p_dist_upgrade       # Distribution upgrade (Debian/RHEL)
+p_search <query>     # Search for packages
+p_clean              # Remove orphans & cache
+p_info <pkg>         # Show package details
+p_list [<pkg>]       # List packages
+p_installed          # Show all installed packages
+p_which <file>       # Find which package owns a file
+```
 
-4. **Restart shell:**
-   ```bash
-   exec bash
-   ```
+> **In scripts: always use `p_install`, not `install`.** The `install` alias is interactive-only and conflicts with `/usr/bin/install` in scripts.
+
+### Alias-Based (Interactive Only)
+
+Enabled when `ENABLE_SHORT_ALIASES=1` in `pkg_aliases.bash`:
+
+| Command | Description |
+|---------|-------------|
+| `install <pkg>` | Install package(s) |
+| `remove <pkg>` | Remove package(s) |
+| `uninstall <pkg>` | Alias for remove |
+| `update` | Refresh package lists |
+| `upgrade` | Install all updates |
+| `search <query>` | Search for packages |
+| `clean` | Remove orphans & cache |
+| `info <pkg>` | Show package details |
+| `version` | Show system info (fastfetch/neofetch/onefetch) |
+
+### Supported Distributions
+
+| Family | Distros | Package Manager |
+|--------|---------|-----------------|
+| Debian | Ubuntu, Debian, Mint, Pop!_OS, Kali | apt-get |
+| RHEL | RHEL, CentOS, Fedora, Rocky, AlmaLinux | dnf/yum |
+| Arch | Arch, Manjaro, EndeavourOS, Garuda | pacman |
+| SUSE | openSUSE, SLES | zypper |
+| Gentoo | Gentoo | emerge |
+| Alpine | Alpine Linux | apk |
+| Void | Void Linux | xbps |
+| BSD | FreeBSD | pkg |
+| BSD | OpenBSD | pkg_add |
+| macOS | macOS | Homebrew |
+
+---
+
+## System Detector
+
+`system_detector.sh` is a standalone POSIX-compatible utility — it does not require bash and works on minimal systems:
+
+```bash
+./system_detector.sh            # Show system info + shell capabilities
+./system_detector.sh --debug    # Enable set -x tracing
+./system_detector.sh --version
+```
+
+Reports: OS, distro, kernel, arch, environment (WSL / native / Cygwin), login shell, execution shell, and shell capabilities (aliases, functions, arrays, associative arrays).
+
+> **Note:** This script intentionally uses `#!/bin/sh` for maximum portability. This is a documented exception to the bash-only guideline.
+
+---
+
+## Daily Usage
+
+### Reloading Configuration
+
+The `.bashrc` includes a recursion guard (up to 3 re-sources per session) and a tmux guard:
+
+```bash
+reload              # Force reload, bypass tmux guard, clear screen
+src                 # Force reload without clearing screen
+srcquiet            # Silent reload
+```
+
+### TMUX Behaviour Control
+
+Set `BASHRC_SKIP_IN_TMUX` in `~/.bash_profile` to control whether `.bashrc` loads in new tmux panes:
+
+| Value | Behaviour |
+|-------|-----------|
+| `"yes"` | Skip in tmux panes — load only on terminal start |
+| `"no"` | Always load in tmux panes (current default) |
+| `"ask"` | Prompt on first tmux pane |
+
+```bash
+export BASHRC_SKIP_IN_TMUX="yes"   # Persist in ~/.bash_profile
+bashrc-toggle-tmux                  # Interactive toggle alias
+bashrc-reset-choice                 # Reset ask-mode decision
+```
+
+### Package Management
+
+```bash
+install neofetch htop     # Interactive shell
+p_install neofetch htop   # Scripts or interactive
+
+update && upgrade         # Update system
+search python             # Search packages
+clean                     # Clean orphans/cache
+version                   # Show system info
+```
+
+### Docker Commands (If Docker Installed)
+
+```bash
+dps              # docker ps
+dcp              # docker compose
+dex <container>  # docker exec -it <container> /bin/sh
+dkln <container> # Follow container logs
+dclean           # Clean dangling images/volumes
+```
+
+### Useful Functions
+
+```bash
+up [n|name]        # Navigate up n levels or to named parent directory
+mcd <dir>          # mkdir + cd in one step
+ff <name>          # Find file by exact name recursively
+fif <text> [path]  # Find text in files (rg preferred, grep fallback)
+fstr <pattern>     # Find and highlight pattern in files
+extract <archive>  # Extract any archive format (zip, tar, gz, bz2, rar, 7z...)
+ii                 # Display detailed host info (IP, uptime, memory, disk)
+mydf <path>        # Pretty df output with visual usage bar
+ltree [path]       # Tree view with default ignores, paged through less
+functions          # List all defined function names
+functions -?       # List all functions with descriptions
+version            # Show system info via fastfetch / neofetch / onefetch
+sssh <host>        # SSH and auto-attach to tmux or screen session
+sshtmux <host>     # SSH and attach to named tmux session
+authme             # Copy SSH public key to remote server
+quickscan [host]   # Quick port scan of common ports (default: localhost)
+```
+
+---
+
+## Smart Backup System
+
+### How Backups Work
+
+1. **First Run** — Creates pristine originals in `oldfiles/`
+   - Example: `.bashrc.bak-2026-01-20_10-00-00`
+   - These are **never deleted** — they are your permanent restoration point
+
+2. **Subsequent Runs** — Compares files byte-by-byte with repo versions
+   - Only backs up if changed; skips unchanged files
+   - Creates a timestamped tar.gz archive: `backup-HOSTNAME-DATE.tar.gz`
+
+3. **Automatic Cleanup** — Keeps only 3 most recent tar.gz archives; deletes older ones
+
+### Backup Output Example
+
+```
+Backing up existing dotfiles...
+⏭️  Skipping /home/user/.bashrc (unchanged from repo)
+✔ Backed up: /home/user/.profile
+Backed up 1 files to /home/user/.dotfiles/oldfiles/
+
+✔ Archived backups: backup-DESKTOP-JLMCRD0-2026-05-06_10-30-00.tar.gz
+
+Cleaning up old backup archives (keeping 3 most recent)...
+🗑️  Deleted old archive: backup-DESKTOP-JLMCRD0-2026-01-10_10-00-00.tar.gz
+✔ Cleaned up 1 old archive(s), kept 3 most recent
+```
+
+---
 
 ## Customization
 
 ### Adding Your Own Aliases
 
-Edit or create `~/.bashrc.d/extra_alias.bash`:
+Edit `~/.bashrc.d/extra_alias.bash`. This file is listed in `.gitignore` — it will never be overwritten by `git pull` and is safe for machine-specific customizations:
 
 ```bash
-# My custom aliases
 alias mycommand='echo "Hello World"'
 alias ll='ls -lah'
 alias ..='cd ..'
+```
+
+> If `extra_alias.bash` doesn't exist yet, create it — it will be picked up automatically.
+
+### Adding Custom Functions
+
+Edit `~/.bashrc.d/functions.bash`. A `###` comment on the first line inside the function makes it appear in `functions -?`:
+
+```bash
+function my_function() {
+    ### Short description of what this does
+    echo "This is my function"
+}
 ```
 
 ### Adding Environment Variables
@@ -418,225 +472,68 @@ export PATH="$HOME/bin:$PATH"
 export EDITOR="vim"
 ```
 
-### Adding Custom Functions
+### Customizing the Application List
 
-Edit `~/.bashrc.d/functions.bash`:
-
-Adding the tree "`###`" under the function name with a description makes it show up when you run the `functions` command:
+Edit `.install_apps.inc` — one package per line, `#` for comments. Re-run `./run_me_first.sh` and it will only install missing packages:
 
 ```bash
-function my_function() {
-    ### Short informative description of what this does
-    echo "This is my function"
-    # Your code here
-}
-```
-
-Then run `functions` to see all available functions with descriptions, or `functions -?` for detailed help.
-
-### Modifying Package Manager Behavior
-
-Edit `~/.bashrc.d/pkg_aliases.bash` to customize package commands or add new distros.
-
-### Customizing Application List
-
-Edit `.install_apps.inc`:
-
-```bash
-# Core utilities
 curl
-wget
-git
-
-# Development tools
-vim
-tmux
 htop
-
-# Optional (comment out to skip)
-# docker
-# python3
-
-# One app per line, # for comments
+vim
+# nano    # commented out — skipped
 ```
 
-### Adjusting Visual Loading Speed
+### Modifying Package Manager Behaviour
 
-Edit `~/.bashrc`:
+Edit `~/.bashrc.d/pkg_aliases.bash` and add your distro to the `case "$DISTROBASE"` block:
 
 ```bash
-# Change this value (in seconds)
-BASHRC_LOAD_DELAY=1     # Default (1 second per file)
-BASHRC_LOAD_DELAY=0.5   # Faster
-BASHRC_LOAD_DELAY=0.2   # Very fast
-BASHRC_LOAD_DELAY=2     # Slower (more visible)
+yourdistro*)
+    p_install() { sudo your-pkg-manager install "$@"; }
+    p_remove()  { sudo your-pkg-manager remove "$@"; }
+    p_update()  { sudo your-pkg-manager update; }
+    p_upgrade() { sudo your-pkg-manager upgrade; }
+    p_search()  { your-pkg-manager search "$@"; }
+    p_clean()   { sudo your-pkg-manager autoremove; }
+    p_info()    { your-pkg-manager info "$@"; }
+    ;;
 ```
 
-## Troubleshooting
-
-### Colors Not Showing
-
-Check if your terminal supports colors:
-```bash
-echo -e "\033[0;32mGreen\033[0m \033[0;31mRed\033[0m"
-```
-
-If no colors appear, your terminal might not support ANSI colors. Try a different terminal emulator.
-
-### Package Functions Not Working in Scripts
-
-Make sure you're using `p_install` not `install` in scripts:
-
-```bash
-# ❌ Wrong (in scripts)
-install htop
-
-# ✅ Correct (in scripts)
-p_install htop
-
-# ✅ Both work (in interactive shell)
-install htop
-p_install htop
-```
-
-### Docker Shortcuts Not Appearing
-
-Docker shortcuts only load if Docker is installed. Check:
-
-```bash
-# Is Docker installed?
-command -v docker
-
-# If not installed:
-p_install docker.io  # Ubuntu/Debian
-p_install docker     # Other distros
-
-# Then reload
-reload
-```
-
-### Aliases Not Working
-
-```bash
-# Check if pkg_aliases.bash is sourced
-declare -f p_install
-
-# If "not found", manually source:
-source ~/dotfiles/.bashrc.d/pkg_aliases.bash
-
-# Then reload bashrc
-reload
-```
-
-### "Recursion Guard" Preventing Re-source
-
-The `.bashrc` allows re-sourcing up to 3 times per session. If you hit the limit:
-
-```bash
-# Reset the counter
-BASHRC_SOURCED=0
-source ~/.bashrc
-
-# Or use the reload alias (does this automatically)
-reload
-```
-
-### Symlinks Not Created
-
-```bash
-# Check if files exist in repo
-ls -la ~/dotfiles/.bashrc
-
-# Check if symlink exists
-ls -la ~/.bashrc
-
-# Manually create symlink if needed
-ln -sf ~/dotfiles/.bashrc ~/.bashrc
-```
-
-### Package Installation Fails
-
-1. Check your internet connection
-2. Update package lists manually:
-   ```bash
-   sudo apt-get update  # Debian/Ubuntu
-   sudo dnf check-update  # Fedora/RHEL
-   ```
-3. Check the log file:
-   ```bash
-   tail -f ~/dotfiles/logs/install-*.log
-   ```
-4. Try installing packages manually:
-   ```bash
-   sudo apt-get install -y curl htop vim
-   ```
-
-### Visual Loading Not Showing
-
-Make sure you're in an **interactive** shell:
-
-```bash
-# Check if interactive
-echo $-
-# Should contain 'i' for interactive
-
-# Loading feedback only shows in interactive mode
-# Scripts run non-interactively and don't show feedback
-```
-
-### "Unknown OS" Error
-
-Your distribution isn't detected. Edit `pkg_aliases.bash` and add your distro to the case statement:
-
-```bash
-case "$DISTROBASE" in
-    yourdistro*)
-        p_install() { sudo your-pkg-manager install "$@"; }
-        p_remove() { sudo your-pkg-manager remove "$@"; }
-        p_update() { sudo your-pkg-manager update; }
-        p_upgrade() { sudo your-pkg-manager upgrade; }
-        p_search() { your-pkg-manager search "$@"; }
-        p_clean() { sudo your-pkg-manager autoremove; }
-        p_info() { your-pkg-manager info "$@"; }
-        ;;
-```
-
-### Files Loading Twice
-
-Run the diagnostic:
-```bash
-bash ~/dotfiles/diagnose-dotfiles.sh
-```
-
-Check for duplicate loading loops in `.bashrc`. Should only have 3 loading sections.
+---
 
 ## Advanced Configuration
 
 ### WSL-Specific Setup
 
-The installer automatically configures `.bash_profile` to load `.bashrc` for WSL compatibility. No additional setup needed.
+The installer automatically configures `.bash_profile` to source `.bashrc` for WSL compatibility. The `BASHRC_SKIP_IN_TMUX` variable is also set there. No additional setup needed.
 
 ### Tmux Integration
 
-The script automatically:
-- Clones tmux configuration from Bitbucket
-- Clones Tmux Plugin Manager (TPM)
-- Creates symlink for `.tmux.conf`
+The installer automatically:
+- Clones tmux configuration from Bitbucket → `~/.tmux`
+- Clones Tmux Plugin Manager → `~/.tmux/plugins/tpm`
+- Creates symlink `~/.tmux.conf → ~/.tmux/.tmux.conf`
 
-Inside tmux:
+Install plugins inside tmux:
 ```bash
-# Press: prefix + I (capital i) to install plugins
-# Default prefix is Ctrl+b
+# Press: prefix + I  (capital i — default prefix is Ctrl+b)
+```
+
+Update tmux config manually:
+```bash
+git -C ~/.tmux pull
+tmux source ~/.tmux.conf
 ```
 
 ### SSH Key Management
 
-The `.bashrc` includes keychain integration for SSH keys. Install keychain:
+The `.bashrc` runs keychain or falls back to `ssh-agent` in interactive non-tmux shells (avoids agent conflicts inside tmux). Install keychain for the preferred path:
+
 ```bash
-install keychain
+p_install keychain
 ```
 
-The script automatically detects and loads SSH keys:
+Keys loaded in preference order:
 - `~/.ssh/id_ed25519` (preferred)
 - `~/.ssh/id_rsa`
 - `~/.ssh/id_ecdsa`
@@ -644,214 +541,285 @@ The script automatically detects and loads SSH keys:
 
 ### Vim Setup
 
-The script clones your vim configuration:
+The installer clones your vim configuration from Bitbucket:
+- Cloned to `~/.vim`
+- Symlink: `~/.vimrc → ~/.vim/.vimrc`
+
+### Broot Integration
+
+If `broot` is installed, `.bashrc` sources its launcher at runtime via `$HOME/.config/broot/launcher/bash/br`. Note: `.bash_profile` currently has this path hardcoded — see [Known Issues / Migration TODOs](#known-issues--migration-todos).
+
+---
+
+## Reverting Changes
+
+### Automatic Revert
+
 ```bash
-# Automatically cloned to ~/.vim
-# Symlinks ~/.vimrc to ~/.vim/.vimrc
+./run_me_first.sh --revert
 ```
+
+Restores original dotfiles from `oldfiles/` backups, removes all created symlinks, and shows a summary. Installed packages are left in place.
+
+### Manual Revert
+
+```bash
+# 1. Restore pristine backups
+cd ~/.dotfiles/oldfiles/
+for f in .bashrc.bak-* .profile.bak-* .bash_profile.bak-* .inputrc.bak-*; do
+    [ -f "$f" ] || continue
+    original=$(echo "$f" | sed 's/\.bak-.*$//')
+    cp "$f" ~/"$original"
+    echo "Restored: $original"
+done
+
+# 2. Remove symlinks
+rm -f ~/.bashrc ~/.bash_profile ~/.profile ~/.inputrc
+
+# 3. Restart shell
+exec bash
+```
+
+---
 
 ## Maintenance
 
 ### Updating Dotfiles
 
 ```bash
-cd ~/dotfiles
+cd ~/.dotfiles
 git pull origin main
-reload  # Reload configuration with visual feedback
+reload
 ```
 
 ### Backing Up Current Config
 
 ```bash
-cd ~/dotfiles
-git add -A
-git commit -m "Update configuration"
+cd ~/.dotfiles
+git add .bashrc .bash_profile .profile .bashrc.d/ .profile.d/
+git commit -m "chore: update configuration"
 git push
 ```
 
-### Cleaning Up Old Backups
+### Cleaning Up Old Archives
 
-The script automatically:
-- Keeps pristine originals in `oldfiles/` **forever**
-- Keeps only 3 most recent `backup-*.tar.gz` archives
+Archives are automatically culled to 3 most recent. To clean manually:
 
-To manually clean archives:
 ```bash
-# Remove all but 3 newest archives
-cd ~/dotfiles
+cd ~/.dotfiles
 ls -t backup-*.tar.gz | tail -n +4 | xargs rm -f
 ```
 
 ### Viewing Logs
 
 ```bash
-# View latest log
-tail -f ~/dotfiles/logs/install-*.log
-
-# View all logs
-ls -lth ~/dotfiles/logs/
-
-# Clean old logs (older than 30 days)
-find ~/dotfiles/logs -name "*.log" -mtime +30 -delete
+tail -f ~/.dotfiles/logs/install-*.log     # Follow latest log
+ls -lth ~/.dotfiles/logs/                  # List all logs
+find ~/.dotfiles/logs -name "*.log" -mtime +30 -delete   # Clean logs > 30 days
 ```
 
-## Script Output
+---
 
-### Success Messages (Green ✓)
-- File backups
-- Symlink creation
-- Package installations
-- Archive creation
-- File loading progress
+## Troubleshooting
 
-### Info/Warning Messages (Yellow ⚠️)
-- Skipped unchanged files
-- Missing optional files
-- Warnings about system state
+### Colors Not Showing
 
-### Error Messages (Red ✗)
-- Failed operations
-- Missing required files
-- Permission issues
-- Failed file loads
-
-Example output:
 ```bash
-=========================================
-Starting Dotfiles Installation
-Version: v15.1.0 (2026-01-20)
-=========================================
-🎨 Color output enabled
-Detected: OS=linux, Distro=ubuntu, Base=ubuntu, Kernel=5.15.0, Arch=x86_64
-✅ Package functions configured for ubuntu
-✓ Loaded 15 applications from .install_apps.inc
-
-🔓 Checking sudo access (you may be prompted for password)...
-✓ Sudo access verified
-
-Backing up existing dotfiles...
-⭐️  Skipping /home/user/.bashrc (unchanged from repo)
-✓ Backed up: /home/user/.profile
-Backed up 1 files to /home/user/dotfiles/oldfiles/
-Skipped 1 unchanged files
+echo -e "\033[0;32mGreen\033[0m \033[0;31mRed\033[0m"
 ```
 
-## Files Modified by Installer
+If no colors appear, your terminal doesn't support ANSI. Try a different terminal emulator.
 
-The installer creates/modifies these files in your home directory:
+### Package Functions Not Working in Scripts
 
-- `~/.bashrc` → symlink to `~/dotfiles/.bashrc`
-- `~/.bash_profile` → symlink to `~/dotfiles/.bash_profile`
-- `~/.profile` → symlink to `~/dotfiles/.profile`
-- `~/.inputrc` → symlink to `~/dotfiles/.inputrc`
-- `~/.tmux.conf` → symlink to `~/.tmux/.tmux.conf`
-- `~/.vimrc` → symlink to `~/.vim/.vimrc`
+In scripts, `install` is unavailable — use `p_install`:
 
-Original files are backed up to `~/dotfiles/oldfiles/` with timestamps.
+```bash
+p_install htop          # Correct in scripts
+install htop            # Interactive only
+```
+
+### Docker Shortcuts Not Appearing
+
+Docker shortcuts only load if Docker is installed:
+
+```bash
+command -v docker       # Is Docker installed?
+p_install docker.io     # Ubuntu/Debian
+p_install docker        # Other distros
+reload
+```
+
+### Aliases Not Working
+
+```bash
+declare -f p_install                            # Is pkg_aliases loaded?
+source ~/.dotfiles/.bashrc.d/pkg_aliases.bash   # Source manually if not
+reload
+```
+
+### Recursion Guard Preventing Re-source
+
+```bash
+BASHRC_SOURCED=0 source ~/.bashrc   # Reset counter manually
+reload                               # Or use reload (handles it automatically)
+```
+
+### Symlinks Not Created
+
+```bash
+ls -la ~/.dotfiles/.bashrc   # Confirm file exists in repo
+ls -la ~/.bashrc             # Confirm symlink exists at home
+ln -sf ~/.dotfiles/.bashrc ~/.bashrc   # Create manually if needed
+```
+
+### Package Installation Fails
+
+1. Check internet connection
+2. Update package lists: `sudo apt-get update` / `sudo dnf check-update`
+3. Check the log: `tail -f ~/.dotfiles/logs/install-*.log`
+4. Install manually: `sudo apt-get install -y curl htop vim`
+
+### Visual Loading Not Showing
+
+Loading feedback only appears in interactive shells:
+
+```bash
+echo $-   # Must contain 'i' for interactive
+```
+
+### "Unknown OS" Error
+
+Add your distro to `pkg_aliases.bash`. See [Modifying Package Manager Behaviour](#modifying-package-manager-behaviour).
+
+### Files Loading Twice
+
+The `loaded_files` associative array in `.bashrc` prevents duplicate loading. If you see doubles, check for extra `source` calls outside the standard loading blocks.
+
+### `functions -?` Showing Wrong File
+
+See [Known Issues / Migration TODOs](#known-issues--migration-todos) — `functions.bash` has a hardcoded `~/dotfiles/` path that breaks after migration.
+
+---
 
 ## Security Notes
 
-- 🔒 The installer never modifies system files (only user home directory)
-- 🔑 Sudo is only used for package installation
-- 💾 All changes are logged to timestamped log files
-- 🔄 Original files are backed up before any changes
-- ⚠️ Review `RunMe.sh` before running if you're security-conscious
-- 🛡️ Script includes recursion guard to prevent infinite loops
-- ✅ All file operations include error checking
-- 🎯 Core files load in all contexts, interactive files guarded
-- 🐳 Docker shortcuts only load when Docker is installed
+- The installer never modifies system files (user home directory only)
+- Sudo is used only for package installation
+- All changes are logged to timestamped log files
+- Original files are backed up before any change is made
+- Recursion guard prevents infinite sourcing loops
+- Run guard (`RUNME_INITIATED`) prevents concurrent installer execution
+- Docker shortcuts load only when Docker is present
 
-## Architecture Benefits
+---
 
-### Why Split Core and Interactive Files?
+## Getting Help
 
-**Core files (no guards):**
-- Scripts like `RunMe.sh` need package management functions
-- Environment variables needed everywhere
-- Shell options improve script reliability
-- Utility functions used by automation
+1. **Check logs**: `tail -f ~/.dotfiles/logs/install-*.log`
+2. **Check bash syntax**: `bash -n ~/.bashrc`
+3. **Debug mode**: `DEBUG=1 ./run_me_first.sh`
+4. **Trace mode**: `TRACE_DEBUG=1 ./run_me_first.sh`
+5. **Version check**: `./run_me_first.sh --version`
+6. **Shell reload check**: `reload` (should show visual feedback)
+7. **Test pkg_aliases**: `source ~/.dotfiles/helpers/debug.sh`
 
-**Interactive files (with guards):**
-- Aliases don't work in scripts anyway
-- User convenience features not needed in automation
-- Reduces overhead for non-interactive contexts
-- Prevents unexpected behavior in scripts
+---
 
-### Function Export Pattern
+## Known Issues / Migration TODOs
 
-```bash
-# In pkg_aliases.bash
-p_install() { sudo apt-get install -y "$@"; }  # Function
-export -f p_install                            # Export for scripts
+### Repository Migration (`~/dotfiles` → `~/.dotfiles`)
 
-# In interactive shells only
-if [[ $- == *i* ]]; then
-    alias install='p_install'                  # Convenient alias
-fi
-```
+| File | Location | Issue |
+|------|----------|-------|
+| `run_me_first.sh` | line 19 | `DIR="$HOME/dotfiles"` → `$HOME/.dotfiles` |
+| `exports.bash` | line 73 | `DOTFILES_DIR="$HOME/dotfiles"` → `$HOME/.dotfiles` |
+| `exports.bash` | line 74 | `DOTFILES_REPO` still points to Bitbucket → update to GitHub |
+| `functions.bash` | line 740 | Hardcoded `$HOME/dotfiles/` breaks `functions -?` after migration |
+| `pkg_aliases.bash` | lines 44, 434 | Comments say "RunMe.sh" → "run_me_first.sh" |
+| `.bash_profile` | line 29 | Hardcoded `/home/patrick/.config/broot/...` → use `$HOME` |
+| `.bashrc` headers | line 3 | "Created by RunMe.sh" → auto-corrected on next installer run |
+| `run_me_first.sh` | lines 973, 1005 | Clones `.tmux` and `.vim` from Bitbucket → update to GitHub |
+| `extra_alias.bash` | — | Now gitignored; run `git rm --cached .bashrc.d/extra_alias.bash` to untrack |
 
-**Result:**
-- `p_install` works in scripts ✓
-- `p_install` works interactively ✓
-- `install` works interactively ✓
-- `install` doesn't interfere with `/usr/bin/install` in scripts ✓
+Already updated (ahead of migration): `.bashrc`, `aliases.bash` (`dotupdate`), `helpers/debug.sh`.
+
+### Vibecoding v5.6 Compliance Gaps
+
+| File | Guideline | Issue |
+|------|-----------|-------|
+| `run_me_first.sh` | Part II §2 | Missing compliant script header (Author, Created, Version, Last Updated, Repository) |
+| `run_me_first.sh` | Part II §3 | Missing flags: `-h`, `-?/--info`, `--dry-run`, `-d`, `--test-notify`, `--notify-only` |
+| `run_me_first.sh` | Part II §4 | Missing standard exit codes 2, 3, 4, 5 |
+| `run_me_first.sh` | Part IV | No `safe_exec()` — no dry-run protection on destructive operations |
+| `run_me_first.sh` | Part IV Pattern F | `cleanup_on_exit()` is a no-op placeholder — needs real implementation |
+| `run_me_first.sh` | Part V §1 | No `ColorCodes.inc` — inline ANSI codes only |
+| `run_me_first.sh` | Part V §3 | Non-standard logging — uses `log()` with level arg, not `log_error/log_success/log_warning/log_info/log_debug` |
+| `system_detector.sh` | Part II §2 | Missing compliant script header |
+| `system_detector.sh` | Part II §3 | Missing: `-?/--info`, `--dry-run`, standard exit codes |
+| `symlink.sh` | Part II §2 | Missing compliant script header |
+| `symlink.sh` | Part II §3 | No flags (called by installer, not user-facing — acceptable) |
+
+---
 
 ## Version History
 
+- **v15.6.0** (2026-05-06)
+  - Restructured repo: `debug.sh` moved from `.bashrc.d/` to `helpers/`
+  - Added `extra_alias.bash` and `local_alias.bash` to `.gitignore` (safe local customizations)
+  - README fully restructured for new-user-first flow
+  - README completed with all sections from original (previously omitted in migration)
+  - Added Vibecoding v5.6 compliance audit to Known Issues
+  - Confirmed migration target: `https://github.com/b0red/.dotfiles`
+  - Updated version references throughout
+
+- **v15.5.0** (2026-02-18)
+  - Renamed installer: `RunMe.sh` → `run_me_first.sh`
+  - Replaced `SystemDetector.sh` with portable POSIX `system_detector.sh`
+  - Moved diagnostic/test scripts to `oldfiles/`
+  - Added `symlink_config_folders` for `~/.config` directory linking
+  - Added `archive_backup` and automatic cleanup of old archives (keeps 3)
+  - Added revert functionality (`--revert`)
+  - Added tmux guard with `BASHRC_SKIP_IN_TMUX` control + `bashrc-toggle-tmux` alias
+  - Added `bashrc-reset-choice` for ask-mode reset
+  - `.bashrc` updated to reference `~/.dotfiles` (migration target)
+
+- **v15.2.0–v15.4.0** (2026-01, undocumented)
+  - Intermediate versions released during this period — changelog not recorded at time of release.
+
 - **v15.1.0** (2026-01-20)
-  - **NEW**: Visual loading feedback with cursor positioning
-  - **NEW**: Conditional Docker loading (only if Docker installed)
-  - **NEW**: Smart file loading architecture (core vs interactive)
-  - **NEW**: Diagnostic tool (`diagnose-dotfiles.sh`)
-  - **IMPROVED**: Package management with `p_*` functions and aliases
-  - **IMPROVED**: Cross-distro support with proper distro detection
-  - **IMPROVED**: Function exports for script compatibility
-  - **FIXED**: Guard logic - core files load everywhere, interactive files guarded
-  - **FIXED**: Docker shortcuts don't clutter shell when Docker not installed
+  - Visual loading feedback with cursor positioning
+  - Conditional Docker loading (only if Docker installed)
+  - Smart file loading architecture (core vs interactive)
+  - Package management with `p_*` functions and aliases
   - Configurable loading delay
-  - Better error handling in shopt commands
-  - Enhanced README with architecture documentation
+  - Enhanced cross-distro support
 
 - **v15.0.0** (2026-01-16)
   - Added version support (`--version` flag)
   - Smart backup system (only backs up changed files)
   - Automatic cleanup (keeps 3 most recent archives)
   - Color-coded output (green/yellow/red)
-  - Improved error handling throughout
   - Smart recursion guard in `.bashrc`
-  - Privilege-aware prompt colors
-
-## Getting Help
-
-1. **Check diagnostic**: `bash ~/dotfiles/diagnose-dotfiles.sh`
-2. **Check logs**: `~/dotfiles/logs/install-*.log`
-3. **Review this README**: Most issues are covered above
-4. **Check bash syntax**: `bash -n ~/.bashrc`
-5. **Test in debug mode**: `DEBUG=1 ./RunMe.sh`
-6. **Test in trace mode**: `TRACE_DEBUG=1 ./RunMe.sh`
-7. **Check version**: `./RunMe.sh --version`
-8. **Check loading**: `reload` (should show visual feedback)
-
-## License
-
-[Your license here - MIT recommended]
-
-## Credits & Inspiration
-
-Some links to where I've ~~stolen~~ borrowed stuff & inspiration from:
-
-* [Shell Config Subfiles](https://sanctum.geek.nz/arabesque/shell-config-subfiles/)
-* [CLI Improved](https://remysharp.com/2018/08/23/cli-improved)
-* [kenorb/dotfiles Functions](https://github.com/kenorb/dotfiles/blob/master/.bash_functions)
-* [kenorb/dotfiles Aliases](https://github.com/kenorb/dotfiles/blob/master/.bash_aliases)
-* [sharkdp/bat](https://github.com/sharkdp/bat/)
-* [prettyping](https://github.com/denilsonsa/prettyping.git) → `~/dotfiles/extras/prettyping`
-
-Created and maintained by **Patrick Österlund**. 
-
-If you find this useful, consider supporting: [[PayPal](https://paypal.me/fotosbypatrick)]
+  - Privilege-aware prompt colors (green user / red root)
 
 ---
 
-**Last Updated**: February 16, 2026  
-**Script Version**: v15.5.0
+## Credits & Inspiration
+
+- [Shell Config Subfiles](https://sanctum.geek.nz/arabesque/shell-config-subfiles/)
+- [CLI Improved](https://remysharp.com/2018/08/23/cli-improved)
+- [kenorb/dotfiles Functions](https://github.com/kenorb/dotfiles/blob/master/.bash_functions)
+- [kenorb/dotfiles Aliases](https://github.com/kenorb/dotfiles/blob/master/.bash_aliases)
+- [sharkdp/bat](https://github.com/sharkdp/bat/)
+- [prettyping](https://github.com/denilsonsa/prettyping.git)
+
+Created and maintained by **Patrick Österlund**.
+
+If you find this useful, consider supporting: [PayPal](https://paypal.me/fotosbypatrick)
+
+---
+
+**Last Updated**: 2026-05-06
+**Script Version**: v15.6.0
+**Guidelines**: Vibecoding v5.6 / Semantic Versioning 2.0.0

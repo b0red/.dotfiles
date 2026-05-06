@@ -737,7 +737,7 @@ function cd() {
 
 function functions() {
     ### List function names or descriptions with -?
-    local func_file="$HOME/dotfiles/.bashrc.d/functions.bash"
+    local func_file="$HOME/.dotfiles/.bashrc.d/functions.bash"
     
     if [[ "$1" == "-?" || "$1" == "--help" ]]; then
         if [[ -f "$func_file" ]]; then

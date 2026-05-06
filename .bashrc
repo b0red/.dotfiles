@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 ### -+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-###                                             Created by RunMe.sh 2026-04-25 01:01:42
+###                                             Created by RunMe.sh 2026-05-05 23:40:36
 ###                                             Host: DESKTOP-JLMCRD0
 ###                                             User: patrick
 ###                                             Distro: ubuntu
@@ -192,7 +192,7 @@ shopt -s nocaseglob      # Case-insensitive globbing
 # =============================================================================
 # LOAD BASHRC.D FILES
 # =============================================================================
-BASHRC_DIR="$HOME/dotfiles/.bashrc.d"
+BASHRC_DIR="$HOME/.dotfiles/.bashrc.d"
 
 # Track loaded files to prevent reload dupes
 declare -A loaded_files
@@ -269,8 +269,8 @@ fi
 # =============================================================================
 # PROFILE.D FILES (non-bash, always load if interactive)
 # =============================================================================
-if [[ -d "$HOME/dotfiles/.profile.d" && $- == *i* ]]; then
-    for f in "$HOME/dotfiles/.profile.d"/*.sh; do
+if [[ -d "$HOME/.dotfiles/.profile.d" && $- == *i* ]]; then
+    for f in "$HOME/.dotfiles/.profile.d"/*.sh; do
         if [[ -f "$f" ]]; then
             basename_f=$(basename "$f")
             if [[ -z "${loaded_files[$basename_f]}" ]]; then

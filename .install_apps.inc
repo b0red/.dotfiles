@@ -1,4 +1,4 @@
-# .install_apps.inc - Application list for RunMe.sh
+# .install_apps.inc - Application list for installs by the file: run_me_first.sh
 
 # === CORE ESSENTIALS ===
 curl

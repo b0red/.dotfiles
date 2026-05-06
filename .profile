@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 ### -+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-###                                             Created by RunMe.sh 2026-04-25 01:01:42
+###                                             Created by RunMe.sh 2026-05-05 23:40:36
 ###                                             Host: DESKTOP-JLMCRD0
 ###                                             User: patrick
 ###                                             Distro: ubuntu
@@ -38,8 +38,8 @@ fi
 
 ###     Load any supplementary scripts in $HOME/.profile.d directory
 #
-if [ -d $HOME/dotfiles/.profile.d ]; then
-	for config in "$HOME"/dotfiles/.profile.d/*.sh ; do
+if [ -d $HOME/.dotfiles/.profile.d ]; then
+	for config in "$HOME"/.dotfiles/.profile.d/*.sh ; do
 	. "$config"
 	#echo $config loaded.
 	done
