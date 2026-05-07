@@ -26,7 +26,7 @@ Updated all tmux configuration files to use Coffee plugin manager instead of TPM
 
 ---
 
-### 2. `TmuxInstaller.sh` - MAJOR UPDATE ✓
+### 2. `tmux_installer.sh` - MAJOR UPDATE ✓
 **Changes Made:**
 - ✅ Replaced TPM installation with Coffee installation
 - ✅ Added version checking for tmux (requires 3.0+)
@@ -72,7 +72,7 @@ Updated all tmux configuration files to use Coffee plugin manager instead of TPM
 
 **New Sections:**
 1. Prerequisites (with version requirements)
-2. Automated Installation (TmuxInstaller.sh)
+2. Automated Installation (tmux_installer.sh)
 3. Coffee Plugin Manager (detailed guide)
 4. Migration from TPM
 5. Configuration Details
@@ -93,7 +93,7 @@ Updated all tmux configuration files to use Coffee plugin manager instead of TPM
 ### Critical Issues:
 1. ✅ **Coffee/TPM Mismatch** - RESOLVED
    - .tmux.conf now uses Coffee exclusively
-   - TmuxInstaller.sh now installs Coffee instead of TPM
+   - tmux_installer.sh now installs Coffee instead of TPM
    - All references aligned
 
 2. ✅ **README Typo** - FIXED
@@ -105,7 +105,7 @@ Updated all tmux configuration files to use Coffee plugin manager instead of TPM
 
 ### Improvements Made:
 1. ✅ **Version Checking** - Added comprehensive version validation
-2. ✅ **Error Handling** - Enhanced throughout TmuxInstaller.sh
+2. ✅ **Error Handling** - Enhanced throughout tmux_installer.sh
 3. ✅ **Documentation** - Greatly improved with detailed instructions
 4. ✅ **Python venv** - Automatic detection and installation
 5. ✅ **PATH Setup** - Clear instructions for shell configuration
@@ -154,7 +154,7 @@ Before deploying, test the following:
    rm ~/.tmux.conf
    
    # Run installer
-   ~/.tmux/TmuxInstaller.sh
+   ~/.tmux/tmux_installer.sh
    
    # Verify Coffee installed
    ls -la ~/.local/share/coffee/.venv
@@ -198,7 +198,7 @@ If users have existing TPM installations:
 
 2. **Run the new installer:**
    ```bash
-   ~/.tmux/TmuxInstaller.sh
+   ~/.tmux/tmux_installer.sh
    ```
 
 3. **Migrate plugins:**
@@ -231,7 +231,7 @@ All shell scripts follow best practices:
 
 All files have been updated and are located in `/home/claude/`:
 1. `.tmux.conf` - Clean configuration with Coffee
-2. `TmuxInstaller.sh` - Updated installer with Coffee support
+2. `tmux_installer.sh` - Updated installer with Coffee support
 3. `README.md` - Comprehensive documentation
 4. `start_tmux.sh` - No changes needed (already correct)
 

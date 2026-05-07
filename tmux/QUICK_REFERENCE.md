@@ -6,7 +6,7 @@
 git clone git@bitbucket.org:b0red/tmux.git ~/.tmux
 
 # 2. Run automated installer
-~/.tmux/TmuxInstaller.sh
+~/.tmux/tmux_installer.sh
 
 # 3. Add Coffee to PATH (add to ~/.bashrc or ~/.zshrc)
 export PATH="$HOME/.local/share/coffee/bin:$PATH"

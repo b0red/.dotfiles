@@ -633,9 +633,56 @@ Keys loaded in preference order:
 
 ### Vim Setup
 
-The installer clones your vim configuration from Bitbucket:
+The installer clones your vim configuration from GitHub:
 - Cloned to `~/.vim`
 - Symlink: `~/.vimrc → ~/.vim/.vimrc`
+
+If you need to set it up manually:
+```bash
+git clone git@github.com:b0red/.vim.git ~/.vim
+ln -s ~/.vim/vimrc ~/.vimrc
+ln -s ~/.vim/gvimrc ~/.gvimrc
+```
+
+#### Vim Plugin Manager
+This repo uses [vim-plug](https://github.com/junegunn/vim-plug).
+
+Install vim-plug:
+```bash
+curl -fLo ~/.vim/autoload/plug.vim --create-dirs \
+  https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
+```
+
+Plugin commands:
+```vim
+:PlugInstall
+:PlugUpdate
+:PlugClean
+:PlugUpgrade
+:PlugStatus
+```
+
+#### Current plugins
+- [vim-fugitive](https://github.com/tpope/vim-fugitive)
+- [NERDTree](https://github.com/preservim/nerdtree)
+- [auto-pairs](https://github.com/jiangmiao/auto-pairs)
+- [nerdcommenter](https://github.com/preservim/nerdcommenter)
+- [vim-afterglow](https://github.com/danilo-augusto/vim-afterglow)
+
+#### Useful key mappings
+- `Ctrl+F` or `Ctrl+O` — Toggle NERDTree
+- `:NERDTree` — Open NERDTree manually
+- `F7` — Auto-indent entire file
+- `F11` — Toggle paste mode
+- `\c<space>` — Toggle comment on current line/selection
+- `:Git status`, `:Git commit`, `:Git push`, `:Git blame`, `:Gdiff`
+
+#### Configuration highlights
+- 4-space indentation, no tabs
+- Line numbers enabled
+- 256-color support
+- Afterglow dark colorscheme
+- Smart case search
 
 ### Broot Integration
 

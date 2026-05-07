@@ -8,6 +8,7 @@ cargo       # Rust package manager/build tool
 
 # === EDITORS ===
 vim
+ghostwriter # Markdown editor
 # nano      # commented out - using vim only
 
 # === TERMINAL MULTIPLEXERS ===
@@ -17,6 +18,7 @@ tmux
 htop
 btop        # better top
 atop
+bottom
 
 # === DISK UTILITIES ===
 ncdu

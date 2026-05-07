@@ -19,6 +19,11 @@ set nocompatible
 " Temporarily disable filetype detection (required before loading plugins)
 filetype off
 
+" Allows for using arrow keys to move cursor"
+imap <silent> <Down> <C-o>gj
+imap <silent> <Up> <C-o>gk
+nmap <silent> <Down> gj
+nmap <silent> <Up> gk
 
 " ============================================================================
 " PLUGIN MANAGER (vim-plug)
@@ -170,6 +175,11 @@ set notimeout ttimeout ttimeoutlen=200
 " Toggle paste mode with F11 (disables auto-indent when pasting from clipboard)
 set pastetoggle=<F11>
 
+" Highlight column 80
+set colorcolumn=80 
+
+" Wrap whole words
+ set linebreak
 
 " ============================================================================
 " KEY MAPPINGS
