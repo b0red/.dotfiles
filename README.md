@@ -507,55 +507,115 @@ yourdistro*)
 
 The installer automatically configures `.bash_profile` to source `.bashrc` for WSL compatibility. The `BASHRC_SKIP_IN_TMUX` variable is also set there. No additional setup needed.
 
-### Tmux Integration
+### Tmux Configuration
 
 The installer automatically:
-- Clones tmux configuration from Bitbucket → `~/.tmux`
+- Clones tmux configuration from GitHub → `~/.tmux`
 - Installs Coffee plugin manager → `~/.local/share/coffee`
 - Creates symlink `~/.tmux.conf → ~/.tmux/.tmux.conf`
 
-Install plugins inside tmux:
+#### Window & Pane Numbering
+
+The tmux configuration uses 1-based indexing (both windows and panes start at 1):
 ```bash
-# Press: prefix + C  (capital c — default prefix is Ctrl+b)
+set-option -g base-index 1
+set -g pane-base-index 1
 ```
 
-Update tmux config manually:
+This affects all window/pane references. The `start_tmux.sh` script creates a multi-pane session with windows and panes numbered starting from 1.
+
+#### Coffee Plugin Manager
+
+Coffee is a modern replacement for TPM. Plugins are configured via YAML files in `~/.config/tmux/coffee/plugins/`.
+
+**Fresh Setup**
+Create plugin configurations:
 ```bash
-git -C ~/.tmux pull
-tmux source ~/.tmux.conf
+~/.config/tmux/coffee/plugins/your-plugin.yaml
 ```
 
-### Coffee info:  
----
-#### Fresh Setup
-Create plugin configurations under:
-
-```bash
-~/.config/tmux/coffee/plugins/
-```
-
-Each plugin is defined in its own YAML file.
-
-#### Minimal Plugin Configuration
-
-This is all you need to install a plugin.
-
-```bash
+**Minimal Plugin Configuration**
+```yaml
 # ~/.config/tmux/coffee/plugins/tmux-resurrect.yaml
 url: "tmux-plugins/tmux-resurrect"
 ```
 
-Coffee.tmux automatically detects source files and manages installation and updates.
-
-#### Installing Plugins
-After setup and reloading tmux, run:
-
+**Installing/Updating Plugins**
 ```bash
-coffee install
-This installs all plugins configured in your YAML files.
+coffee install        # Install all configured plugins
+coffee update         # Update all plugins
+coffee list           # List installed plugins
 ```
+
+**Key Bindings**
+- `prefix + i` — Install missing plugins
+- `prefix + u` — Update plugins
+- `prefix + alt+u` — Uninstall plugins
+
 [Read more: Coffee](https://github.com/PraaneshSelvaraj/coffee.tmux)
-___
+
+#### Custom Keybindings
+
+| Binding | Action |
+|---------|--------|
+| `prefix + h` | Open Htop in display-popup (80% size) |
+| `prefix + H` | Open Htop in new window |
+| `prefix + o` | Open B-Top in display-popup (80% size) |
+| `prefix + O` | Open B-Top in new window |
+| `prefix + t` | Open Task Monitor in display-popup |
+| `prefix + T` | Open Overview Dashboard in display-popup |
+| `prefix + Tab` | Toggle sidebar with tree view |
+| `prefix + Space` | Next layout |
+| `prefix + d` | Detach |
+| `prefix + m` | Open man page (prompt for command) |
+
+#### Session Creation
+
+Create a standard multi-pane session:
+```bash
+cd ~/.dotfiles/tmux
+./start_tmux.sh
+```
+
+This creates a session with:
+- **Window 1, Pane 1** — Left pane (50% width) — default shell
+- **Window 1, Pane 2** — Top-right (60% height) — default shell
+- **Window 1, Pane 3** — Bottom-right (60% height) — default shell
+- **Window 1, Pane 4** — Bottom-right (40% height) — default shell
+
+(Requires `tmux` and optionally `mc` for file browser)
+
+#### Status Bar
+
+Status bar shows (left to right):
+- Session name `[0]`
+- Window name with current path
+- Window list with indicators
+- Plugin status indicators
+- Right side: Prefix highlight | CPU | RAM | User | Host | WAN IP
+
+#### Troubleshooting
+
+**Config won't parse**
+```bash
+tmux -f ~/.tmux.conf list-keys    # Check for syntax errors
+```
+
+**Coffee plugins not installing**
+```bash
+# Verify symlink exists
+ls -la ~/.config/tmux/coffee      # Should point to ~/.tmux/coffee
+
+# Force reinstall
+coffee uninstall
+coffee install --force
+```
+
+**Keybindings not working**
+```bash
+tmux list-keys | grep -E "h|o"    # Verify bindings are loaded
+tmux source ~/.tmux.conf           # Reload config
+```
 
 ### SSH Key Management
 
