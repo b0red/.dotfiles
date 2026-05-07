@@ -356,6 +356,14 @@ if [ -f ~/.tmux-extras/tmux-git.sh ]; then
 fi
 
 # =============================================================================
+# POWERLINE INTEGRATION
+# =============================================================================
+
+if [ -f /usr/share/powerline/bindings/bash/powerline.sh ]; then
+    source /usr/share/powerline/bindings/bash/powerline.sh
+fi
+
+# =============================================================================
 # WELCOME MESSAGE
 # =============================================================================
 if [ -n "$PS1" ] && [ "$BASHRC_SOURCED" -eq 1 ]; then

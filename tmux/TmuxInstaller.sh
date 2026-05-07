@@ -4,7 +4,7 @@
 #	Assumes ~/.tmux repo is already cloned
 #
 #    - Creates symlink for ~/.tmux.conf
-#    - Installs TPM (Tmux Plugin Manager)
+#    - Installs Coffee plugin manager
 #    - Verifies installation
 #
 ################################################################################
@@ -17,8 +17,8 @@ set -euo pipefail  # Exit on error, undefined variables, and pipe failures
 TMUX_DIR="$HOME/.tmux"
 TMUX_CONF_LINK="$HOME/.tmux.conf"
 TMUX_CONF_TARGET="$HOME/.tmux/.tmux.conf"
-TPM_DIR="$HOME/.tmux/plugins/tpm"
-TPM_REPO="https://github.com/tmux-plugins/tpm"
+COFFEE_DIR="$HOME/.local/share/coffee"
+COFFEE_REPO="https://github.com/PraaneshSelvaraj/coffee.tmux"
 INSTALLED_MARKER="$TMUX_DIR/.installed-by-runme"
 
 # =============================================================================
@@ -28,9 +28,9 @@ if [ -f "$INSTALLED_MARKER" ]; then
     install_date=$(cat "$INSTALLED_MARKER" 2>/dev/null || echo "unknown date")
     echo ""
     echo "========================================="
-    echo "⚠️  RunMe.sh Already Set Up Tmux"
+    echo "⚠️  run_me_first.sh Already Set Up Tmux"
     echo "========================================="
-    echo "RunMe.sh installed tmux on: $install_date"
+    echo "run_me_first.sh installed tmux on: $install_date"
     echo ""
     echo "This means:"
     echo "  • ~/.tmux repo is already cloned"
@@ -150,39 +150,38 @@ is_it_installed() {
     return 0
 }
 
-clone_tpm_plugin() {
+install_coffee_manager() {
     echo ""
     echo "========================================="
-    echo "Installing TPM (Tmux Plugin Manager)"
+    echo "Installing Coffee plugin manager"
     echo "========================================="
-    
-    # Check if TPM is already installed
-    if [ -d "$TPM_DIR/.git" ]; then
-        echo "✓ TPM already installed at: $TPM_DIR"
+
+    if [ -d "$COFFEE_DIR/.git" ]; then
+        echo "✓ Coffee already installed at: $COFFEE_DIR"
         echo ""
-        read -rp "Update TPM to latest version? ([y]es or [N]o): " reply
+        read -rp "Update Coffee to latest version? ([y]es or [N]o): " reply
         case $(echo "$reply" | tr '[:upper:]' '[:lower:]') in
             y|yes)
-                echo "Updating TPM..."
-                if git -C "$TPM_DIR" pull 2>&1; then
-                    echo "✓ TPM updated successfully"
+                echo "Updating Coffee..."
+                if git -C "$COFFEE_DIR" pull 2>&1; then
+                    echo "✓ Coffee updated successfully"
                 else
-                    echo "❌ Failed to update TPM"
+                    echo "❌ Failed to update Coffee"
                     return 1
                 fi
                 ;;
             *)
-                echo "⚠️  Skipping TPM update"
+                echo "⚠️  Skipping Coffee update"
                 ;;
         esac
         return 0
-    elif [ -e "$TPM_DIR" ]; then
-        echo "⚠️  Warning: $TPM_DIR exists but is not a git repository"
-        read -rp "Remove and reinstall TPM? ([y]es or [N]o): " reply
+    elif [ -e "$COFFEE_DIR" ]; then
+        echo "⚠️  Warning: $COFFEE_DIR exists but is not a git repository"
+        read -rp "Remove and reinstall Coffee? ([y]es or [N]o): " reply
         case $(echo "$reply" | tr '[:upper:]' '[:lower:]') in
             y|yes)
                 echo "Removing existing directory..."
-                if rm -rf "$TPM_DIR"; then
+                if rm -rf "$COFFEE_DIR"; then
                     echo "✓ Removed existing directory"
                 else
                     echo "❌ Failed to remove directory"
@@ -190,34 +189,50 @@ clone_tpm_plugin() {
                 fi
                 ;;
             *)
-                echo "⚠️  Skipping TPM installation"
+                echo "⚠️  Skipping Coffee installation"
                 return 1
                 ;;
         esac
     fi
-    
-    # Create plugins directory if it doesn't exist
-    if ! mkdir -p "$HOME/.tmux/plugins" 2>/dev/null; then
-        echo "❌ Failed to create plugins directory"
+
+    if ! mkdir -p "$(dirname "$COFFEE_DIR")" 2>/dev/null; then
+        echo "❌ Failed to create parent directory for Coffee"
         return 1
     fi
-    
-    # Clone TPM
-    echo "Cloning TPM from: $TPM_REPO"
-    if GIT_TERMINAL_PROMPT=0 git clone --depth=1 "$TPM_REPO" "$TPM_DIR" 2>&1; then
-        echo "✓ TPM installed successfully to: $TPM_DIR"
-        echo ""
-        echo "TPM Installation Notes:"
-        echo "  • Press prefix + I (capital i) in tmux to install plugins"
-        echo "  • Press prefix + U to update plugins"
-        echo "  • Press prefix + alt + u to uninstall plugins"
-        return 0
+
+    echo "Cloning Coffee from: $COFFEE_REPO"
+    if GIT_TERMINAL_PROMPT=0 git clone --depth=1 "$COFFEE_REPO" "$COFFEE_DIR" 2>&1; then
+        echo "✓ Coffee cloned successfully to: $COFFEE_DIR"
     else
-        echo "❌ Failed to clone TPM"
-        echo "  Repository: $TPM_REPO"
-        echo "  Target: $TPM_DIR"
+        echo "❌ Failed to clone Coffee"
+        echo "  Repository: $COFFEE_REPO"
+        echo "  Target: $COFFEE_DIR"
         return 1
     fi
+
+    if command -v python3 >/dev/null 2>&1; then
+        echo "Setting up Python virtual environment..."
+        if python3 -m venv "$COFFEE_DIR/.venv" 2>&1; then
+            echo "✓ Virtual environment created"
+            if "$COFFEE_DIR/.venv/bin/python" -m pip install --upgrade pip setuptools wheel >/dev/null 2>&1 && \
+               "$COFFEE_DIR/.venv/bin/python" -m pip install -r "$COFFEE_DIR/requirements.txt" >/dev/null 2>&1; then
+                echo "✓ Coffee dependencies installed"
+            else
+                echo "⚠️  Failed to install Coffee Python dependencies"
+                echo "  Check: $COFFEE_DIR/requirements.txt"
+            fi
+        else
+            echo "⚠️  Failed to create virtual environment"
+        fi
+    else
+        echo "⚠️  Python3 not found. Install Python 3.10+ and re-run this script."
+    fi
+
+    echo ""
+    echo "Coffee Installation Notes:"
+    echo "  • Add to PATH: export PATH=\"$COFFEE_DIR/bin:\$PATH\""
+    echo "  • Use Coffee CLI: coffee install"
+    return 0
 }
 
 # =============================================================================
@@ -239,7 +254,7 @@ if [ ! -d "$TMUX_DIR" ]; then
     echo "Please clone the repository first:"
     echo "  git clone git@bitbucket.org:b0red/tmux.git ~/.tmux"
     echo ""
-    echo "Or run RunMe.sh which handles this automatically."
+    echo "Or run run_me_first.sh which handles this automatically."
     exit 1
 fi
 
@@ -306,12 +321,12 @@ else
 fi
 
 # =============================================================================
-# INSTALL TPM (TMUX PLUGIN MANAGER)
+# INSTALL Coffee PLUGIN MANAGER
 # =============================================================================
-if ! clone_tpm_plugin; then
-    echo "⚠️  Warning: TPM installation failed or was skipped"
+if ! install_coffee_manager; then
+    echo "⚠️  Warning: Coffee installation failed or was skipped"
     echo "You can install it manually later with:"
-    echo "  git clone $TPM_REPO $TPM_DIR"
+    echo "  git clone $COFFEE_REPO $COFFEE_DIR"
 fi
 
 # =============================================================================
@@ -350,11 +365,11 @@ else
     echo "❌ Symlink verification failed"
 fi
 
-# Check TPM installation
-if [ -d "$TPM_DIR/.git" ]; then
-    echo "✓ TPM installed at: $TPM_DIR"
+# Check Coffee installation
+if [ -d "$COFFEE_DIR/.git" ]; then
+    echo "✓ Coffee installed at: $COFFEE_DIR"
 else
-    echo "⚠️  TPM not installed or incomplete"
+    echo "⚠️  Coffee not installed or incomplete"
 fi
 
 # =============================================================================
@@ -368,18 +383,18 @@ echo ""
 echo "Configuration:"
 echo "  • Symlink created: ~/.tmux.conf"
 echo "  • Repository: ~/.tmux"
-if [ -d "$TPM_DIR/.git" ]; then
-    echo "  • TPM installed: $TPM_DIR"
+if [ -d "$COFFEE_DIR/.git" ]; then
+    echo "  • Coffee installed: $COFFEE_DIR"
 fi
 echo ""
 echo "Next steps:"
 echo "  1. Start tmux: tmux"
 echo "  2. Reload config in existing session: tmux source ~/.tmux.conf"
-if [ -d "$TPM_DIR/.git" ]; then
-    echo "  3. Install plugins: Press prefix + I (capital i)"
-    echo "  4. Check plugins: ls ~/.tmux/plugins/"
+if [ -d "$COFFEE_DIR/.git" ]; then
+    echo "  3. Install plugins: coffee install"
+    echo "  4. Check plugins: ls $COFFEE_DIR"
 else
-    echo "  3. Install TPM manually if needed"
+    echo "  3. Install Coffee manually if needed"
 fi
 echo "  5. Check status: tmux list-sessions"
 echo ""

@@ -97,7 +97,8 @@ bind-key d detach
 bind-key m command-prompt "split-window 'exec man %%'"
 
 # Tmux menus
-# Coffee plugin manager handles plugin sourcing and plugin configuration
+run-shell ~/.tmux/coffee/plugins/tmux-menus/menus.tmux
+set-environment -g TMUX_PLUGIN_MANAGER_PATH "~/.tmux/coffee/plugins"
 set -g @menus_show_key_hints 'Yes'          # Show key hints in menus
 
 # this might not work (20260115)
@@ -180,6 +181,7 @@ set -g status-right ' #{prefix_highlight} |#{forecast}|#{cpu_bg_color}CPU:#{cpu_
 # -----------------------------------------------------------------------------
 # coffee PLUGIN MANAGER
 # -----------------------------------------------------------------------------
+run-shell ~/.tmux/coffee/plugins/tmux-sidebar/sidebar.tmux
 
 # Source Coffee plugin manager
 source-file ~/.local/share/coffee/coffee.tmux
@@ -239,13 +241,31 @@ bind-key t run-shell "~/.tmux/coffee/plugins/tmux-task-monitor/scripts/launch_mo
 bind-key T run-shell "~/.tmux/coffee/plugins/tmux-task-monitor/scripts/launch_overview.sh"
 
 # -----------------------------------------------------------------------------
-# PLUGINS
+# PLUGINS 
 # -----------------------------------------------------------------------------
-# Plugin configuration is managed by Coffee via ~/.config/tmux/coffee/plugins/*.yaml
-# and loaded through ~/.local/share/coffee/coffee.tmux
-#
-# To add or remove plugins, edit the YAML files and run:
-#   coffee install
-#
-# Legacy TMUX plugin manager directives have been removed.
+
+set -g @plugin 'jaclu/tmux-menus'                       # Menus for various tasks
+set -g @plugin 'joshmedeski/tmux-nerd-font-window-name' # Show window name with nerd font icons
+set -g @plugin 'jaclu/tmux-power-zoom'                  # Zoom in/out of panes
+set -g @plugin 'tmux-plugins/tmux-resurrect'            # Save/restore sessions
+set -g @plugin 'tmux-plugins/tmux-continuum'            # Automatic restore & continuous saving
+set -g @plugin 'tmux-plugins/tmux-online-status'        # Show online/offline status
+set -g @plugin 'tmux-plugins/tmux-sidebar'              # Tree directory listing
+set -g @plugin 'tmux-plugins/tmux-battery'              # Show battery status
+set -g @plugin 'tmux-plugins/tmux-prefix-highlight'     # Highlight prefix status
+set -g @plugin 'tmux-plugins/tmux-cpu'                  # Another Cpu/Mem plugin
+#set -g @plugin 'xamut/tmux-weather'                     # Weather status (actively maintained fork of aaronpowell's plugin)
+set -g @plugin 'aaronpowell/tmux-weather'                     # Weather status (original plugin, not maintained but still works)
+set -g @plugin 'YlanAllouche/tmux-task-monitor'         # Taskmonitor for tmux started processes
+#set -g @net_speed_interfaces "eth0"                     # Network speed monitor (change 'eth0' to your interface, multiple separated by space)
+
+#set -g @plugin 'thewtex/tmux-mem-cpu-load'              # Set cpu-load in left status
+#set -g @plugin 'erikw/tmux-powerline'                   # Power line
+#set -g @plugin 'tmux-plugins/tmux-sensible'             # Sensible defaults
+#set -g @plugin 'tmux-plugins/tmux-yank'                 # *** ADDED: CRUCIAL for system copy/paste (y key in copy mode) ***
+#set -g @plugin 'b0o/tmux-autoreload'                    # Auto reload config on change / not working, needs "entr"
+
+# ── Plugins (managed by tmuxpanel) ──────────────────────
+run-shell '~/.tmux/coffee/plugins/tmux-resurrect/resurrect.tmux'
+run-shell '~/.tmux/coffee/plugins/tmux-weather/weather.tmux'
 # ── End plugins ──────────────────────────────────────

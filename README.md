@@ -41,7 +41,7 @@ The script will:
 4. Load package manager functions for your distro
 5. Install essential applications from `.install_apps.inc`
 6. Update git submodules
-7. Clone additional repos (`.tmux`, `.vim`, `tpm`)
+7. Clone additional repos (`.tmux`, `.vim`)
 8. Create archived backups (tar.gz)
 9. Clean up old archives (keeps 3 most recent)
 10. Log everything to `~/.dotfiles/logs/install-YYYY-MM-DD_HH-MM-SS.log`
@@ -511,12 +511,12 @@ The installer automatically configures `.bash_profile` to source `.bashrc` for W
 
 The installer automatically:
 - Clones tmux configuration from Bitbucket → `~/.tmux`
-- Clones Tmux Plugin Manager → `~/.tmux/plugins/tpm`
+- Installs Coffee plugin manager → `~/.local/share/coffee`
 - Creates symlink `~/.tmux.conf → ~/.tmux/.tmux.conf`
 
 Install plugins inside tmux:
 ```bash
-# Press: prefix + I  (capital i — default prefix is Ctrl+b)
+# Press: prefix + C  (capital c — default prefix is Ctrl+b)
 ```
 
 Update tmux config manually:
@@ -524,6 +524,38 @@ Update tmux config manually:
 git -C ~/.tmux pull
 tmux source ~/.tmux.conf
 ```
+
+### Coffee info:  
+---
+#### Fresh Setup
+Create plugin configurations under:
+
+```bash
+~/.config/tmux/coffee/plugins/
+```
+
+Each plugin is defined in its own YAML file.
+
+#### Minimal Plugin Configuration
+
+This is all you need to install a plugin.
+
+```bash
+# ~/.config/tmux/coffee/plugins/tmux-resurrect.yaml
+url: "tmux-plugins/tmux-resurrect"
+```
+
+Coffee.tmux automatically detects source files and manages installation and updates.
+
+#### Installing Plugins
+After setup and reloading tmux, run:
+
+```bash
+coffee install
+This installs all plugins configured in your YAML files.
+```
+[Read more: Coffee](https://github.com/PraaneshSelvaraj/coffee.tmux)
+___
 
 ### SSH Key Management
 

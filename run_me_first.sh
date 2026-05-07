@@ -27,10 +27,12 @@ VERSION_DATE="2026-05-06"
 DEBUG=${DEBUG:-0}
 TRACE_DEBUG=${TRACE_DEBUG:-0}
 DRY_RUN=${DRY_RUN:-0}
+CHECK_MODE=${CHECK_MODE:-0}
 SLEEP=${SLEEP:-2}
 DIR="$HOME/.dotfiles"
 OLD_FILES="$DIR/oldfiles"
 LOG_DIR="$DIR/logs"
+STATE_FILE="$DIR/.installation-state"
 DATE=$(date +%Y-%m-%d_%H-%M-%S)
 TITLE="Dotfiles Installer Script"
 DOT_ARRAY=("$HOME/.profile" "$HOME/.bashrc" "$HOME/.bash_profile" "$HOME/.inputrc")
@@ -69,9 +71,126 @@ RUNME_INITIATED=1
 export RUNME_INITIATED
 
 # =============================================================================
+# STATE & VALIDATION FUNCTIONS
+# =============================================================================
+
+check_installation_state() {
+    if [ ! -f "$STATE_FILE" ]; then
+        return 1  # Fresh install
+    fi
+    cat "$STATE_FILE"
+}
+
+validate_installation() {
+    local issues=0
+    
+    log_info ""
+    log_info "Validating installation state..."
+    
+    # Check symlinks
+    for src in "${DOT_ARRAY[@]}"; do
+        if [ ! -L "$src" ]; then
+            log_warning "  ⚠️  Symlink missing: $src"
+            issues=$((issues + 1))
+        fi
+    done
+    
+    # Check external repos
+    if [ ! -d "$HOME/.tmux/.git" ]; then
+        log_warning "  ⚠️  Tmux repo not linked: ~/.tmux"
+        issues=$((issues + 1))
+    fi
+    
+    if [ ! -d "$HOME/.vim/.git" ]; then
+        log_warning "  ⚠️  Vim repo not linked: ~/.vim"
+        issues=$((issues + 1))
+    fi
+    
+    # Check submodules
+    if [ -d "$DIR/.git" ]; then
+        if ! git -C "$DIR" submodule foreach --quiet 'test -d .git' 2>/dev/null; then
+            log_warning "  ⚠️  Git submodules not initialized"
+            issues=$((issues + 1))
+        fi
+    fi
+    
+    if [ $issues -eq 0 ]; then
+        log_success "✓ All validations passed"
+        return 0
+    else
+        log_warning "⚠️  Found $issues issue(s)"
+        return 1
+    fi
+}
+
+update_installation_state() {
+    mkdir -p "$DIR"
+    cat > "$STATE_FILE" << EOF
+LAST_RUN=$(date +%Y-%m-%d_%H:%M:%S)
+VERSION=$VERSION
+COMPLETED_STEPS=backup,symlink,apps,submodules,repos,config_folders
+EOF
+    log_success "✓ Installation state recorded"
+}
+
+check_mode() {
+    log_info ""
+    log_info "Installation Status Check"
+    log_info "========================================="
+    
+    local state
+    state=$(check_installation_state)
+    
+    if [ -z "$state" ]; then
+        log_info "📌 Status: Fresh installation (no previous run)"
+    else
+        log_info "📌 Status: Installation detected"
+        log_info ""
+        log_info "$state" | while IFS='=' read -r key value; do
+            case "$key" in
+                LAST_RUN)
+                    log_info "   Last run: $value"
+                    ;;
+                VERSION)
+                    log_info "   Version: $value"
+                    ;;
+                COMPLETED_STEPS)
+                    log_info "   Completed steps: ${value//,/, }"
+                    ;;
+            esac
+        done
+    fi
+    
+    log_info ""
+    if validate_installation; then
+        log_success "✓ All checks passed — setup appears complete"
+        log_info ""
+        read -rp "Re-run full installation? ([y]es or [N]o): " reply
+        case $(echo "$reply" | tr '[:upper:]' '[:lower:]') in
+            y|yes)
+                log_info "Proceeding with full installation..."
+                return 0
+                ;;
+            *)
+                log_info "Exiting (no changes made)"
+                exit 0
+                ;;
+        esac
+    else
+        log_warning "Issues detected. Running full installation to fix..."
+        return 0
+    fi
+}
+
+# =============================================================================
 # MAIN FUNCTION
 # =============================================================================
 main() {
+    if [ "${CHECK_MODE:-0}" -eq 1 ]; then
+        logfile_init
+        check_mode
+    fi
+    
     logfile_init
     log_info "========================================="
     log_info "Starting Dotfiles Installation"
@@ -979,11 +1098,11 @@ clone_repos() {
 
     log_info ""
     log_info "Repo link summary:"
-    [ -L "$HOME/.tmux" ] && log_success "  tmux : ✓ Linked ($DIR/tmux)" \
-                         || log_warning  "  tmux : ❌ Not linked"
-    [ -L "$HOME/.vim"  ] && log_success "  vim  : ✓ Linked ($DIR/vim)"  \
-                         || log_warning  "  vim  : ❌ Not linked"
-    log_success "  TPM  : ✓ Included in repo (tmux/plugins/tpm)"
+    [ -L "$HOME/.tmux" ] && log_success "  tmux   : ✓ Linked ($DIR/tmux)" \
+                         || log_warning  "  tmux   : ❌ Not linked"
+    [ -L "$HOME/.vim"  ] && log_success "  vim    : ✓ Linked ($DIR/vim)"  \
+                         || log_warning  "  vim    : ❌ Not linked"
+    log_success "  Coffee : ✓ Plugin config path available (tmux/coffee/plugins)"
 
     return $errors
 }
@@ -1297,6 +1416,9 @@ source_bashrc() {
     else
         log_warning "⚠️ .bashrc not found"
     fi
+    
+    # Record successful installation
+    update_installation_state
 }
 
 # =============================================================================
@@ -1396,6 +1518,7 @@ show_help() {
     echo "  -?, --info        Show condensed script info and exit"
     echo "  -v, --version     Show version information"
     echo "  -r, --revert      Restore backups and remove symlinks"
+    echo "  --check           Check installation status without making changes"
     echo "  -d, --debug       Enable debug mode"
     echo "  --dry-run         Show what would be done without making changes"
     echo "  --trace           Enable trace mode (set -x)"
@@ -1422,6 +1545,7 @@ show_help() {
     echo ""
     echo -e "${BOLD}Examples:${NC}"
     echo "  ./run_me_first.sh                   # Normal installation"
+    echo "  ./run_me_first.sh --check           # Check status without changes"
     echo "  ./run_me_first.sh --dry-run         # Preview without changes"
     echo "  ./run_me_first.sh --version         # Show version"
     echo "  ./run_me_first.sh --revert          # Undo changes (restore backups)"
@@ -1468,6 +1592,11 @@ case "${1:-}" in
     -r|--revert)
         logfile_init
         revert_changes
+        exit 0
+        ;;
+    --check)
+        CHECK_MODE=1
+        main
         exit 0
         ;;
     -d|--debug)
