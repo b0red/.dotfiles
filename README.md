@@ -40,7 +40,7 @@ The script will:
 3. Create symlinks from `~/.bashrc`, `~/.profile`, etc. to repo files
 4. Load package manager functions for your distro
 5. Install essential applications from `.install_apps.inc`
-6. Update git submodules
+6. Update git submodules (if any included)
 7. Clone additional repos (`.tmux`, `.vim`)
 8. Create archived backups (tar.gz)
 9. Clean up old archives (keeps 3 most recent)
