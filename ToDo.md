@@ -1,22 +1,40 @@
+# ToDo.md - Dotfiles Project Task Tracker
+# Version: 1.2.0 (2026-05-11)
+# Last Updated: 2026-05-11
+
 ### ToDO:
 #### General:
-[x] Add interactive package selection and skip-install options @done
-[x] Improve backup/revert flow with manifest-backed backups @done
-[x] Keep canonical repo on Bitbucket and document it in README @done
-[x] Add Taskwarrior config detection and symlink setup @done
+[x] Add interactive package selection and skip-install options @done (2026-05-11)
+[x] Improve backup/revert flow with manifest-backed backups @done (2026-05-11)
+[x] Keep canonical repo on Bitbucket and document it in README @done (2026-05-11)
+[x] Add Taskwarrior config detection and symlink setup @done (2026-05-11)
+[x] Create a function that reads apps to be installed from file, easier maintance @done (existing load_app_list function)
+[x] create a small header when run, write this to affected files @done (add_file_header function exists)
+[x] check logic/flow, everything must be in the correct order @done (2026-05-11)
+[x] make so when it reverts, it actually shows whats getting done @done (2026-05-11)
 [] echo found distro on top of screen when running for the first time!
 [] maybe make so run_me_first.sh checks for previous runs or if first run?
-[] make so when it reverts, it actually shows whats getting done @done
-[] check logic/flow, everything must be in the correct order @done
-[] create a small header when run, write this to affected files:
-```
-  ### -+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-  ###                                             Created by run_me_first.sh <Current_Date>
-  ### -+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-  ```
-[] Create a function that reads apps to be installed from file, easier maintance
 [] refactor the code to be more modular, functions for each task, easier to read and maintain
 [] add error handling, if a command fails, it should log the error and continue with the next one
+
+---
+
+## Changelog
+
+### v1.2.0 (2026-05-11)
+- Added versioning and changelog to ToDo.md
+- Updated completion status for recent installer enhancements
+- Marked Taskwarrior integration as completed
+- Added dates to completed items for better tracking
+
+### v1.1.0 (2026-05-08)
+- TMUX fixes completed (coffee plugin, keybindings, weather, numbering)
+- General installer improvements marked as done
+
+### v1.0.0 (2026-04-27)
+- Initial ToDo.md structure with VIM and general tasks
+
+---
 
 #### TMUX:
 
