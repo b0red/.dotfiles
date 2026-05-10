@@ -13,7 +13,7 @@
 # Depends     : bash >= 4.0, git, sudo
 # =============================================================================
 
-set -euo pipefail
+# set -euo pipefail  # Disabled for resilient error handling
 
 # Clear all aliases to avoid conflicts
 unalias -a 2>/dev/null || true
@@ -21,7 +21,7 @@ unalias -a 2>/dev/null || true
 # =============================================================================
 # VERSION & CONFIGURATION
 # =============================================================================
-VERSION="15.6.0"
+VERSION="15.7.0"
 VERSION_DATE="2026-05-06"
 
 DEBUG=${DEBUG:-0}
@@ -208,10 +208,40 @@ main() {
     fi
     
     get_os_info
-    validate_environment
-    load_package_functions || log_warning "⚠️ Continuing without package functions"
+    
+    # Display detected distro prominently on first run
+    if ! is_first_run; then
+        log_info ""
+        log_info "🎨 Color output enabled"
+    else
+        log_info ""
+        log_info "🎨 Color output enabled"
+        log_info ""
+        log_info "╔══════════════════════════════════════════════════════════════════════════════╗"
+        log_info "║                           SYSTEM DETECTION                                ║"
+        log_info "╠══════════════════════════════════════════════════════════════════════════════╣"
+        log_info "║  Operating System: $OS                                                    ║"
+        log_info "║  Distribution:     $DISTRO                                                ║"
+        log_info "║  Base System:      $DISTRO_BASE                                           ║"
+        log_info "║  Kernel:          $KERNEL                                                 ║"
+        log_info "║  Architecture:    $MACH                                                   ║"
+        log_info "╚══════════════════════════════════════════════════════════════════════════════╝"
+        log_info ""
+    fi
+    
+    if ! validate_environment; then
+        log_error "❌ Critical environment issues found — aborting installation"
+        exit $EXIT_ENV
+    fi
+    
+    if ! load_package_functions; then
+        log_warning "⚠️ Continuing without package functions"
+    fi
+    
     if [ "${SKIP_APP_INSTALL:-0}" -eq 0 ]; then
-        load_app_list || log_warning "⚠️ Using fallback app list"
+        if ! load_app_list; then
+            log_warning "⚠️ Using fallback app list"
+        fi
     else
         log_info "Application installation will be skipped"
     fi
@@ -219,7 +249,7 @@ main() {
     # Prompt for sudo early
     log_info ""
     log_info "🔐 Checking sudo access (you may be prompted for password)..."
-    if ! sudo -v; then
+    if ! sudo -v 2>/dev/null; then
         log_error "❌ Sudo access required for package installation"
         log_error "Run 'sudo -v' to verify sudo access, then try again."
         exit $EXIT_PERM
@@ -227,17 +257,54 @@ main() {
     log_success "✓ Sudo access verified"
     log_info ""
     
-    backup_dotfiles
-    cleanup_symlinks
-    symlink_dotfiles
-    install_apps
-    setup_taskwarrior_config
-    archive_backup
-    update_submodules
-    clone_repos
-    symlink_external_repos
-    symlink_config_folders
-    source_bashrc
+    # Core installation steps - continue on individual failures where possible
+    if ! backup_dotfiles; then
+        log_warning "⚠️ Backup step failed, but continuing with installation"
+    fi
+    
+    if ! cleanup_symlinks; then
+        log_warning "⚠️ Symlink cleanup failed, but continuing"
+    fi
+    
+    if ! symlink_dotfiles; then
+        log_error "❌ Critical: Symlink creation failed — aborting"
+        exit $EXIT_ERROR
+    fi
+    
+    if ! install_apps; then
+        log_warning "⚠️ App installation had issues, but continuing"
+    fi
+    
+    if ! setup_taskwarrior_config; then
+        log_warning "⚠️ Taskwarrior setup failed, but continuing"
+    fi
+    
+    if ! archive_backup; then
+        log_warning "⚠️ Backup archiving failed, but installation complete"
+    fi
+    
+    if ! update_submodules; then
+        log_warning "⚠️ Submodule update failed, but continuing"
+    fi
+    
+    if ! clone_repos; then
+        log_warning "⚠️ Repository cloning failed, but continuing"
+    fi
+    
+    if ! symlink_external_repos; then
+        log_warning "⚠️ External repo symlinking failed, but continuing"
+    fi
+    
+    if ! symlink_config_folders; then
+        log_warning "⚠️ Config folder symlinking failed, but continuing"
+    fi
+    
+    if ! source_bashrc; then
+        log_warning "⚠️ Bashrc sourcing failed, but continuing"
+    fi
+    
+    # Mark installation as complete
+    mark_installation_complete
     
     log_info ""
     log_success "========================================="
@@ -699,6 +766,20 @@ validate_environment() {
     log_success "✓ Environment OK"
 }
 
+is_first_run() {
+    # Check if this is the first run by looking for installation state file
+    [ ! -f "$STATE_FILE" ]
+}
+
+mark_installation_complete() {
+    # Mark installation as complete by creating state file
+    echo "installed_at=$DATE" > "$STATE_FILE"
+    echo "version=$VERSION" >> "$STATE_FILE"
+    echo "distro=$DISTRO" >> "$STATE_FILE"
+    echo "distro_base=$DISTRO_BASE" >> "$STATE_FILE"
+    log_info "✓ Installation state saved to $STATE_FILE"
+}
+
 # =============================================================================
 # APPLICATION LIST MANAGEMENT
 # =============================================================================
@@ -1034,7 +1115,7 @@ backup_dotfiles() {
 
     if ! mkdir -p "$OLD_FILES" 2>/dev/null; then
         log_error "❌ Failed to create backup directory"
-        exit $EXIT_PERM
+        return 1
     fi
     backup_manifest_init || log_warning "⚠️ Could not initialize backup manifest"
 
@@ -1065,6 +1146,7 @@ backup_dotfiles() {
             log_info "Skipped $skipped_unchanged unchanged files"
         fi
     fi
+    return 0
 }
 
 cleanup_symlinks() {
@@ -1105,7 +1187,7 @@ symlink_dotfiles() {
     
     if [ ! -d "$DIR" ]; then
         log_error "❌ Error: $DIR not found. Clone repo first."
-        exit $EXIT_MISSING
+        return 1
     fi
     
     local linked=0

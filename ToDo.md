@@ -1,5 +1,5 @@
 # ToDo.md - Dotfiles Project Task Tracker
-# Version: 1.2.0 (2026-05-11)
+# Version: 1.3.0 (2026-05-11)
 # Last Updated: 2026-05-11
 
 ### ToDO:
@@ -12,20 +12,21 @@
 [x] create a small header when run, write this to affected files @done (add_file_header function exists)
 [x] check logic/flow, everything must be in the correct order @done (2026-05-11)
 [x] make so when it reverts, it actually shows whats getting done @done (2026-05-11)
-[] echo found distro on top of screen when running for the first time!
-[] maybe make so run_me_first.sh checks for previous runs or if first run?
+[] echo found distro on top of screen when running for the first time! @done (2026-05-11)
+[] maybe make so run_me_first.sh checks for previous runs or if first run? @done (2026-05-11)
 [] refactor the code to be more modular, functions for each task, easier to read and maintain
-[] add error handling, if a command fails, it should log the error and continue with the next one
+[] add error handling, if a command fails, it should log the error and continue with the next one @done (2026-05-11)
 
 ---
 
 ## Changelog
 
-### v1.2.0 (2026-05-11)
-- Added versioning and changelog to ToDo.md
-- Updated completion status for recent installer enhancements
-- Marked Taskwarrior integration as completed
-- Added dates to completed items for better tracking
+### v1.3.0 (2026-05-11)
+- Added prominent distro display on first run
+- Implemented first-run detection with state file tracking
+- Enhanced error handling for resilient operation (removed set -euo pipefail)
+- Updated installer to continue on non-critical failures
+- Added installation state persistence for future reference
 
 ### v1.1.0 (2026-05-08)
 - TMUX fixes completed (coffee plugin, keybindings, weather, numbering)
