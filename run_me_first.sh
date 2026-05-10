@@ -4,8 +4,8 @@
 # =============================================================================
 # Author      : b0red
 # Repository  : https://bitbucket.org/b0red/dotfiles
-# Version     : 15.6.0
-# Date        : 2026-05-06
+# Version     : 15.7.0
+# Date        : 2026-05-11
 # Description : Backs up existing dotfiles, creates symlinks, installs apps,
 #               updates submodules, and clones companion repos (.tmux, .vim).
 # Usage       : ./run_me_first.sh [-h|-?] [--dry-run] [-v] [-d] [-r]
@@ -231,6 +231,7 @@ main() {
     cleanup_symlinks
     symlink_dotfiles
     install_apps
+    setup_taskwarrior_config
     archive_backup
     update_submodules
     clone_repos
@@ -966,6 +967,61 @@ install_apps_direct() {
     if [ $failed -gt 0 ]; then
         return 1
     fi
+    return 0
+}
+
+setup_taskwarrior_config() {
+    log_info "Checking for Taskwarrior configuration..."
+
+    local taskrc="$HOME/.taskrc"
+    local repo_taskrc="$DIR/taskwarrior/.taskrc"
+
+    if [ ! -f "$taskrc" ]; then
+        log_info "⏭️  ~/.taskrc not found, skipping Taskwarrior config setup"
+        return 0
+    fi
+
+    log_info "Found existing ~/.taskrc, setting up dotfiles version..."
+
+    # Create taskwarrior directory in repo if it doesn't exist
+    if [ ! -d "$DIR/taskwarrior" ]; then
+        if ! mkdir -p "$DIR/taskwarrior"; then
+            log_error "❌ Failed to create $DIR/taskwarrior"
+            return 1
+        fi
+    fi
+
+    # Backup existing repo file if it exists
+    if [ -f "$repo_taskrc" ]; then
+        local backup_file="$OLD_FILES/taskwarrior_$(date +%Y%m%d_%H%M%S).taskrc"
+        if cp "$repo_taskrc" "$backup_file"; then
+            log_info "✓ Backed up existing repo .taskrc to $backup_file"
+        else
+            log_warning "⚠️ Failed to backup existing repo .taskrc"
+        fi
+    fi
+
+    # Copy current .taskrc to repo
+    if cp "$taskrc" "$repo_taskrc"; then
+        log_success "✓ Copied ~/.taskrc to $repo_taskrc"
+    else
+        log_error "❌ Failed to copy ~/.taskrc to repo"
+        return 1
+    fi
+
+    # Backup current .taskrc if needed
+    if backup_target "$taskrc"; then
+        log_info "✓ Backed up existing ~/.taskrc"
+    fi
+
+    # Create symlink
+    if safe_exec ln -sf "$repo_taskrc" "$taskrc"; then
+        log_success "✓ Symlinked: $repo_taskrc -> $taskrc"
+    else
+        log_error "❌ Failed to symlink Taskwarrior config"
+        return 1
+    fi
+
     return 0
 }
 

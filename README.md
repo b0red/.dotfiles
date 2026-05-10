@@ -53,7 +53,7 @@ The script will:
 ```bash
 ./run_me_first.sh                   # Normal installation
 ./run_me_first.sh --help            # Show help message
-./run_me_first.sh --version         # Show version (v15.6.0)
+./run_me_first.sh --version         # Show version (v15.7.0)
 ./run_me_first.sh --revert          # Revert changes (restore backups)
 ./run_me_first.sh --select-apps      # Choose specific packages to install
 ./run_me_first.sh --skip-apps        # Skip package installation
@@ -64,6 +64,20 @@ TRACE_DEBUG=1 ./run_me_first.sh     # Trace with environment variable
 ```
 
 > **Note:** `--notify-only` is not yet implemented. See [Known Issues / Migration TODOs](#known-issues--migration-todos).
+
+---
+
+## Recent Changes
+
+### v15.7.0 (2026-05-11)
+- **Enhanced Installer Options**: Added `--select-apps` for interactive package selection and `--skip-apps` to bypass package installation entirely
+- **Improved Backup System**: Implemented manifest-backed backups for robust revert functionality with detailed change tracking
+- **Repository Migration**: Updated all references to canonical Bitbucket repository (`git@bitbucket.org:b0red/dotfiles.git`)
+- **Taskwarrior Integration**: Added automatic detection and setup of Taskwarrior configuration (`.taskrc`) if installed
+- **Documentation Updates**: Refreshed help text, examples, and README with new features and options
+
+### v15.6.0 (2026-05-06)
+- Initial release with comprehensive dotfiles installer
 
 ---
 
@@ -97,7 +111,7 @@ Example install run:
 ```
 =========================================
 Starting Dotfiles Installation
-Version: v15.6.0 (2026-05-06)
+Version: v15.7.0 (2026-05-11)
 =========================================
 🎨 Color output enabled
 Detected: OS=linux, Distro=ubuntu, Base=debian, Kernel=6.6.87, Arch=x86_64
