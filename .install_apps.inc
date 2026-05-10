@@ -4,7 +4,8 @@
 curl
 wget
 git
-cargo       # Rust package manager/build tool
+cargo           # Rust package manager/build tool
+taskwarrior     # Simple taskmanager
 
 # === EDITORS ===
 vim
