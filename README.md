@@ -2,7 +2,7 @@
 
 A comprehensive, cross-platform dotfiles setup with modular bash configuration, visual loading feedback, universal package management, and automated installation.
 
-> **Migration note**: This repo is being moved from `~/dotfiles` (Bitbucket, current canonical) to `~/.dotfiles` at **https://github.com/b0red/.dotfiles** and merged with `~/.tmux` and `~/.vim`. Several files already reference `~/.dotfiles` (`.bashrc`, `aliases.bash`, `helpers/debug.sh`). The installer (`run_me_first.sh`) and `exports.bash` still reference the old `~/dotfiles` path — update those when completing the migration. See [Known Issues / Migration TODOs](#known-issues--migration-todos).
+> **Repository note**: This repo is canonical on Bitbucket at `git@bitbucket.org:b0red/dotfiles.git` and is checked out into `~/.dotfiles`. Several files still include legacy `~/dotfiles` references and should be updated over time. See [Known Issues / Migration TODOs](#known-issues--migration-todos).
 
 ---
 
@@ -55,13 +55,15 @@ The script will:
 ./run_me_first.sh --help            # Show help message
 ./run_me_first.sh --version         # Show version (v15.6.0)
 ./run_me_first.sh --revert          # Revert changes (restore backups)
+./run_me_first.sh --select-apps      # Choose specific packages to install
+./run_me_first.sh --skip-apps        # Skip package installation
 ./run_me_first.sh --debug           # Enable debug mode
 ./run_me_first.sh --trace           # Enable trace mode (set -x)
 DEBUG=1 ./run_me_first.sh           # Debug with environment variable
 TRACE_DEBUG=1 ./run_me_first.sh     # Trace with environment variable
 ```
 
-> **Note:** `-h`, `-?`, `--dry-run`, and `-d` short flags are not yet implemented. See [Known Issues / Migration TODOs](#known-issues--migration-todos).
+> **Note:** `--notify-only` is not yet implemented. See [Known Issues / Migration TODOs](#known-issues--migration-todos).
 
 ---
 
@@ -510,9 +512,9 @@ The installer automatically configures `.bash_profile` to source `.bashrc` for W
 ### Tmux Configuration
 
 The installer automatically:
-- Clones tmux configuration from GitHub → `~/.tmux`
+- Links tmux configuration from the repo → `~/.tmux`
 - Installs Coffee plugin manager → `~/.local/share/coffee`
-- Creates symlink `~/.tmux.conf → ~/.tmux/.tmux.conf`
+- Creates symlink `~/.tmux.conf` → `~/.tmux/.tmux.conf`
 
 #### Window & Pane Numbering
 
@@ -633,15 +635,16 @@ Keys loaded in preference order:
 
 ### Vim Setup
 
-The installer clones your vim configuration from GitHub:
-- Cloned to `~/.vim`
-- Symlink: `~/.vimrc → ~/.vim/.vimrc`
+The installer links your vim configuration from the repo:
+- Linked to `~/.vim`
+- Symlink: `~/.vimrc` → `~/.vim/.vimrc`
 
 If you need to set it up manually:
 ```bash
-git clone git@github.com:b0red/.vim.git ~/.vim
-ln -s ~/.vim/vimrc ~/.vimrc
-ln -s ~/.vim/gvimrc ~/.gvimrc
+git clone git@bitbucket.org:b0red/dotfiles.git ~/.dotfiles
+ln -s ~/.dotfiles/vim ~/.vim
+ln -s ~/.vim/.vimrc ~/.vimrc
+ln -s ~/.vim/.gvimrc ~/.gvimrc
 ```
 
 #### Vim Plugin Manager

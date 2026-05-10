@@ -3,7 +3,7 @@
 # run_me_first.sh — Dotfiles installer for first-run setup on new systems
 # =============================================================================
 # Author      : b0red
-# Repository  : https://github.com/b0red/.dotfiles
+# Repository  : https://bitbucket.org/b0red/dotfiles
 # Version     : 15.6.0
 # Date        : 2026-05-06
 # Description : Backs up existing dotfiles, creates symlinks, installs apps,
@@ -38,6 +38,10 @@ TITLE="Dotfiles Installer Script"
 DOT_ARRAY=("$HOME/.profile" "$HOME/.bashrc" "$HOME/.bash_profile" "$HOME/.inputrc")
 OLD_FILE_ARRAY=("$HOME/.bashrc" "$HOME/.profile" "$HOME/.bash_profile" "$HOME/.inputrc" "$HOME/.cshrc" "$HOME/.login")
 TEMP_FILES=()
+APP_SELECTION_MODE="all"      # all, selected, none
+INTERACTIVE_APP_SELECTION=${INTERACTIVE_APP_SELECTION:-0}
+SKIP_APP_INSTALL=${SKIP_APP_INSTALL:-0}
+BACKUP_MANIFEST="$OLD_FILES/backup-manifest-$DATE.txt"
 
 # Standard exit codes (Vibecoding v5.6)
 EXIT_OK=0
@@ -206,8 +210,12 @@ main() {
     get_os_info
     validate_environment
     load_package_functions || log_warning "⚠️ Continuing without package functions"
-    load_app_list || log_warning "⚠️ Using fallback app list"
-    
+    if [ "${SKIP_APP_INSTALL:-0}" -eq 0 ]; then
+        load_app_list || log_warning "⚠️ Using fallback app list"
+    else
+        log_info "Application installation will be skipped"
+    fi
+
     # Prompt for sudo early
     log_info ""
     log_info "🔐 Checking sudo access (you may be prompted for password)..."
@@ -293,6 +301,68 @@ safe_exec() {
         return 0
     fi
     "$@"
+}
+
+backup_manifest_init() {
+    if [ ! -d "$OLD_FILES" ]; then
+        mkdir -p "$OLD_FILES" 2>/dev/null || return 1
+    fi
+    touch "$BACKUP_MANIFEST" 2>/dev/null || return 1
+}
+
+record_backup() {
+    local original="$1" backup="$2"
+    if [ -z "$original" ] || [ -z "$backup" ]; then
+        return 1
+    fi
+    printf '%s|%s\n' "$original" "$backup" >> "$BACKUP_MANIFEST"
+}
+
+backup_target() {
+    local src="$1"
+    if [ ! -e "$src" ] && [ ! -L "$src" ]; then
+        return 0
+    fi
+    if [ -z "$BACKUP_MANIFEST" ]; then
+        return 1
+    fi
+    if [ ! -f "$BACKUP_MANIFEST" ]; then
+        backup_manifest_init || true
+    fi
+    local rel="${src#$HOME}"
+    local backup_path="$OLD_FILES${rel}.bak-$DATE"
+    mkdir -p "$(dirname "$backup_path")" 2>/dev/null || return 1
+    if safe_exec cp -a "$src" "$backup_path"; then
+        record_backup "$src" "$backup_path"
+        return 0
+    fi
+    return 1
+}
+
+restore_backup_manifest() {
+    local manifest
+    manifest=$(ls -1t "$OLD_FILES"/backup-manifest-*.txt 2>/dev/null | head -n1 || true)
+    if [ -z "$manifest" ]; then
+        return 1
+    fi
+    log_info "Restoring backups from manifest: $manifest"
+    while IFS='|' read -r original backup; do
+        [ -z "$original" ] && continue
+        if [ ! -e "$backup" ] && [ ! -L "$backup" ]; then
+            log_warning "⚠️ Backup missing: $backup"
+            continue
+        fi
+        if [ -e "$original" ] || [ -L "$original" ]; then
+            rm -rf "$original" 2>/dev/null || log_warning "⚠️ Could not remove existing $original"
+        fi
+        mkdir -p "$(dirname "$original")" 2>/dev/null || log_warning "⚠️ Could not create directory: $(dirname "$original")"
+        if cp -a "$backup" "$original" 2>/dev/null; then
+            log_success "✓ Restored: $original"
+        else
+            log_error "❌ Failed to restore: $original"
+        fi
+    done < "$manifest"
+    return 0
 }
 
 logfile_init() {
@@ -616,7 +686,7 @@ validate_environment() {
     if [ ! -d "$DIR" ]; then
         log_error "❌ Dotfiles directory not found: $DIR"
         log_error "   Clone the repo first:"
-        log_error "   git clone https://github.com/b0red/.dotfiles $DIR"
+        log_error "   git clone git@bitbucket.org:b0red/dotfiles.git $DIR"
         errors=$((errors + 1))
     fi
 
@@ -713,14 +783,23 @@ load_package_functions() {
 install_apps() {
     log_info "Installing applications..."
 
+    if [ "${SKIP_APP_INSTALL:-0}" -eq 1 ]; then
+        log_info "Skipping application installation by request"
+        return 0
+    fi
+
     if [ "${DRY_RUN:-0}" -eq 1 ]; then
         log_info "  [dry-run] would install ${#APP_ARRAY[@]:-0} apps via package manager"
         return 0
     fi
 
+    if [ "${INTERACTIVE_APP_SELECTION:-0}" -eq 1 ]; then
+        prompt_select_apps
+    fi
+
     if [ -z "${APP_ARRAY+x}" ] || [ ${#APP_ARRAY[@]} -eq 0 ]; then
-        log_error "❌ APP_ARRAY not loaded or empty"
-        return 1
+        log_info "No applications selected for installation"
+        return 0
     fi
     
     log_info "Processing ${#APP_ARRAY[@]} applications..."
@@ -767,6 +846,61 @@ install_apps() {
         return 1
     fi
     return 0
+}
+
+prompt_select_apps() {
+    if [ "${INTERACTIVE_APP_SELECTION:-0}" -ne 1 ]; then
+        return 0
+    fi
+    if [ ${#APP_ARRAY[@]} -eq 0 ]; then
+        log_warning "⚠️ No applications available to select"
+        return 0
+    fi
+
+    log_info "Interactive application selection enabled"
+    while true; do
+        echo ""
+        log_info "Pick packages to install from .install_apps.inc:"
+        for i in "${!APP_ARRAY[@]}"; do
+            printf "  %2d) %s\n" "$((i + 1))" "${APP_ARRAY[i]}"
+        done
+        echo ""
+        read -rp "Enter numbers separated by commas, 'all' to install all, or 'none' to skip: " selection
+        selection="${selection// /}"
+        selection="$(echo "$selection" | tr '[:upper:]' '[:lower:]')"
+        if [ -z "$selection" ] || [ "$selection" = "all" ]; then
+            log_info "Installing all listed packages"
+            break
+        fi
+        if [ "$selection" = "none" ] || [ "$selection" = "skip" ]; then
+            APP_ARRAY=()
+            log_warning "Skipping all app installs"
+            break
+        fi
+        local valid=1
+        local selected=()
+        IFS=',' read -ra entries <<< "$selection"
+        for entry in "${entries[@]}"; do
+            if [[ "$entry" =~ ^[0-9]+$ ]] && [ "$entry" -ge 1 ] && [ "$entry" -le "${#APP_ARRAY[@]}" ]; then
+                selected+=("${APP_ARRAY[entry-1]}")
+            else
+                log_warning "⚠️ Invalid selection: $entry"
+                valid=0
+                break
+            fi
+        done
+        if [ $valid -eq 1 ]; then
+            local unique=()
+            for app in "${selected[@]}"; do
+                if ! printf '%s\n' "${unique[@]}" | grep -Fxq "$app" 2>/dev/null; then
+                    unique+=("$app")
+                fi
+            done
+            APP_ARRAY=("${unique[@]}")
+            log_info "Selected ${#APP_ARRAY[@]} app(s) for installation"
+            break
+        fi
+    done
 }
 
 install_apps_direct() {
@@ -841,36 +975,28 @@ install_apps_direct() {
 
 backup_dotfiles() {
     log_info "Backing up existing dotfiles..."
-    
+
     if ! mkdir -p "$OLD_FILES" 2>/dev/null; then
         log_error "❌ Failed to create backup directory"
         exit $EXIT_PERM
     fi
-    
+    backup_manifest_init || log_warning "⚠️ Could not initialize backup manifest"
+
     local backed_up=0 skipped_unchanged=0
-    
+
     for f in "${OLD_FILE_ARRAY[@]}"; do
-        if [ -f "$f" ] && [ ! -L "$f" ]; then
-            local target
-            target="$DIR/$(basename "$f")"
-            local backup_name
-            backup_name="$(basename "$f").bak-$DATE"
-            
-            if [ -f "$target" ] && cmp -s "$f" "$target" 2>/dev/null; then
+        if [ -e "$f" ] || [ -L "$f" ]; then
+            if [ -f "$f" ] && [ ! -L "$f" ] && [ -f "$DIR/$(basename "$f")" ] && cmp -s "$f" "$DIR/$(basename "$f")" 2>/dev/null; then
                 log_info "⏭️  Skipping $f (unchanged from repo)"
                 skipped_unchanged=$((skipped_unchanged + 1))
                 continue
             fi
-            
-            if safe_exec cp -p "$f" "$OLD_FILES/$backup_name"; then
-                log_success "✓ Backed up: $f"
+            if backup_target "$f"; then
                 backed_up=$((backed_up + 1))
-            else
-                log_error "❌ Failed to backup: $f"
             fi
         fi
     done
-    
+
     if [ $backed_up -eq 0 ]; then
         if [ $skipped_unchanged -gt 0 ]; then
             log_info "No new backups needed ($skipped_unchanged files unchanged)"
@@ -887,7 +1013,8 @@ backup_dotfiles() {
 
 cleanup_symlinks() {
     log_info "Cleaning up old symlinks..."
-    
+    backup_manifest_init || log_warning "⚠️ Could not initialize backup manifest"
+
     for file in "${DOT_ARRAY[@]}"; do
         if [ -L "$file" ]; then
             if [ ! -e "$file" ]; then
@@ -896,12 +1023,22 @@ cleanup_symlinks() {
                 else
                     log_error "❌ Failed to remove broken symlink: $file"
                 fi
+            else
+                if backup_target "$file"; then
+                    if rm -rf "$file" 2>/dev/null; then
+                        log_success "✓ Backed up and removed existing symlink: $file"
+                    else
+                        log_error "❌ Failed to remove: $file"
+                    fi
+                fi
             fi
         elif [ -e "$file" ]; then
-            if mv "$file" "$OLD_FILES/$(basename "$file").moved-$DATE" 2>/dev/null; then
-                log_success "✓ Moved existing file: $file -> $OLD_FILES/"
-            else
-                log_error "❌ Failed to move: $file"
+            if backup_target "$file"; then
+                if rm -rf "$file" 2>/dev/null; then
+                    log_success "✓ Backed up and removed existing file: $file"
+                else
+                    log_error "❌ Failed to remove: $file"
+                fi
             fi
         fi
     done
@@ -1082,7 +1219,9 @@ clone_repos() {
         fi
         if [ -e "$dest" ] && [ ! -L "$dest" ]; then
             log_warning "⚠️  $dest exists and is not a symlink — backing up"
-            safe_exec mv "$dest" "${dest}.bak-$DATE"
+            if backup_target "$dest"; then
+                rm -rf "$dest" 2>/dev/null || true
+            fi
         fi
         if safe_exec ln -sfn "$src" "$dest"; then
             log_success "✓ Linked: $src -> $dest"
@@ -1233,9 +1372,8 @@ symlink_external_repos() {
     if [ -d "$HOME/.tmux" ]; then
         if [ -f "$HOME/.tmux/.tmux.conf" ]; then
             if [ -e "$HOME/.tmux.conf" ] || [ -L "$HOME/.tmux.conf" ]; then
-                if ! rm -f "$HOME/.tmux.conf" 2>/dev/null; then
-                    log_error "❌ Failed to remove old .tmux.conf"
-                    errors=$((errors + 1))
+                if backup_target "$HOME/.tmux.conf"; then
+                    rm -f "$HOME/.tmux.conf" 2>/dev/null || true
                 fi
             fi
             if [ $errors -eq 0 ]; then
@@ -1256,9 +1394,8 @@ symlink_external_repos() {
     if [ -d "$HOME/.vim" ]; then
         if [ -f "$HOME/.vim/.vimrc" ]; then
             if [ -e "$HOME/.vimrc" ] || [ -L "$HOME/.vimrc" ]; then
-                if ! rm -f "$HOME/.vimrc" 2>/dev/null; then
-                    log_error "❌ Failed to remove old .vimrc"
-                    errors=$((errors + 1))
+                if backup_target "$HOME/.vimrc"; then
+                    rm -f "$HOME/.vimrc" 2>/dev/null || true
                 fi
             fi
             if safe_exec ln -sf "$HOME/.vim/.vimrc" "$HOME/.vimrc"; then
@@ -1343,27 +1480,21 @@ symlink_config_folders() {
                 fi
             fi
             
-            # Backup existing file/directory/symlink
-            local backup_name="${basename_item}.bak-$DATE"
-            local backup_path="$OLD_FILES/$backup_name"
-            
-            log_info "Backing up existing: $basename_item -> $backup_name"
-            
-            if [ -L "$target_path" ]; then
-                # If it's a symlink, just remove it
-                if ! rm -f "$target_path" 2>/dev/null; then
-                    log_error "❌ Failed to remove existing symlink: $target_path"
-                    errors=$((errors + 1))
-                    continue
-                fi
-            else
-                # If it's a real file/directory, back it up
-                if ! mv "$target_path" "$backup_path" 2>/dev/null; then
+            if [ -L "$target_path" ] || [ -e "$target_path" ]; then
+                log_info "Backing up existing: $basename_item"
+                if backup_target "$target_path"; then
+                    if rm -rf "$target_path" 2>/dev/null; then
+                        log_success "✓ Backed up: $basename_item"
+                    else
+                        log_error "❌ Failed to remove existing item: $target_path"
+                        errors=$((errors + 1))
+                        continue
+                    fi
+                else
                     log_error "❌ Failed to backup: $basename_item"
                     errors=$((errors + 1))
                     continue
                 fi
-                log_success "✓ Backed up: $basename_item"
             fi
         fi
         
@@ -1429,33 +1560,17 @@ revert_changes() {
     log_info "========================================="
     log_info "Reverting Dotfiles Installation"
     log_info "========================================="
-    
+
     if [ ! -d "$OLD_FILES" ]; then
         log_error "❌ No backup directory found at: $OLD_FILES"
         log_info "Nothing to revert."
         return 1
     fi
-    
-    local reverted=0 failed=0
-    
-    shopt -s nullglob
-    for f in "$OLD_FILES"/*.bak-* "$OLD_FILES"/*.moved-*; do
-        [ -f "$f" ] || continue
-        local basename_file
-        basename_file=$(basename "$f" | sed 's/\.\(bak\|moved\)-.*$//')
-        
-        if cp -pf "$f" "$HOME/$basename_file" 2>/dev/null; then
-            log_success "✓ Restored: $basename_file"
-            reverted=$((reverted + 1))
-        else
-            log_error "❌ Failed to restore: $basename_file"
-            failed=$((failed + 1))
-        fi
-    done
-    shopt -u nullglob
-    
-    local removed=0
-    for src in "${DOT_ARRAY[@]}"; do
+
+    local reverted=0 failed=0 removed=0
+
+    log_info "Removing symlinks created by the installer..."
+    for src in "${DOT_ARRAY[@]}" "$HOME/.tmux" "$HOME/.vim" "$HOME/.tmux.conf" "$HOME/.vimrc"; do
         if [ -L "$src" ]; then
             if rm -f "$src" 2>/dev/null; then
                 log_success "✓ Removed symlink: $src"
@@ -1466,7 +1581,29 @@ revert_changes() {
             fi
         fi
     done
-    
+
+    if restore_backup_manifest; then
+        log_success "✓ Restored files from latest manifest"
+    else
+        log_warning "⚠️ No manifest found, using legacy backup restore as fallback"
+    fi
+
+    shopt -s nullglob
+    for f in "$OLD_FILES"/*.bak-* "$OLD_FILES"/*.moved-*; do
+        [ -f "$f" ] || continue
+        local basename_file
+        basename_file=$(basename "$f" | sed 's/\.\(bak\|moved\)-.*$//')
+
+        if cp -pf "$f" "$HOME/$basename_file" 2>/dev/null; then
+            log_success "✓ Restored: $basename_file"
+            reverted=$((reverted + 1))
+        else
+            log_error "❌ Failed to restore: $basename_file"
+            failed=$((failed + 1))
+        fi
+    done
+    shopt -u nullglob
+
     log_info "========================================="
     log_info "Revert Summary:"
     log_info "  Files restored: $reverted"
@@ -1475,11 +1612,11 @@ revert_changes() {
         log_error "  Failed operations: $failed"
     fi
     log_info "========================================="
-    
+
     if [ $reverted -eq 0 ] && [ $removed -eq 0 ]; then
         log_warning "⚠️ No changes were reverted. Check $OLD_FILES/ manually."
     fi
-    
+
     log_info ""
     log_info "Manual cleanup steps (if needed):"
     log_info "  1. Review backups: ls -la $OLD_FILES/"
@@ -1497,13 +1634,13 @@ show_version() {
     echo -e "${GREEN}${BOLD}run_me_first.sh${NC} version ${BLUE}v${VERSION}${NC} (${VERSION_DATE})"
     echo ""
     echo "Dotfiles installer and configuration manager"
-    echo "https://github.com/b0red/.dotfiles"
+    echo "https://bitbucket.org/b0red/dotfiles"
 }
 
 show_info() {
     echo -e "${BOLD}run_me_first.sh${NC} v${VERSION} — Dotfiles installer for first-run setup"
     echo ""
-    echo -e "  Repo    : ${BLUE}https://github.com/b0red/.dotfiles${NC}"
+    echo -e "  Repo    : ${BLUE}https://bitbucket.org/b0red/dotfiles${NC}"
     echo -e "  Date    : ${VERSION_DATE}"
     echo -e "  Usage   : ./run_me_first.sh [-h|-?] [--dry-run] [-v] [-d] [-r]"
     echo ""
@@ -1519,6 +1656,8 @@ show_help() {
     echo "  -v, --version     Show version information"
     echo "  -r, --revert      Restore backups and remove symlinks"
     echo "  --check           Check installation status without making changes"
+    echo "  --select-apps     Choose specific applications from .install_apps.inc"
+    echo "  --skip-apps       Skip application installation entirely"
     echo "  -d, --debug       Enable debug mode"
     echo "  --dry-run         Show what would be done without making changes"
     echo "  --trace           Enable trace mode (set -x)"
@@ -1547,6 +1686,8 @@ show_help() {
     echo "  ./run_me_first.sh                   # Normal installation"
     echo "  ./run_me_first.sh --check           # Check status without changes"
     echo "  ./run_me_first.sh --dry-run         # Preview without changes"
+    echo "  ./run_me_first.sh --select-apps     # Choose specific packages to install"
+    echo "  ./run_me_first.sh --skip-apps       # Skip package installation"
     echo "  ./run_me_first.sh --version         # Show version"
     echo "  ./run_me_first.sh --revert          # Undo changes (restore backups)"
     echo "  ./run_me_first.sh -d                # Debug mode"
@@ -1596,6 +1737,16 @@ case "${1:-}" in
         ;;
     --check)
         CHECK_MODE=1
+        main
+        exit 0
+        ;;
+    --select-apps)
+        INTERACTIVE_APP_SELECTION=1
+        main
+        exit 0
+        ;;
+    --skip-apps)
+        SKIP_APP_INSTALL=1
         main
         exit 0
         ;;

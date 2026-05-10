@@ -1,5 +1,8 @@
 ### ToDO:
 #### General:
+[x] Add interactive package selection and skip-install options @done
+[x] Improve backup/revert flow with manifest-backed backups @done
+[x] Keep canonical repo on Bitbucket and document it in README @done
 [] echo found distro on top of screen when running for the first time!
 [] maybe make so run_me_first.sh checks for previous runs or if first run?
 [] make so when it reverts, it actually shows whats getting done @done
