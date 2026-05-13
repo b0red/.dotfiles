@@ -1,6 +1,21 @@
 {
     "plugins": [
         {
+            "name": "tmux-weather",
+            "source": [
+                "/home/patrick/.tmux/coffee/plugins/tmux-weather/weather.tmux"
+            ],
+            "enabled": true,
+            "install_path": "/home/patrick/.tmux/coffee/plugins/tmux-weather",
+            "skip_auto_update": false,
+            "git": {
+                "repo": "aaronpowell/tmux-weather",
+                "tag": null,
+                "commit_hash": "829b7031952f1c27eaf08e06001861b66b4de81e",
+                "last_pull": "2026-05-13T19:00:43.498559+00:00"
+            }
+        },
+        {
             "name": "tmux-battery",
             "source": [
                 "/home/patrick/.tmux/coffee/plugins/tmux-battery/battery.tmux",
@@ -164,21 +179,6 @@
                 "tag": null,
                 "commit_hash": "e886288d848283a871fcc0777927e83f306a289b",
                 "last_pull": "2026-05-07T15:38:21.104935+00:00"
-            }
-        },
-        {
-            "name": "tmux-weather",
-            "source": [
-                "/home/patrick/.tmux/coffee/plugins/tmux-weather/weather.tmux"
-            ],
-            "enabled": true,
-            "install_path": "/home/patrick/.tmux/coffee/plugins/tmux-weather",
-            "skip_auto_update": false,
-            "git": {
-                "repo": "aaronpowell/tmux-weather",
-                "tag": null,
-                "commit_hash": "829b7031952f1c27eaf08e06001861b66b4de81e",
-                "last_pull": "2026-05-07T15:38:21.105521+00:00"
             }
         }
     ]

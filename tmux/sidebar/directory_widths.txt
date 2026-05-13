@@ -10,3 +10,4 @@
 /home/patrick	40
 /home/patrick/bin	40
 /home/patrick/.tmux/coffee/plugins/tmux-menus/items/custom_items	10
+/home/patrick/.dotfiles	29

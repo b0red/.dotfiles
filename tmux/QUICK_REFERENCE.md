@@ -48,10 +48,10 @@ coffee disable <plugin>     # Disable plugin
 |-----------|--------|
 | `Ctrl-a` + `r` | Reload config |
 | `Ctrl-a` + `C` | Open Coffee TUI |
-| `Ctrl-a` + `I` | Install plugins (alternative to coffee install) |
+| `~~ Ctrl-a` + `I` | Install plugins (alternative to coffee install) ~~|
 | `Ctrl-a` + `c` | New window |
-| `Ctrl-a` + `\|` | Split horizontal |
-| `Ctrl-a` + `-` | Split vertical |
+| `Ctrl-a` + `-` | Split horizontal |
+| `Ctrl-a` + `\|` | Split vertical |
 | `Ctrl-a` + `d` | Detach session |
 | `Alt` + `Arrow` | Navigate panes (no prefix!) |
 | `Tab` | Toggle sidebar |
@@ -106,6 +106,8 @@ tmux kill-server
 
 # Start new session
 tmux new-session
+or
+~/.tmux/start-tmux.sh (preconfigured layout)
 ```
 
 ## File Locations

@@ -557,16 +557,11 @@ url: "tmux-plugins/tmux-resurrect"
 ```
 
 **Installing/Updating Plugins**
-```bash
-coffee install        # Install all configured plugins
-coffee update         # Update all plugins
-coffee list           # List installed plugins
-```
-
-**Key Bindings**
-- `prefix + i` — Install missing plugins
-- `prefix + u` — Update plugins
-- `prefix + alt+u` — Uninstall plugins
+Prefix + C, opens the Coffee TUI. It has 4 menus;  
+* Home  
+* Install  
+* Update  
+* Remove
 
 [Read more: Coffee](https://github.com/PraaneshSelvaraj/coffee.tmux)
 
@@ -574,14 +569,15 @@ coffee list           # List installed plugins
 
 | Binding | Action |
 |---------|--------|
+| `prefix + C` | Open Coffee plugin-manager |
 | `prefix + h` | Open Htop in display-popup (80% size) |
 | `prefix + H` | Open Htop in new window |
 | `prefix + o` | Open B-Top in display-popup (80% size) |
 | `prefix + O` | Open B-Top in new window |
-| `prefix + t` | Open Task Monitor in display-popup |
-| `prefix + T` | Open Overview Dashboard in display-popup |
+| `prefix + t` | Open Task Monitor in display-popup (80% size)|
+| `prefix + T` | Open System Resouce Overview Dashboard in display-popup (80% size)|
 | `prefix + Tab` | Toggle sidebar with tree view |
-| `prefix + Space` | Next layout |
+| `prefix + Space` | Next layout (toggle) |
 | `prefix + d` | Detach |
 | `prefix + m` | Open man page (prompt for command) |
 
@@ -595,9 +591,13 @@ cd ~/.dotfiles/tmux
 
 This creates a session with:
 - **Window 1, Pane 1** — Left pane (50% width) — default shell
+	+ Opens to ~
 - **Window 1, Pane 2** — Top-right (60% height) — default shell
+	+ If docker is installed, opens to ~/docker/config
 - **Window 1, Pane 3** — Bottom-right (60% height) — default shell
+	+ opens with "Midnight Commander", requires root
 - **Window 1, Pane 4** — Bottom-right (40% height) — default shell
+	+ if Taskwarrior is installed, opens with the task list loaded
 
 (Requires `tmux` and optionally `mc` for file browser)
 
