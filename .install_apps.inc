@@ -41,6 +41,7 @@ most        # alternative to less/more
 # === MODERN CLI REPLACEMENTS ===
 bat         # cat replacement
 tldr        # man page summaries
+procs       # ps aux replacement
 
 # === DATA PROCESSING ===
 jq          # JSON processor
