@@ -919,6 +919,13 @@ Already updated (ahead of migration): `.bashrc`, `aliases.bash` (`dotupdate`), `
 ---
 
 ## Version History
+- **v15.6.1** (2026-05-13)
+  - Changed info regarding tmux plugin manager from TPM to Coffee (modern replacement)
+  - Updated tmux configuration instructions to reflect Coffee usage
+  - Added `start_tmux.sh` script for easy session creation with the new tmux configuration
+  - Updated tmux keybinding documentation to reflect new bindings and Coffee integration
+  - Added troubleshooting steps for tmux configuration and Coffee plugin manager
+  - Updated Known Issues / Migration TODOs to reflect changes and new tmux setup
 
 - **v15.6.0** (2026-05-06)
   - Restructured repo: `debug.sh` moved from `.bashrc.d/` to `helpers/`
