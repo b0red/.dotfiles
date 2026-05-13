@@ -1,0 +1,6 @@
+{
+    "chat.tools.terminal.autoApprove": {
+        "pip": true,
+        "/home/patrick/.local/share/coffee/.venv/bin/python": true
+    }
+}
