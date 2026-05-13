@@ -569,7 +569,7 @@ Prefix + C, opens the Coffee TUI. It has 4 menus;
 
 | Binding | Action |
 |---------|--------|
-| `prefix + C` | Open Coffee plugin-manager |
+| `prefix + C` | Open Coffee plugin-manager (Capital C)|
 | `prefix + h` | Open Htop in display-popup (80% size) |
 | `prefix + H` | Open Htop in new window |
 | `prefix + o` | Open B-Top in display-popup (80% size) |
@@ -577,13 +577,13 @@ Prefix + C, opens the Coffee TUI. It has 4 menus;
 | `prefix + t` | Open Task Monitor in display-popup (80% size)|
 | `prefix + T` | Open System Resouce Overview Dashboard in display-popup (80% size)|
 | `prefix + Tab` | Toggle sidebar with tree view |
-| `prefix + Space` | Next layout (toggle) |
+| `prefix + Space` | Next layout (cycles trough all variants) |
 | `prefix + d` | Detach |
-| `prefix + m` | Open man page (prompt for command) |
+| `~~ prefix + m` | Open man page (prompt for command) ~~|
 
 #### Session Creation
 
-Create a standard multi-pane session:
+Create the default multi-pane session:
 ```bash
 cd ~/.dotfiles/tmux
 ./start_tmux.sh
@@ -604,7 +604,7 @@ This creates a session with:
 #### Status Bar
 
 Status bar shows (left to right):
-- Session name `[0]`
+- Session name `[1]`
 - Window name with current path
 - Window list with indicators
 - Plugin status indicators
