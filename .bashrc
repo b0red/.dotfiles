@@ -372,13 +372,10 @@ if [ -n "$PS1" ] && [ "$BASHRC_SOURCED" -eq 1 ]; then
     # Color definitions for welcome message
     N_GREEN='\033[0;32m'
     N_BLUE='\033[0;34m'
-    if [[ -z "${NC+x}" ]]; then
-        readonly NC='\033[0m'
-    fi
     
     echo -e "\n${N_GREEN}Welcome to $(hostname)${NC}"
     echo -e "${N_BLUE}$(date)${NC}\n"
-    unset N_GREEN N_BLUE NC
+    unset N_GREEN N_BLUE
 fi
 
 # =============================================================================

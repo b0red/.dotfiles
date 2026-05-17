@@ -99,13 +99,13 @@ fi
 
 # Pane 4: task pane (only if created)
 if command -v task >/dev/null 2>&1; then
-    tmux send-keys -t "$SESSION_NAME":1.4 "clear && task" C-m
+    tmux send-keys -t "$SESSION_NAME":1.4 "clear && tasks" C-m
 fi
 
 #----------------------------------------------------------------------------- 
 # 7. FOCUS MC PANE AND ATTACH TO SESSION
 #----------------------------------------------------------------------------- 
 tmux select-pane -t "$SESSION_NAME":1.3
-HOOK_CMD='if-shell "[ #{pane_id} = '$SESSION_NAME':1.3 ]" "set-option cursor-style blinking-block ; set-option cursor-colour brightred" "set-option cursor-style default ; set-option cursor-colour default"'
-tmux set-hook -g pane-focus-in "$HOOK_CMD"
-tmux attach-session -t "$SESSION_NAME"st
+# HOOK_CMD='if-shell "[ #{pane_id} = '$SESSION_NAME':1.3 ]" "set-option cursor-style blinking-block ; set-option cursor-colour brightred" "set-option cursor-style default ; set-option cursor-colour default"'
+# tmux set-hook -g pane-focus-in "$HOOK_CMD"
+tmux attach-session -t "$SESSION_NAME"
