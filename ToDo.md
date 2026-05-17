@@ -21,6 +21,10 @@
 
 ## Changelog
 
+### v1.3.0.1 (2026-05-17)
+- Added Taskwarrior config detection and symlink setup
+- Translated some lines from swedish to english for better readability
+
 ### v1.3.0 (2026-05-11)
 - Added prominent distro display on first run
 - Implemented first-run detection with state file tracking
@@ -60,10 +64,15 @@
 
 #### VIM
 
+##### Major:
+* WIP
+##### Minor:
+* WIP
+
 ### Done:
 
-[x] fixa casesatsen för de olika aliasen @done (19-04-27 22:44)
-[x] Check that logfilen skrivs snyggt @done (19-04-27 22:44)
+[x] fix case selection for the different aliases @done (19-04-27 22:44)
+[x] check that we have nicely written logfiles@done (19-04-27 22:44)
 [x] make so when it reverts, it actually shows whats getting done @done
 [x] check logic/flow, everything must be in the correct order @done
 [x] create a small header when run, write this to affected files:
