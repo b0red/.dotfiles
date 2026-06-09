@@ -99,7 +99,9 @@ fi
 
 # Pane 4: task pane (only if created)
 if command -v task >/dev/null 2>&1; then
-    tmux send-keys -t "$SESSION_NAME":1.4 "clear && tasks" C-m
+    # Use the underlying task command directly, because `tasks` is a shell alias
+    # and tmux pane shells may not source the alias definition.
+    tmux send-keys -t "$SESSION_NAME":1.4 "clear && task list" C-m
 fi
 
 #----------------------------------------------------------------------------- 
