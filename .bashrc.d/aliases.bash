@@ -177,6 +177,7 @@ alias rm='rm -i'  # Interactive confirm
 alias nano='nano -c'
 alias vi='vim'
 alias less='less -R'  # Colored pipe support
+alias ghost='ghostwriter $1'
 
 # Colored grep (safe, no deprecated GREP_OPTIONS)
 alias grep='grep --color=always --line-number --no-messages --binary-files=without-match'

@@ -76,13 +76,17 @@ if command -v task >/dev/null 2>&1; then
     tmux split-window -v -t "$SESSION_NAME":1.3 -p 20 -c "$TOP_RIGHT_DIR"
 fi
 
-#----------------------------------------------------------------------------- 
+#-----------------------------------------------------------------------------
 # 6. SET UP EACH PANE WITH COMMANDS
 #    (Moved BEFORE attach for execution guarantee)
-#----------------------------------------------------------------------------- 
+#-----------------------------------------------------------------------------
 # NOTE: With BASHRC_SKIP_IN_TMUX="yes" (default), these panes will NOT
 #       re-source .bashrc. They inherit the environment from the parent shell.
 #       This makes pane creation much faster!
+
+# Wait for pane shells to finish initializing before sending keys.
+# Without this delay, send-keys fires before bash is ready and keys are swallowed.
+sleep 1
 
 # Pane 1: left pane
 tmux send-keys -t "$SESSION_NAME":1.1 "clear" C-m
