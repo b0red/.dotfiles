@@ -20,3 +20,18 @@ old-files/
 
 # Claude Code working directory
 .claude/
+
+# Coffee-managed tmux plugins — installed/updated by Coffee, not tracked here.
+# The *.yaml files alongside them ARE tracked (they tell Coffee what to install).
+tmux/coffee/plugins/tmux-battery/
+tmux/coffee/plugins/tmux-continuum/
+tmux/coffee/plugins/tmux-cpu/
+tmux/coffee/plugins/tmux-menus/
+tmux/coffee/plugins/tmux-nerd-font-window-name/
+tmux/coffee/plugins/tmux-online-status/
+tmux/coffee/plugins/tmux-power-zoom/
+tmux/coffee/plugins/tmux-prefix-highlight/
+tmux/coffee/plugins/tmux-resurrect/
+tmux/coffee/plugins/tmux-sidebar/
+tmux/coffee/plugins/tmux-task-monitor/
+tmux/coffee/plugins/tmux-weather/
