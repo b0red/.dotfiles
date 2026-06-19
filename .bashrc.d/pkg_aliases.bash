@@ -181,7 +181,7 @@ function set_package_aliases() {
             p_remove() { $SUDOCMD apt-get remove -y "$@"; }
             p_uninstall() { $SUDOCMD apt-get remove -y "$@"; }
             p_purge() { $SUDOCMD apt-get purge -y "$@"; }
-            p_update() { $SUDOCMD apt-get update; }
+            p_update() { $SUDOCMD apt-get update && $SUDOCMD apt-get upgrade -y; }
             p_upgrade() { $SUDOCMD apt-get update && $SUDOCMD apt-get upgrade -y; }
             p_dist_upgrade() { $SUDOCMD apt-get update && $SUDOCMD apt-get dist-upgrade -y; }
             p_search() { apt-cache search "$@"; }
@@ -422,6 +422,7 @@ function set_package_aliases() {
         alias search='p_search'
         alias clean='p_clean'
         alias info='p_info'
+        alias fullupdate='p_update && p_clean'
     fi
     
     echo "Package functions configured for $DISTROBASE"
