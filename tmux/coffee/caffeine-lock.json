@@ -1,6 +1,21 @@
 {
     "plugins": [
         {
+            "name": "tmux-mullvad",
+            "source": [
+                "/home/patrick/.tmux/coffee/plugins/tmux-mullvad/mullvad.tmux"
+            ],
+            "enabled": true,
+            "install_path": "/home/patrick/.tmux/coffee/plugins/tmux-mullvad",
+            "skip_auto_update": false,
+            "git": {
+                "repo": "jaclu/tmux-mullvad",
+                "tag": "v1.0.4",
+                "commit_hash": "f716bcfeae95060649a632826c8c09a1bf402338",
+                "last_pull": "2026-06-19T15:21:59.533136+00:00"
+            }
+        },
+        {
             "name": "tmux-weather",
             "source": [
                 "/home/patrick/.tmux/coffee/plugins/tmux-weather/weather.tmux"
