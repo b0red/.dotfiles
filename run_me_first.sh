@@ -4,8 +4,8 @@
 # =============================================================================
 # Author      : b0red
 # Repository  : https://github.com/b0red/.dotfiles
-# Version     : 15.7.0
-# Date        : 2026-05-11
+# Version     : 15.8.0
+# Date        : 2026-06-21
 # Description : Backs up existing dotfiles, creates symlinks, installs apps,
 #               updates submodules, and clones companion repos (.tmux, .vim).
 # Usage       : ./run_me_first.sh [-h|-?] [--dry-run] [-v] [-d] [-r]
@@ -105,13 +105,13 @@ validate_installation() {
         fi
     done
     
-    # Check external repos
-    if [ ! -d "$HOME/.tmux/.git" ]; then
+    # Check external repos (both are symlinks into this repo's subtrees, not separate repos)
+    if [ ! -L "$HOME/.tmux" ] || [ ! -d "$HOME/.tmux" ]; then
         log_warning "  ⚠️  Tmux repo not linked: ~/.tmux"
         issues=$((issues + 1))
     fi
-    
-    if [ ! -d "$HOME/.vim/.git" ]; then
+
+    if [ ! -L "$HOME/.vim" ] || [ ! -d "$HOME/.vim" ]; then
         log_warning "  ⚠️  Vim repo not linked: ~/.vim"
         issues=$((issues + 1))
     fi
@@ -133,16 +133,6 @@ validate_installation() {
     fi
 }
 
-update_installation_state() {
-    mkdir -p "$DIR"
-    cat > "$STATE_FILE" << EOF
-LAST_RUN=$(date +%Y-%m-%d_%H:%M:%S)
-VERSION=$VERSION
-COMPLETED_STEPS=backup,symlink,apps,submodules,repos,config_folders
-EOF
-    log_success "✓ Installation state recorded"
-}
-
 check_mode() {
     log_info ""
     log_info "Installation Status Check"
@@ -156,7 +146,7 @@ check_mode() {
     else
         log_info "📌 Status: Installation detected"
         log_info ""
-        log_info "$state" | while IFS='=' read -r key value; do
+        printf '%s\n' "$state" | while IFS='=' read -r key value; do
             case "$key" in
                 LAST_RUN)
                     log_info "   Last run: $value"
@@ -412,7 +402,7 @@ add_file_header() {
         while IFS= read -r line; do
             # Check if this line is part of the header
             if [[ "$line" =~ ^###.*-\+- ]] || \
-               [[ "$line" =~ ^###.*Created\ by\ RunMe\.sh ]] || \
+               [[ "$line" =~ ^###.*Created\ by\ (RunMe|run_me_first)\.sh ]] || \
                [[ "$line" =~ ^###.*Host: ]] || \
                [[ "$line" =~ ^###.*User: ]] || \
                [[ "$line" =~ ^###.*Distro: ]]; then
@@ -641,13 +631,16 @@ is_first_run() {
 }
 
 mark_installation_complete() {
+    mkdir -p "$DIR"
     {
+        echo "LAST_RUN=$(date +%Y-%m-%d_%H:%M:%S)"
+        echo "VERSION=$VERSION"
+        echo "COMPLETED_STEPS=backup,symlink,apps,submodules,repos,config_folders"
         echo "installed_at=$DATE"
-        echo "version=$VERSION"
         echo "distro=$DISTRO"
         echo "distro_base=$DISTRO_BASE"
     } > "$STATE_FILE"
-    log_info "✓ Installation state saved to $STATE_FILE"
+    log_success "✓ Installation state saved to $STATE_FILE"
 }
 
 # =============================================================================
@@ -705,12 +698,12 @@ load_package_functions() {
     
     log_info "Calling set_package_aliases for distro: $DISTRO_BASE..."
     
-    if set_package_aliases 2>&1 | tee -a "$LOG"; then
-        log_success "✅ Package functions configured for $DISTRO_BASE"
-    else
+    set_package_aliases 2>&1 | tee -a "$LOG"
+    if [ "${PIPESTATUS[0]}" -ne 0 ]; then
         log_error "❌ set_package_aliases failed"
         return 1
     fi
+    log_success "✅ Package functions configured for $DISTRO_BASE"
     
     local missing_funcs=()
     for func in p_install p_remove p_update p_upgrade p_search; do
@@ -869,16 +862,16 @@ install_apps_direct() {
     local pkg_install=""
     
     case "${DISTRO_BASE:-unknown}" in
-        debian|ubuntu) pkg_install="sudo apt-get install -y" ;;
-        redhat|fedora|centos|rhel)
+        debian) pkg_install="sudo apt-get install -y" ;;
+        rhel)
             if command -v dnf >/dev/null 2>&1; then
                 pkg_install="sudo dnf install -y"
             else
                 pkg_install="sudo yum install -y"
             fi
             ;;
-        opensuse|suse) pkg_install="sudo zypper install -y" ;;
-        arch|manjaro) pkg_install="sudo pacman -S --noconfirm" ;;
+        suse) pkg_install="sudo zypper install -y" ;;
+        arch) pkg_install="sudo pacman -S --noconfirm" ;;
         *)
             log_error "❌ Unknown distro: $DISTRO_BASE"
             return 1
@@ -952,6 +945,11 @@ setup_taskwarrior_config() {
         fi
     fi
 
+    # Backup current .taskrc before modifying it
+    if backup_target "$taskrc"; then
+        log_info "✓ Backed up existing ~/.taskrc"
+    fi
+
     # Copy current .taskrc to repo
     if cp "$taskrc" "$repo_taskrc"; then
         log_success "✓ Copied ~/.taskrc to $repo_taskrc"
@@ -960,9 +958,10 @@ setup_taskwarrior_config() {
         return 1
     fi
 
-    # Backup current .taskrc if needed
-    if backup_target "$taskrc"; then
-        log_info "✓ Backed up existing ~/.taskrc"
+    # Replace original with symlink
+    if ! rm -f "$taskrc" 2>/dev/null; then
+        log_error "❌ Failed to remove original ~/.taskrc before symlinking"
+        return 1
     fi
 
     # Create symlink
@@ -1077,7 +1076,7 @@ symlink_dotfiles() {
         fi
 
         if safe_exec ln -sf "$target" "$src"; then
-            log_success "✓ Linked: $target -> $src"
+            log_success "✓ Linked: $src -> $target"
             linked=$((linked + 1))
         else
             log_error "❌ Failed to link: $src"
@@ -1268,7 +1267,7 @@ symlink_external_repos() {
             fi
             if [ $errors -eq 0 ]; then
                 if safe_exec ln -sf "$HOME/.tmux/.tmux.conf" "$HOME/.tmux.conf"; then
-                    log_success "✓ Linked: ~/.tmux/.tmux.conf -> ~/.tmux.conf"
+                    log_success "✓ Linked: ~/.tmux.conf -> ~/.tmux/.tmux.conf"
                 else
                     log_error "❌ Failed to link .tmux.conf"
                     errors=$((errors + 1))
@@ -1289,7 +1288,7 @@ symlink_external_repos() {
                 fi
             fi
             if safe_exec ln -sf "$HOME/.vim/.vimrc" "$HOME/.vimrc"; then
-                log_success "✓ Linked: ~/.vim/.vimrc -> ~/.vimrc"
+                log_success "✓ Linked: ~/.vimrc -> ~/.vim/.vimrc"
             else
                 log_error "❌ Failed to link .vimrc"
                 errors=$((errors + 1))
@@ -1437,9 +1436,6 @@ source_bashrc() {
     else
         log_warning "⚠️ .bashrc not found"
     fi
-    
-    # Record successful installation
-    update_installation_state
 }
 
 # =============================================================================
@@ -1476,23 +1472,22 @@ revert_changes() {
         log_success "✓ Restored files from latest manifest"
     else
         log_warning "⚠️ No manifest found, using legacy backup restore as fallback"
+        shopt -s nullglob
+        for f in "$OLD_FILES"/*.bak-* "$OLD_FILES"/*.moved-*; do
+            [ -f "$f" ] || continue
+            local basename_file
+            basename_file=$(basename "$f" | sed 's/\.\(bak\|moved\)-.*$//')
+
+            if cp -pf "$f" "$HOME/$basename_file" 2>/dev/null; then
+                log_success "✓ Restored: $basename_file"
+                reverted=$((reverted + 1))
+            else
+                log_error "❌ Failed to restore: $basename_file"
+                failed=$((failed + 1))
+            fi
+        done
+        shopt -u nullglob
     fi
-
-    shopt -s nullglob
-    for f in "$OLD_FILES"/*.bak-* "$OLD_FILES"/*.moved-*; do
-        [ -f "$f" ] || continue
-        local basename_file
-        basename_file=$(basename "$f" | sed 's/\.\(bak\|moved\)-.*$//')
-
-        if cp -pf "$f" "$HOME/$basename_file" 2>/dev/null; then
-            log_success "✓ Restored: $basename_file"
-            reverted=$((reverted + 1))
-        else
-            log_error "❌ Failed to restore: $basename_file"
-            failed=$((failed + 1))
-        fi
-    done
-    shopt -u nullglob
 
     log_info "========================================="
     log_info "Revert Summary:"
