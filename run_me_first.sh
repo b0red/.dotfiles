@@ -41,8 +41,8 @@ LOG_DIR="$DIR/logs"
 STATE_FILE="$DIR/.installation-state"
 DATE=$(date +%Y-%m-%d_%H-%M-%S)
 TITLE="Dotfiles Installer Script"
-DOT_ARRAY=("$HOME/.profile" "$HOME/.bashrc" "$HOME/.bash_profile" "$HOME/.inputrc")
-OLD_FILE_ARRAY=("$HOME/.bashrc" "$HOME/.profile" "$HOME/.bash_profile" "$HOME/.inputrc" "$HOME/.cshrc" "$HOME/.login")
+DOT_ARRAY=("$HOME/.profile" "$HOME/.bashrc" "$HOME/.bash_profile")
+OLD_FILE_ARRAY=("$HOME/.bashrc" "$HOME/.profile" "$HOME/.bash_profile")
 TEMP_FILES=()
 APP_SELECTION_MODE="all"      # all, selected, none
 INTERACTIVE_APP_SELECTION=${INTERACTIVE_APP_SELECTION:-0}
@@ -640,7 +640,7 @@ mark_installation_complete() {
     {
         echo "LAST_RUN=$(date +%Y-%m-%d_%H:%M:%S)"
         echo "VERSION=$VERSION"
-        echo "COMPLETED_STEPS=backup,symlink,apps,submodules,repos,config_folders"
+        echo "COMPLETED_STEPS=backup,symlink,apps,submodules,repos"
         echo "installed_at=$DATE"
         echo "distro=$DISTRO"
         echo "distro_base=$DISTRO_BASE"
@@ -1328,115 +1328,6 @@ symlink_external_repos() {
 # CONFIG FOLDER SYMLINKING
 # =============================================================================
 
-symlink_config_folders() {
-    log_info ""
-    log_info "========================================="
-    log_info "Symlinking Config Folders"
-    log_info "========================================="
-    
-    local dotfiles_configs="$DIR/.configs"
-    local target_config="$HOME/.config"
-    local errors=0
-    local linked=0
-    local skipped=0
-    
-    # Validate source directory exists
-    if [ ! -d "$dotfiles_configs" ]; then
-        log_warning "⚠️ Source directory does not exist: $dotfiles_configs"
-        log_warning "Skipping config folder symlinking"
-        return 0
-    fi
-    
-    # Create ~/.config if it doesn't exist
-    if [ ! -d "$target_config" ]; then
-        if ! mkdir -p "$target_config" 2>/dev/null; then
-            log_error "❌ Failed to create directory: $target_config"
-            return 1
-        fi
-        log_success "✓ Created directory: $target_config"
-    fi
-    
-    # Iterate through all items in dotfiles/.configs
-    shopt -s nullglob dotglob
-    for item in "$dotfiles_configs"/*; do
-        [ -e "$item" ] || continue
-        
-        local basename_item
-        basename_item=$(basename "$item")
-        local target_path="$target_config/$basename_item"
-        
-        # Skip if not a directory
-        if [ ! -d "$item" ]; then
-            log_warning "⚠️ Skipping non-directory: $basename_item"
-            skipped=$((skipped + 1))
-            continue
-        fi
-        
-        # Check if target already exists
-        if [ -e "$target_path" ] || [ -L "$target_path" ]; then
-            # If it's already a symlink pointing to our source, skip
-            if [ -L "$target_path" ]; then
-                local current_target
-                if current_target=$(readlink "$target_path" 2>/dev/null); then
-                    if [ "$current_target" = "$item" ]; then
-                        log_success "✓ Already linked: $basename_item"
-                        linked=$((linked + 1))
-                        continue
-                    fi
-                fi
-            fi
-            
-            if [ -L "$target_path" ] || [ -e "$target_path" ]; then
-                log_info "Backing up existing: $basename_item"
-                if backup_target "$target_path"; then
-                    if rm -rf "$target_path" 2>/dev/null; then
-                        log_success "✓ Backed up: $basename_item"
-                    else
-                        log_error "❌ Failed to remove existing item: $target_path"
-                        errors=$((errors + 1))
-                        continue
-                    fi
-                else
-                    log_error "❌ Failed to backup: $basename_item"
-                    errors=$((errors + 1))
-                    continue
-                fi
-            fi
-        fi
-        
-        # Create the symlink
-        if safe_exec ln -sf "$item" "$target_path"; then
-            log_success "✓ Linked: $basename_item -> $target_config/$basename_item"
-            linked=$((linked + 1))
-        else
-            log_error "❌ Failed to create symlink: $basename_item"
-            errors=$((errors + 1))
-        fi
-    done
-    shopt -u nullglob dotglob
-    
-    log_info ""
-    log_info "Config Symlinking Summary:"
-    log_info "  Folders linked: $linked"
-    if [ $skipped -gt 0 ]; then
-        log_info "  Items skipped: $skipped"
-    fi
-    if [ $errors -gt 0 ]; then
-        log_error "  Errors encountered: $errors"
-    fi
-    
-    if [ $linked -eq 0 ] && [ $errors -eq 0 ]; then
-        log_warning "⚠️ No config folders found to link in $dotfiles_configs"
-    fi
-    
-    if [ $errors -gt 0 ]; then
-        log_warning "⚠️ $errors error(s) occurred during config folder symlinking"
-        return 1
-    fi
-    
-    return 0
-}
-
 # =============================================================================
 # SHELL CONFIGURATION
 # =============================================================================
@@ -1772,7 +1663,6 @@ main() {
     if ! update_submodules;        then log_warning "⚠️ Submodule update failed, but continuing"; fi
     if ! clone_repos;              then log_warning "⚠️ Repository cloning failed, but continuing"; fi
     if ! symlink_external_repos;   then log_warning "⚠️ External repo symlinking failed, but continuing"; fi
-    if ! symlink_config_folders;   then log_warning "⚠️ Config folder symlinking failed, but continuing"; fi
     if ! source_bashrc;            then log_warning "⚠️ Bashrc sourcing failed, but continuing"; fi
 
     mark_installation_complete
