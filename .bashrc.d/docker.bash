@@ -51,17 +51,6 @@ command_check() {
 }
 
 #--------------------------------------
-# Lazydocker & Lazyjournal (conditional)
-#--------------------------------------
-if command_check lazydocker; then 
-    alias lzd="lazydocker"
-fi
-
-if command_check lazyjournal; then 
-    alias lzj="lazyjournal"
-fi
-
-#--------------------------------------
 # Docker Compose Aliases
 #--------------------------------------
 alias dcp="docker compose -f ~/docker/compose/compose.yml"
@@ -114,9 +103,11 @@ function did() {
 function dkclean() {
     ### Remove exited containers
     local exited
-    exited=$(docker ps -a -q -f status=exited)
+    exited=$(command docker ps -a -q -f status=exited)
     if [[ -n "$exited" ]]; then
-        docker rm $exited
+        local -a ids
+        mapfile -t ids <<< "$exited"
+        command docker rm "${ids[@]}"
         echo "Removed exited containers"
     else
         echo "No exited containers to remove"
@@ -197,18 +188,22 @@ function dkexe() {
 function dclean() {
     ### Clean up dangling images and volumes
     local images volumes
-    images=$(docker images -q -f dangling=true)
-    volumes=$(docker volume ls -q -f dangling=true)
-    
+    images=$(command docker images -q -f dangling=true)
+    volumes=$(command docker volume ls -q -f dangling=true)
+
     if [[ -n "$images" ]]; then
-        docker rmi $images
+        local -a img_ids
+        mapfile -t img_ids <<< "$images"
+        command docker rmi "${img_ids[@]}"
         echo "Removed dangling images"
     else
         echo "No dangling images to remove"
     fi
-    
+
     if [[ -n "$volumes" ]]; then
-        docker volume rm $volumes
+        local -a vol_ids
+        mapfile -t vol_ids <<< "$volumes"
+        command docker volume rm "${vol_ids[@]}"
         echo "Removed dangling volumes"
     else
         echo "No dangling volumes to remove"
@@ -249,12 +244,8 @@ function dport() {
 #--------------------------------------
 docker_check() {
     ### Verify Docker daemon is running
-    if [ ! -x "$(command -v docker)" ]; then
-        echo -e "${RED}Error:${NC} Docker is not installed. Please install Docker first." >&2
-        return 1
-    fi
     if ! docker ps >/dev/null 2>&1; then
-        echo "${RED}Error:${NC} Docker daemon is not running. Please start Docker." >&2
+        echo -e "${RED}Error:${NC} Docker daemon is not running. Please start Docker." >&2
         return 1
     fi
     return 0
@@ -306,14 +297,5 @@ function lzd() {
     # No tmux - run directly
     lazydocker
 }
-
-# Override aliases with functions if tools exist
-if command_check lazydocker; then 
-    alias lzd="lzd"
-fi
-
-if command_check lazyjournal; then 
-    alias lzj="lzj"
-fi
 
 # End of docker.bash (Interactive Only, Docker Required)

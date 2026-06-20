@@ -20,16 +20,6 @@ shopt -s dirspell 2>/dev/null || true        # Auto-correct dir names
 shopt -s nocaseglob 2>/dev/null || true      # Case-insensitive globs
 
 # =============================================================================
-# TERMINAL COLOR SUPPORT DETECTION
-# =============================================================================
-case "${TERM:-}" in
-    xterm*|rxvt*|screen*|tmux*)
-        color_prompt=yes ;;
-    *)
-        color_prompt= ;;
-esac
-
-# =============================================================================
 # LESSPIPE (enhanced less for compressed files)
 # =============================================================================
 [[ -x /usr/bin/lesspipe ]] && eval "$(SHELL=/bin/sh lesspipe)"

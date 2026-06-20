@@ -166,7 +166,7 @@ alias lf='ls -l | egrep -v "^d"'
 alias ldir='ls -l | egrep "^d"'
 
 # Tree-like views
-alias ltree="ls -R | grep ':$' | sed -e 's/:$//' -e 's/[^-][^/]*\//--/g' -e 's/^/   /' -e 's/-/|/'"
+# ltree() is defined in functions.bash (uses real tree with paging — much more capable)
 alias treels='find . -type d | sed "s/[^-][^/]*/  /g;s/^-/\ |/"'
 
 #----------------------------------------------------------------------------
@@ -282,7 +282,7 @@ command -v mc >/dev/null 2>&1 && alias mc='sudo mc'
 #----------------------------------------------------------------------------
 alias ifconfig='ip -c a'
 alias ip='ip -br -c a'
-alias myip='wget -qO- http://ipinfo.io/ip || curl -s http://ipinfo.io/ip'
+# myip() is defined in functions.bash (detects active NIC — more reliable than curl)
 alias week='date +%V'
 alias diff='colordiff 2>/dev/null || diff'
 function f() {

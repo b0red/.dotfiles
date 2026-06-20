@@ -19,7 +19,13 @@
 [ -z "${LESS_TERMCAP_us:-}" ] && export LESS_TERMCAP_us=$'\E[1;32m'
 [ -z "${LESS_TERMCAP_ue:-}" ] && export LESS_TERMCAP_ue=$'\E[0m'
 [ -z "${GREP_COLORS:-}" ] && export GREP_COLORS='mt=1;32'
-[ -z "${PAGER:-}" ] && export PAGER='most'
+[ -z "${PAGER:-}" ] && {
+    if command -v most >/dev/null 2>&1; then
+        export PAGER='most'
+    else
+        export PAGER='less'
+    fi
+}
 [ -z "${LESS:-}" ] && export LESS='-R -S'
 
 # =============================================================================
@@ -47,7 +53,10 @@
 # =============================================================================
 # TMUX TMPDIR
 # =============================================================================
-[ -z "${TMUX_TMPDIR:-}" ] && export TMUX_TMPDIR="$HOME/tmp/tmux-$(id -un)"
+if [ -z "${TMUX_TMPDIR:-}" ]; then
+    TMUX_TMPDIR="$HOME/tmp/tmux-$(id -un)"
+    export TMUX_TMPDIR
+fi
 
 # =============================================================================
 # HISTORY SETTINGS
@@ -76,17 +85,19 @@
 [ -z "${LOG_DIR:-}" ] && export LOG_DIR="$HOME/log"
 
 # =============================================================================
-# UNAME SHORTCUTS (optional - for quick reference, from variables.bash)
+# UNAME SHORTCUTS (all populated in one block — avoids 8 separate forks)
 # =============================================================================
-# Consolidated here since they're general system info exports
-[ -z "${uname_s:-}" ] && export uname_s="$(uname -s)"  # Operating System
-[ -z "${uname_n:-}" ] && export uname_n="$(uname -n)"  # Node name (hostname)
-[ -z "${uname_r:-}" ] && export uname_r="$(uname -r)"  # Release number
-[ -z "${uname_v:-}" ] && export uname_v="$(uname -v)"  # Version info
-[ -z "${uname_m:-}" ] && export uname_m="$(uname -m)"  # Machine hardware name
-[ -z "${uname_p:-}" ] && export uname_p="$(uname -p)"  # Processor type
-[ -z "${uname_i:-}" ] && export uname_i="$(uname -i)"  # Hardware platform
-[ -z "${uname_o:-}" ] && export uname_o="$(uname -o)"  # Operating system
+if [ -z "${uname_s:-}" ]; then
+    uname_s="$(uname -s)"   # Operating System
+    uname_n="$(uname -n)"   # Node name (hostname)
+    uname_r="$(uname -r)"   # Release number
+    uname_v="$(uname -v)"   # Version info
+    uname_m="$(uname -m)"   # Machine hardware name
+    uname_p="$(uname -p)"   # Processor type
+    uname_i="$(uname -i)"   # Hardware platform
+    uname_o="$(uname -o)"   # Operating system
+    export uname_s uname_n uname_r uname_v uname_m uname_p uname_i uname_o
+fi
 
 # End of exports.bash
 

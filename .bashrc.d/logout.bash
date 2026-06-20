@@ -25,8 +25,25 @@
 # We're in an INTERACTIVE shell - set up logout handlers
 # =============================================================================
 
-# Exit trap - log session end and save history
-trap 'echo "Session ended $(date)" >> ~/.bash_logout_log 2>/dev/null; history -a' EXIT
+# Max lines to keep in the logout log (easy to change)
+LOGOUT_LOG_MAX_LINES=50
+LOGOUT_LOG="$HOME/.bash_logout_log"
+
+_logout_handler() {
+    echo "Session ended $(date)" >> "$LOGOUT_LOG" 2>/dev/null
+    history -a
+    # Rotate log: keep only the last N lines
+    if [ -f "$LOGOUT_LOG" ]; then
+        local tmp="${LOGOUT_LOG}.tmp"
+        if tail -n "$LOGOUT_LOG_MAX_LINES" "$LOGOUT_LOG" > "$tmp" 2>/dev/null; then
+            mv "$tmp" "$LOGOUT_LOG" 2>/dev/null
+        else
+            rm -f "$tmp" 2>/dev/null
+        fi
+    fi
+}
+
+trap '_logout_handler' EXIT
 
 # Clear console for privacy when leaving (if SHLVL is 1 - top level shell)
 if [ "$SHLVL" = 1 ]; then
