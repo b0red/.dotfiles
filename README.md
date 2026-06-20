@@ -2,7 +2,7 @@
 
 A comprehensive, cross-platform dotfiles setup with modular bash configuration, visual loading feedback, universal package management, and automated installation.
 
-> **Repository note**: This repo is canonical on Bitbucket at `git@bitbucket.org:b0red/dotfiles.git` and is checked out into `~/.dotfiles`. Several files still include legacy `~/dotfiles` references and should be updated over time. See [Known Issues / Migration TODOs](#known-issues--migration-todos).
+> **Repository**: Canonical on GitHub at `git@github.com:b0red/.dotfiles.git`, checked out into `~/.dotfiles`.
 
 ---
 
@@ -28,7 +28,7 @@ A comprehensive, cross-platform dotfiles setup with modular bash configuration, 
 
 ```bash
 # Clone the repository
-git clone git@bitbucket.org:b0red/dotfiles.git ~/.dotfiles
+git clone git@github.com:b0red/.dotfiles.git ~/.dotfiles
 cd ~/.dotfiles
 
 # Run the installer
@@ -54,7 +54,7 @@ The script will:
 ```bash
 ./run_me_first.sh                   # Normal installation
 ./run_me_first.sh --help            # Show help message
-./run_me_first.sh --version         # Show version (v15.7.0)
+./run_me_first.sh --version         # Show version (v15.8.0)
 ./run_me_first.sh --revert          # Revert changes (restore backups)
 ./run_me_first.sh --select-apps      # Choose specific packages to install
 ./run_me_first.sh --skip-apps        # Skip package installation
@@ -69,6 +69,25 @@ TRACE_DEBUG=1 ./run_me_first.sh     # Trace with environment variable
 ---
 
 ## Recent Changes
+
+### v15.8.0 (2026-06-21)
+- **`run_me_first.sh` refactor**: Modularised into canonical Vibecoding v5.6 structure — `parse_args()`, `show_brief_help()`, `show_version()`, `show_info()`, `IFS`, `SCRIPT_DIR`, `VERSION_DATE` globals added; `main()` moved to canonical bottom position; dead `_clone_if_missing_UNUSED` (115 lines) removed; all Bitbucket URLs → GitHub
+- **9 logical bug fixes in `run_me_first.sh`**:
+  - `validate_installation()` always reported tmux/vim as unlinked — was checking `~/.tmux/.git` but both are symlinks to repo subtrees (no `.git`)
+  - `check_mode()` never displayed `LAST_RUN` — `log_info()` prefixed ANSI codes onto the first line, breaking key=value parsing; fixed with `printf`
+  - State file conflict — `update_installation_state()` and `mark_installation_complete()` wrote different key formats to the same file; merged into one function with all keys
+  - `load_package_functions()` piped through `tee` — swallowed `set_package_aliases` exit code via `PIPESTATUS`; fixed with `PIPESTATUS[0]`
+  - `setup_taskwarrior_config()` backed up `~/.taskrc` after copying to repo; reordered to backup-first
+  - `install_apps_direct()` matched `ubuntu/redhat/fedora/centos/opensuse/manjaro` — `DISTRO_BASE` never contains those; corrected to `debian/rhel/suse/arch`
+  - `revert_changes()` ran legacy glob restore unconditionally alongside manifest restore — moved to `else` branch
+  - Symlink direction logged backwards in `symlink_dotfiles()` and `symlink_external_repos()`
+  - `add_file_header()` only matched `RunMe.sh` header pattern; added `run_me_first.sh` to prevent duplicate headers on re-run
+- **`.bashrc.d` bug fixes**:
+  - `aliases.bash`: `ltree` and `myip` aliases shadowed the more capable functions in `functions.bash` — aliases removed
+  - `docker.bash`: `lzd`/`lzj` self-referential alias definitions removed; `dkclean`/`dclean` unquoted container ID variables fixed with arrays + `command docker`; `docker_check()` redundant install check removed
+  - `exports.bash`: `PAGER='most'` now falls back to `less` when `most` is not installed; `$(id -un)` and `$(uname -x)` separated from `export` declarations; 8 individual uname guards collapsed into one block
+  - `env.bash`: Dead `color_prompt` variable removed
+  - `logout.bash`: `~/.bash_logout_log` now rotated to last 50 lines on exit (`LOGOUT_LOG_MAX_LINES` variable)
 
 ### v15.7.1 (2026-06-20)
 - **Tmux Auto-Start**: `.bashrc` now launches `~/.start_tmux.sh` automatically on first interactive login (guarded: interactive shell only, first load only, not already in tmux)
@@ -220,7 +239,7 @@ Checks EUID, USER, and LOGNAME to determine privilege.
 ├── .gitignore              # Excludes: extra_alias.bash, local_alias.bash, logs, oldfiles
 ├── symlink.sh              # Distro-specific symlink helper (called by run_me_first.sh)
 ├── system_detector.sh      # Standalone POSIX system info reporter
-├── run_me_first.sh         # Main installer script (v15.6.0)
+├── run_me_first.sh         # Main installer script (v15.8.0)
 ├── oldfiles/               # Backup directory (pristine originals + archived old scripts)
 ├── logs/                   # Installation logs (gitignored)
 │   └── install-*.log
@@ -895,41 +914,32 @@ See [Known Issues / Migration TODOs](#known-issues--migration-todos) — `functi
 
 ## Known Issues / Migration TODOs
 
-### Repository Migration (`~/dotfiles` → `~/.dotfiles`)
+### Remaining Items
 
 | File | Location | Issue |
 |------|----------|-------|
-| `run_me_first.sh` | line 19 | `DIR="$HOME/dotfiles"` → `$HOME/.dotfiles` |
-| `exports.bash` | line 73 | `DOTFILES_DIR="$HOME/dotfiles"` → `$HOME/.dotfiles` |
-| `exports.bash` | line 74 | `DOTFILES_REPO` still points to Bitbucket → update to GitHub |
-| `functions.bash` | line 740 | Hardcoded `$HOME/dotfiles/` breaks `functions -?` after migration |
-| `pkg_aliases.bash` | lines 44, 434 | Comments say "RunMe.sh" → "run_me_first.sh" |
 | `.bash_profile` | line 29 | Hardcoded `/home/patrick/.config/broot/...` → use `$HOME` |
-| `.bashrc` headers | line 3 | "Created by RunMe.sh" → auto-corrected on next installer run |
-| `run_me_first.sh` | lines 973, 1005 | Clones `.tmux` and `.vim` from Bitbucket → update to GitHub |
-| `extra_alias.bash` | — | Now gitignored; run `git rm --cached .bashrc.d/extra_alias.bash` to untrack |
-
-Already updated (ahead of migration): `.bashrc`, `aliases.bash` (`dotupdate`), `helpers/debug.sh`.
+| `.bashrc` header | line 3 | Still says "Created by RunMe.sh" — auto-corrected on next `./run_me_first.sh` run |
+| `system_detector.sh` | — | Missing `-?/--info`, `--dry-run`, compliant header (low priority — standalone utility) |
+| `symlink.sh` | — | No flags (called by installer, not user-facing — acceptable) |
 
 ### Vibecoding v5.6 Compliance Gaps
 
 | File | Guideline | Issue |
 |------|-----------|-------|
-| `run_me_first.sh` | Part II §2 | Missing compliant script header (Author, Created, Version, Last Updated, Repository) |
-| `run_me_first.sh` | Part II §3 | Missing flags: `-h`, `-?/--info`, `--dry-run`, `-d`, `--test-notify`, `--notify-only` |
-| `run_me_first.sh` | Part II §4 | Missing standard exit codes 2, 3, 4, 5 |
-| `run_me_first.sh` | Part IV | No `safe_exec()` — no dry-run protection on destructive operations |
-| `run_me_first.sh` | Part IV Pattern F | `cleanup_on_exit()` is a no-op placeholder — needs real implementation |
-| `run_me_first.sh` | Part V §1 | No `ColorCodes.inc` — inline ANSI codes only |
-| `run_me_first.sh` | Part V §3 | Non-standard logging — uses `log()` with level arg, not `log_error/log_success/log_warning/log_info/log_debug` |
+| `run_me_first.sh` | Part V §1 | Inline ANSI codes only — no `ColorCodes.inc` sourcing |
 | `system_detector.sh` | Part II §2 | Missing compliant script header |
-| `system_detector.sh` | Part II §3 | Missing: `-?/--info`, `--dry-run`, standard exit codes |
 | `symlink.sh` | Part II §2 | Missing compliant script header |
-| `symlink.sh` | Part II §3 | No flags (called by installer, not user-facing — acceptable) |
 
 ---
 
 ## Version History
+- **v15.8.0** (2026-06-21)
+  - Full refactor of `run_me_first.sh` to Vibecoding v5.6 canonical structure
+  - 9 logical bug fixes in `run_me_first.sh` (state file conflict, validate_installation false positives, revert double-restore, symlink log direction, add_file_header regex, PIPESTATUS, distro case patterns, taskwarrior backup order)
+  - 6 `.bashrc.d` bug fixes (ltree/myip alias shadowing, docker.bash lzd/lzj conflict + unquoted IDs, exports.bash PAGER fallback + export/assign split + uname consolidation, env.bash dead variable, logout.bash log rotation)
+  - Repository migration complete: all Bitbucket URLs → GitHub; `~/dotfiles` → `~/.dotfiles`
+
 - **v15.7.1** (2026-06-20)
   - Tmux auto-start on new terminal via `~/.start_tmux.sh` (guarded for interactive, first-load, non-tmux)
   - Fixed `NC` color code in `colorcodes.bash` (was black, now proper reset)
@@ -1002,6 +1012,6 @@ If you find this useful, consider supporting: [PayPal](https://paypal.me/fotosby
 
 ---
 
-**Last Updated**: 2026-06-20
-**Script Version**: v15.7.1
+**Last Updated**: 2026-06-21
+**Script Version**: v15.8.0
 **Guidelines**: Vibecoding v5.6 / Semantic Versioning 2.0.0

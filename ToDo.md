@@ -1,6 +1,6 @@
 # ToDo.md - Dotfiles Project Task Tracker
-# Version: 1.4.0 (2026-06-20)
-# Last Updated: 2026-06-20
+# Version: 1.5.0 (2026-06-21)
+# Last Updated: 2026-06-21
 
 ### ToDO:
 #### General:
@@ -14,12 +14,18 @@
 [x] make so when it reverts, it actually shows whats getting done @done (2026-05-11)
 [x] echo found distro on top of screen when running for the first time! @done (2026-05-11)
 [x] maybe make so run_me_first.sh checks for previous runs or if first run? @done (2026-05-11)
-[] refactor the code to be more modular, functions for each task, easier to read and maintain
+[x] refactor the code to be more modular, functions for each task, easier to read and maintain @done (2026-06-21)
 [x] add error handling, if a command fails, it should log the error and continue with the next one @done (2026-05-11)
 
 ---
 
 ## Changelog
+
+### v1.5.0 (2026-06-21)
+- `run_me_first.sh` refactored to Vibecoding v5.6 canonical structure (v15.8.0)
+- 9 logical bugs fixed in `run_me_first.sh` (state file, validate_installation, revert, logging, distro cases, taskwarrior order)
+- 6 `.bashrc.d` bugs fixed (alias shadowing in aliases.bash, docker.bash lzd/lzj + unquoted IDs, exports.bash PAGER + export/assign + uname, env.bash dead var, logout.bash log rotation)
+- Repository migration complete: all Bitbucket → GitHub references updated
 
 ### v1.4.0 (2026-06-20)
 - Fixed three improperly formatted done items (had @done text but `[]` checkbox)
