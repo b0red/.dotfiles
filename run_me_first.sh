@@ -27,7 +27,7 @@ IFS=$'\n\t'
 SCRIPT_NAME=$(basename "$0")
 SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
 VERSION="15.8.0"
-VERSION_DATE="2026-06-20"
+VERSION_DATE="2026-06-21"
 INTERACTIVE=0
 
 DEBUG=${DEBUG:-0}
@@ -54,7 +54,7 @@ EXIT_OK=0
 EXIT_ERROR=1
 EXIT_ENV=2
 EXIT_ABORT=3
-EXIT_MISSING=4
+EXIT_DRYRUN=4
 EXIT_PERM=5
 
 # Colours — source shared include if available, else inline fallback
@@ -367,7 +367,12 @@ add_file_header() {
         log_warning "⚠️ Target file does not exist: $target_file"
         return 1
     fi
-    
+
+    if [ "${DRY_RUN:-0}" -eq 1 ]; then
+        log_info "  [dry-run] would update header in $(basename "$target_file")"
+        return 0
+    fi
+
     local temp_file
     if ! temp_file=$(mktemp 2>/dev/null); then
         log_error "❌ Failed to create temp file"
@@ -392,7 +397,7 @@ add_file_header() {
     fi
     
     # Check if there's an old run_me_first.sh header to skip
-    if grep -q "Created by run_me_first.sh" "$target_file" 2>/dev/null; then
+    if grep -qE "Created by (RunMe|run_me_first)\.sh" "$target_file" 2>/dev/null; then
         log_info "Updating header in $(basename "$target_file")..."
         
         # Read file line by line starting after shebang
@@ -697,9 +702,9 @@ load_package_functions() {
     log_success "✓ Package file sourced"
     
     log_info "Calling set_package_aliases for distro: $DISTRO_BASE..."
-    
-    set_package_aliases 2>&1 | tee -a "$LOG"
-    if [ "${PIPESTATUS[0]}" -ne 0 ]; then
+
+    # Run directly (no pipe/subshell) so functions it defines persist in current shell
+    if ! set_package_aliases >> "$LOG" 2>&1; then
         log_error "❌ set_package_aliases failed"
         return 1
     fi
@@ -734,7 +739,7 @@ install_apps() {
     fi
 
     if [ "${DRY_RUN:-0}" -eq 1 ]; then
-        log_info "  [dry-run] would install ${#APP_ARRAY[@]:-0} apps via package manager"
+        log_info "  [dry-run] would install ${#APP_ARRAY[@]} apps via package manager"
         return 0
     fi
 
@@ -773,13 +778,13 @@ install_apps() {
         fi
         
         log_info "Installing $app..."
-        
-        if p_install "$app" 2>&1 | tee -a "$LOG"; then
-            log_success "✅ Installed $app"
-            installed=$((installed + 1))
-        else
+        p_install "$app" 2>&1 | tee -a "$LOG"
+        if [ "${PIPESTATUS[0]}" -ne 0 ]; then
             log_error "❌ Failed to install $app"
             failed=$((failed + 1))
+        else
+            log_success "✅ Installed $app"
+            installed=$((installed + 1))
         fi
         
         sleep 0.5
@@ -895,12 +900,13 @@ install_apps_direct() {
         fi
         
         log_info "Installing $app..."
-        if $pkg_install "$app" 2>&1 | tee -a "$LOG"; then
-            log_success "✅ Installed $app"
-            installed=$((installed + 1))
-        else
+        $pkg_install "$app" 2>&1 | tee -a "$LOG"
+        if [ "${PIPESTATUS[0]}" -ne 0 ]; then
             log_error "❌ Failed to install $app"
             failed=$((failed + 1))
+        else
+            log_success "✅ Installed $app"
+            installed=$((installed + 1))
         fi
         
         sleep 0.5
@@ -1090,11 +1096,16 @@ symlink_dotfiles() {
     if [ -f "$DIR/.bash_profile" ]; then add_file_header "$DIR/.bash_profile"; fi
     
     if [ -x "$DIR/symlink.sh" ]; then
-        log_info "Running distro-specific symlink script..."
-        if "$DIR/symlink.sh" "$DISTRO" "$DISTRO_BASE" 2>&1 | tee -a "$LOG"; then
-            log_success "✓ Distro-specific symlinks created"
+        if [ "${DRY_RUN:-0}" -eq 1 ]; then
+            log_info "  [dry-run] would run distro-specific symlink script"
         else
-            log_warning "⚠️ Distro-specific symlink script encountered issues"
+            log_info "Running distro-specific symlink script..."
+            "$DIR/symlink.sh" "$DISTRO" "$DISTRO_BASE" 2>&1 | tee -a "$LOG"
+            if [ "${PIPESTATUS[0]}" -ne 0 ]; then
+                log_warning "⚠️ Distro-specific symlink script encountered issues"
+            else
+                log_success "✓ Distro-specific symlinks created"
+            fi
         fi
     else
         log_warning "⚠️ symlink.sh not found or not executable"
@@ -1125,8 +1136,13 @@ EOF
 # =============================================================================
 
 archive_backup() {
+    if [ "${DRY_RUN:-0}" -eq 1 ]; then
+        log_info "  [dry-run] would archive backups to $DIR/backup-${HOSTNAME}-$DATE.tar.gz"
+        return 0
+    fi
+
     local archived="$DIR/backup-${HOSTNAME}-$DATE.tar.gz"
-    
+
     if [ -d "$OLD_FILES" ] && [ -n "$(ls -A "$OLD_FILES" 2>/dev/null)" ]; then
         if tar -czf "$archived" -C "$DIR" "oldfiles" 2>/dev/null; then
             log_success "✓ Archived backups: $archived"
@@ -1195,11 +1211,12 @@ update_submodules() {
         return 1
     fi
     
-    if git submodule update --init --recursive 2>&1 | tee -a "$LOG"; then
+    git submodule update --init --recursive 2>&1 | tee -a "$LOG"
+    if [ "${PIPESTATUS[0]}" -ne 0 ]; then
+        log_warning "⚠️ No submodules found or update failed"
+    else
         git submodule foreach --recursive 'git pull origin master || git pull origin main' 2>&1 | tee -a "$LOG" || true
         log_success "✓ Updated submodules"
-    else
-        log_warning "⚠️ No submodules found or update failed"
     fi
 }
 
@@ -1426,7 +1443,12 @@ symlink_config_folders() {
 
 source_bashrc() {
     log_info "Configuration complete..."
-    
+
+    if [ "${DRY_RUN:-0}" -eq 1 ]; then
+        log_info "  [dry-run] would verify ~/.bashrc symlink"
+        return 0
+    fi
+
     if [ -f "$HOME/.bashrc" ]; then
         log_success "✓ .bashrc is ready"
         log_info ""
@@ -1637,7 +1659,7 @@ parse_args() {
             DRY_RUN=1
             log_warning "🔍 DRY RUN — no changes will be made"
             main
-            exit 0
+            exit $EXIT_DRYRUN
             ;;
         --trace)
             TRACE_DEBUG=1
@@ -1727,16 +1749,18 @@ main() {
         log_info "Application installation will be skipped"
     fi
 
-    # Prompt for sudo early
-    log_info ""
-    log_info "🔐 Checking sudo access (you may be prompted for password)..."
-    if ! sudo -v 2>/dev/null; then
-        log_error "❌ Sudo access required for package installation"
-        log_error "Run 'sudo -v' to verify sudo access, then try again."
-        exit $EXIT_PERM
+    # Prompt for sudo early (skip in dry-run — no changes will be made)
+    if [ "${DRY_RUN:-0}" -eq 0 ]; then
+        log_info ""
+        log_info "🔐 Checking sudo access (you may be prompted for password)..."
+        if ! sudo -v 2>/dev/null; then
+            log_error "❌ Sudo access required for package installation"
+            log_error "Run 'sudo -v' to verify sudo access, then try again."
+            exit $EXIT_PERM
+        fi
+        log_success "✓ Sudo access verified"
+        log_info ""
     fi
-    log_success "✓ Sudo access verified"
-    log_info ""
 
     # Core installation steps - continue on individual failures where possible
     if ! backup_dotfiles;          then log_warning "⚠️ Backup step failed, but continuing"; fi

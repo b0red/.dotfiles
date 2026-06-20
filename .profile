@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 ### -+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-###                                             Created by RunMe.sh 2026-05-05 23:40:36
+###                                             Created by run_me_first.sh 2026-06-21 00:37:20
 ###                                             Host: DESKTOP-JLMCRD0
 ###                                             User: patrick
 ###                                             Distro: ubuntu
@@ -38,11 +38,11 @@ fi
 
 ###     Load any supplementary scripts in $HOME/.profile.d directory
 #
-if [ -d $HOME/.dotfiles/.profile.d ]; then
+if [ -d "$HOME/.dotfiles/.profile.d" ]; then
 	for config in "$HOME"/.dotfiles/.profile.d/*.sh ; do
 	. "$config"
-	#echo $config loaded.
 	done
 	unset -v config
 fi
-. "$HOME/.cargo/env"
+# shellcheck disable=SC1091
+[ -f "$HOME/.cargo/env" ] && . "$HOME/.cargo/env"
