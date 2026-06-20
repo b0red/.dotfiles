@@ -3,7 +3,7 @@
 # run_me_first.sh — Dotfiles installer for first-run setup on new systems
 # =============================================================================
 # Author      : b0red
-# Repository  : https://bitbucket.org/b0red/dotfiles
+# Repository  : https://github.com/b0red/.dotfiles
 # Version     : 15.7.0
 # Date        : 2026-05-11
 # Description : Backs up existing dotfiles, creates symlinks, installs apps,
@@ -13,16 +13,22 @@
 # Depends     : bash >= 4.0, git, sudo
 # =============================================================================
 
-# set -euo pipefail  # Disabled for resilient error handling
+# set -euo pipefail intentionally disabled — installer continues on individual
+# step failures rather than aborting; each function returns its own error code.
 
 # Clear all aliases to avoid conflicts
 unalias -a 2>/dev/null || true
 
+IFS=$'\n\t'
+
 # =============================================================================
 # VERSION & CONFIGURATION
 # =============================================================================
-VERSION="15.7.0"
-VERSION_DATE="2026-05-06"
+SCRIPT_NAME=$(basename "$0")
+SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
+VERSION="15.8.0"
+VERSION_DATE="2026-06-20"
+INTERACTIVE=0
 
 DEBUG=${DEBUG:-0}
 TRACE_DEBUG=${TRACE_DEBUG:-0}
@@ -184,143 +190,6 @@ check_mode() {
         log_warning "Issues detected. Running full installation to fix..."
         return 0
     fi
-}
-
-# =============================================================================
-# MAIN FUNCTION
-# =============================================================================
-main() {
-    if [ "${CHECK_MODE:-0}" -eq 1 ]; then
-        logfile_init
-        check_mode
-    fi
-    
-    logfile_init
-    log_info "========================================="
-    log_info "Starting Dotfiles Installation"
-    log_info "Version: v${VERSION} (${VERSION_DATE})"
-    log_info "========================================="
-    
-    if [ "${TRACE_DEBUG:-0}" -eq 1 ]; then
-        set -x
-        trap 'read -p "DEBUG: Press Enter..."' DEBUG
-        log_success "✓ Trace enabled"
-    fi
-    
-    get_os_info
-    
-    # Display detected distro prominently on first run
-    if ! is_first_run; then
-        log_info ""
-        log_info "🎨 Color output enabled"
-    else
-        log_info ""
-        log_info "🎨 Color output enabled"
-        log_info ""
-        log_info "╔══════════════════════════════════════════════════════════════════════════════╗"
-        log_info "║                           SYSTEM DETECTION                                ║"
-        log_info "╠══════════════════════════════════════════════════════════════════════════════╣"
-        log_info "║  Operating System: $OS                                                    ║"
-        log_info "║  Distribution:     $DISTRO                                                ║"
-        log_info "║  Base System:      $DISTRO_BASE                                           ║"
-        log_info "║  Kernel:          $KERNEL                                                 ║"
-        log_info "║  Architecture:    $MACH                                                   ║"
-        log_info "╚══════════════════════════════════════════════════════════════════════════════╝"
-        log_info ""
-    fi
-    
-    if ! validate_environment; then
-        log_error "❌ Critical environment issues found — aborting installation"
-        exit $EXIT_ENV
-    fi
-    
-    if ! load_package_functions; then
-        log_warning "⚠️ Continuing without package functions"
-    fi
-    
-    if [ "${SKIP_APP_INSTALL:-0}" -eq 0 ]; then
-        if ! load_app_list; then
-            log_warning "⚠️ Using fallback app list"
-        fi
-    else
-        log_info "Application installation will be skipped"
-    fi
-
-    # Prompt for sudo early
-    log_info ""
-    log_info "🔐 Checking sudo access (you may be prompted for password)..."
-    if ! sudo -v 2>/dev/null; then
-        log_error "❌ Sudo access required for package installation"
-        log_error "Run 'sudo -v' to verify sudo access, then try again."
-        exit $EXIT_PERM
-    fi
-    log_success "✓ Sudo access verified"
-    log_info ""
-    
-    # Core installation steps - continue on individual failures where possible
-    if ! backup_dotfiles; then
-        log_warning "⚠️ Backup step failed, but continuing with installation"
-    fi
-    
-    if ! cleanup_symlinks; then
-        log_warning "⚠️ Symlink cleanup failed, but continuing"
-    fi
-    
-    if ! symlink_dotfiles; then
-        log_error "❌ Critical: Symlink creation failed — aborting"
-        exit $EXIT_ERROR
-    fi
-    
-    if ! install_apps; then
-        log_warning "⚠️ App installation had issues, but continuing"
-    fi
-    
-    if ! setup_taskwarrior_config; then
-        log_warning "⚠️ Taskwarrior setup failed, but continuing"
-    fi
-    
-    if ! archive_backup; then
-        log_warning "⚠️ Backup archiving failed, but installation complete"
-    fi
-    
-    if ! update_submodules; then
-        log_warning "⚠️ Submodule update failed, but continuing"
-    fi
-    
-    if ! clone_repos; then
-        log_warning "⚠️ Repository cloning failed, but continuing"
-    fi
-    
-    if ! symlink_external_repos; then
-        log_warning "⚠️ External repo symlinking failed, but continuing"
-    fi
-    
-    if ! symlink_config_folders; then
-        log_warning "⚠️ Config folder symlinking failed, but continuing"
-    fi
-    
-    if ! source_bashrc; then
-        log_warning "⚠️ Bashrc sourcing failed, but continuing"
-    fi
-    
-    # Mark installation as complete
-    mark_installation_complete
-    
-    log_info ""
-    log_success "========================================="
-    log_success "✓ Installation Complete!"
-    log_success "========================================="
-    log_info "Log saved to: $LOG"
-    log_info ""
-    log_info "Next steps:"
-    log_info "  1. Restart your shell: exec bash"
-    log_info "  2. Or reload config: reload"
-    log_info "  3. Test package functions: version"
-    log_info "  4. Check for warnings above"
-    log_info ""
-    log_info "For troubleshooting, see: README.md"
-    log_info "To revert changes: ./run_me_first.sh --revert"
-    log_success "========================================="
 }
 
 # =============================================================================
@@ -754,13 +623,13 @@ validate_environment() {
     if [ ! -d "$DIR" ]; then
         log_error "❌ Dotfiles directory not found: $DIR"
         log_error "   Clone the repo first:"
-        log_error "   git clone git@bitbucket.org:b0red/dotfiles.git $DIR"
+        log_error "   git clone git@github.com:b0red/.dotfiles.git $DIR"
         errors=$((errors + 1))
     fi
 
     if [ "$errors" -gt 0 ]; then
         log_error "❌ Environment validation failed ($errors error(s)) — aborting"
-        exit $EXIT_ENV
+        return 1
     fi
 
     log_success "✓ Environment OK"
@@ -772,11 +641,12 @@ is_first_run() {
 }
 
 mark_installation_complete() {
-    # Mark installation as complete by creating state file
-    echo "installed_at=$DATE" > "$STATE_FILE"
-    echo "version=$VERSION" >> "$STATE_FILE"
-    echo "distro=$DISTRO" >> "$STATE_FILE"
-    echo "distro_base=$DISTRO_BASE" >> "$STATE_FILE"
+    {
+        echo "installed_at=$DATE"
+        echo "version=$VERSION"
+        echo "distro=$DISTRO"
+        echo "distro_base=$DISTRO_BASE"
+    } > "$STATE_FILE"
     log_info "✓ Installation state saved to $STATE_FILE"
 }
 
@@ -1384,124 +1254,6 @@ clone_repos() {
     return $errors
 }
 
-# --- dead code preserved for reference during migration ---
-_clone_if_missing_UNUSED() {
-        local repo_url="$1"
-        local target_dir="$2"
-        local repo_name
-        repo_name=$(basename "$target_dir")
-        
-        if [ -z "$repo_url" ]; then
-            log_error "❌ clone_if_missing: No repository URL provided"
-            return 1
-        fi
-        
-        if [ -z "$target_dir" ]; then
-            log_error "❌ clone_if_missing: No target directory provided"
-            return 1
-        fi
-        
-        if [ -e "$target_dir" ]; then
-            if [ -d "$target_dir/.git" ]; then
-                log_success "✓ $repo_name exists and is a git repo"
-                
-                local current_remote
-                current_remote=$(git -C "$target_dir" config --get remote.origin.url 2>/dev/null || echo "")
-                
-                if [ -n "$current_remote" ]; then
-                    local normalized_current normalized_expected
-                    normalized_current=$(echo "$current_remote" | sed 's/\.git$//' | tr '[:upper:]' '[:lower:]')
-                    normalized_expected=$(echo "$repo_url" | sed 's/\.git$//' | tr '[:upper:]' '[:lower:]')
-                    
-                    if [[ "$normalized_current" == "$normalized_expected" ]] || \
-                       [[ "$normalized_current" == *"${normalized_expected##*/}" ]] || \
-                       [[ "$normalized_expected" == *"${normalized_current##*/}" ]]; then
-                        log_info "  Remote URL matches expected repository"
-                    else
-                        log_warning "⚠️  Warning: Remote URL differs from expected"
-                        log_warning "  Current:  $current_remote"
-                        log_warning "  Expected: $repo_url"
-                    fi
-                else
-                    log_warning "⚠️  Warning: Could not verify remote URL"
-                fi
-                
-                if git -C "$target_dir" diff-index --quiet HEAD -- 2>/dev/null; then
-                    log_info "  Repository is clean (no uncommitted changes)"
-                else
-                    log_warning "⚠️  Repository has uncommitted changes"
-                fi
-                
-                return 0
-            else
-                log_warning "⚠️  $target_dir exists but is not a git repository"
-                log_warning "  Skipping clone to avoid overwriting existing directory"
-                log_warning "  To fix: mv $target_dir ${target_dir}.backup && re-run script"
-                return 1
-            fi
-        fi
-        
-        log_info "Cloning $repo_name repository..."
-        log_info "  Source: $repo_url"
-        log_info "  Target: $target_dir"
-        
-        if GIT_TERMINAL_PROMPT=0 git clone --recurse-submodules "$repo_url" "$target_dir" 2>&1 | tee -a "$LOG"; then
-            log_success "✓ Successfully cloned $repo_name"
-            
-            if [ -d "$target_dir/.git" ]; then
-                log_success "  ✓ Git repository structure verified"
-                
-                if [ -f "$target_dir/.gitmodules" ]; then
-                    log_info "  Repository contains submodules"
-                    
-                    if git -C "$target_dir" submodule status 2>/dev/null | grep -q '^-'; then
-                        log_warning "⚠️  Some submodules may not be initialized"
-                        log_info "  Initializing submodules..."
-                        if git -C "$target_dir" submodule update --init --recursive 2>&1 | tee -a "$LOG"; then
-                            log_success "  ✓ Submodules initialized"
-                        else
-                            log_warning "  ⚠️  Failed to initialize some submodules"
-                        fi
-                    else
-                        log_success "  ✓ Submodules initialized"
-                    fi
-                fi
-                
-                return 0
-            else
-                log_error "❌ Clone appeared to succeed but git directory not found"
-                return 1
-            fi
-        else
-            local exit_code=$?
-            log_error "❌ Failed to clone $repo_name (exit code: $exit_code)"
-            
-            case $exit_code in
-                128)
-                    log_error "  Common causes:"
-                    log_error "    • Repository URL is incorrect"
-                    log_error "    • No network connectivity"
-                    log_error "    • SSH key not configured (for git@ URLs)"
-                    log_error "    • Repository doesn't exist or is private"
-                    ;;
-                *)
-                    log_error "  Check network connectivity and repository access"
-                    ;;
-            esac
-            
-            if [ -d "$target_dir" ] && [ ! -d "$target_dir/.git" ]; then
-                log_warning "  Cleaning up incomplete clone directory..."
-                if rm -rf "$target_dir" 2>/dev/null; then
-                    log_success "  ✓ Cleaned up incomplete directory"
-                else
-                    log_warning "  ⚠️  Failed to clean up $target_dir"
-                fi
-            fi
-            
-            return 1
-        fi
-} # end _clone_if_missing_UNUSED
-
 symlink_external_repos() {
     log_info "Symlinking external repo configs..."
     
@@ -1768,17 +1520,26 @@ revert_changes() {
 # HELP DOCUMENTATION
 # =============================================================================
 
+show_brief_help() {
+    echo -e "Usage: ${BOLD}./run_me_first.sh${NC} [OPTIONS]"
+    echo "  -h, --help     Full help"
+    echo "  -v, --version  Version info"
+    echo "  --dry-run      Preview without changes"
+    echo "  --revert       Restore backups"
+    echo "  --check        Check installation status"
+}
+
 show_version() {
     echo -e "${GREEN}${BOLD}run_me_first.sh${NC} version ${BLUE}v${VERSION}${NC} (${VERSION_DATE})"
     echo ""
     echo "Dotfiles installer and configuration manager"
-    echo "https://bitbucket.org/b0red/dotfiles"
+    echo "https://github.com/b0red/.dotfiles"
 }
 
 show_info() {
     echo -e "${BOLD}run_me_first.sh${NC} v${VERSION} — Dotfiles installer for first-run setup"
     echo ""
-    echo -e "  Repo    : ${BLUE}https://bitbucket.org/b0red/dotfiles${NC}"
+    echo -e "  Repo    : ${BLUE}https://github.com/b0red/.dotfiles${NC}"
     echo -e "  Date    : ${VERSION_DATE}"
     echo -e "  Usage   : ./run_me_first.sh [-h|-?] [--dry-run] [-v] [-d] [-r]"
     echo ""
@@ -1835,13 +1596,193 @@ show_help() {
 }
 
 # =============================================================================
+# ARGUMENT PARSING
+# =============================================================================
+
+parse_args() {
+    case "${1:-}" in
+        -h|--help)
+            show_help
+            exit 0
+            ;;
+        -\?|--info)
+            show_info
+            exit 0
+            ;;
+        -v|--version)
+            show_version
+            exit 0
+            ;;
+        -r|--revert)
+            logfile_init
+            revert_changes
+            exit 0
+            ;;
+        --check)
+            CHECK_MODE=1
+            main
+            exit 0
+            ;;
+        --select-apps)
+            INTERACTIVE_APP_SELECTION=1
+            main
+            exit 0
+            ;;
+        --skip-apps)
+            SKIP_APP_INSTALL=1
+            main
+            exit 0
+            ;;
+        -d|--debug)
+            DEBUG=1
+            main
+            exit 0
+            ;;
+        --dry-run)
+            DRY_RUN=1
+            log_warning "🔍 DRY RUN — no changes will be made"
+            main
+            exit 0
+            ;;
+        --trace)
+            TRACE_DEBUG=1
+            main
+            exit 0
+            ;;
+        --test-notify)
+            echo -e "${YELLOW}⚠️  Notification system not yet configured.${NC}"
+            echo "   Add notify integration and re-run --test-notify."
+            exit 0
+            ;;
+        --notify-only)
+            echo -e "${YELLOW}⚠️  Notification system not yet configured.${NC}"
+            echo "   Add notify integration before using --notify-only."
+            exit $EXIT_ERROR
+            ;;
+        "")
+            main
+            exit 0
+            ;;
+        *)
+            echo -e "${RED}❌ Unknown option: $1${NC}"
+            echo ""
+            show_brief_help
+            exit $EXIT_ERROR
+            ;;
+    esac
+}
+
+# =============================================================================
+# MAIN
+# =============================================================================
+
+main() {
+    logfile_init
+
+    if [ "${CHECK_MODE:-0}" -eq 1 ]; then
+        check_mode
+    fi
+    log_info "========================================="
+    log_info "Starting Dotfiles Installation"
+    log_info "Version: v${VERSION} (${VERSION_DATE})"
+    log_info "========================================="
+
+    if [ "${TRACE_DEBUG:-0}" -eq 1 ]; then
+        set -x
+        trap 'read -p "DEBUG: Press Enter..."' DEBUG
+        log_success "✓ Trace enabled"
+    fi
+
+    get_os_info
+
+    # Display detected distro prominently on first run
+    if ! is_first_run; then
+        log_info ""
+        log_info "🎨 Color output enabled"
+    else
+        log_info ""
+        log_info "🎨 Color output enabled"
+        log_info ""
+        log_info "╔══════════════════════════════════════════════════════════════════════════════╗"
+        log_info "║                           SYSTEM DETECTION                                ║"
+        log_info "╠══════════════════════════════════════════════════════════════════════════════╣"
+        log_info "║  Operating System: $OS                                                    ║"
+        log_info "║  Distribution:     $DISTRO                                                ║"
+        log_info "║  Base System:      $DISTRO_BASE                                           ║"
+        log_info "║  Kernel:          $KERNEL                                                 ║"
+        log_info "║  Architecture:    $MACH                                                   ║"
+        log_info "╚══════════════════════════════════════════════════════════════════════════════╝"
+        log_info ""
+    fi
+
+    if ! validate_environment; then
+        log_error "❌ Critical environment issues found — aborting installation"
+        exit $EXIT_ENV
+    fi
+
+    if ! load_package_functions; then
+        log_warning "⚠️ Continuing without package functions"
+    fi
+
+    if [ "${SKIP_APP_INSTALL:-0}" -eq 0 ]; then
+        if ! load_app_list; then
+            log_warning "⚠️ Using fallback app list"
+        fi
+    else
+        log_info "Application installation will be skipped"
+    fi
+
+    # Prompt for sudo early
+    log_info ""
+    log_info "🔐 Checking sudo access (you may be prompted for password)..."
+    if ! sudo -v 2>/dev/null; then
+        log_error "❌ Sudo access required for package installation"
+        log_error "Run 'sudo -v' to verify sudo access, then try again."
+        exit $EXIT_PERM
+    fi
+    log_success "✓ Sudo access verified"
+    log_info ""
+
+    # Core installation steps - continue on individual failures where possible
+    if ! backup_dotfiles;          then log_warning "⚠️ Backup step failed, but continuing"; fi
+    if ! cleanup_symlinks;         then log_warning "⚠️ Symlink cleanup failed, but continuing"; fi
+    if ! symlink_dotfiles;         then log_error "❌ Critical: Symlink creation failed — aborting"; exit $EXIT_ERROR; fi
+    if ! install_apps;             then log_warning "⚠️ App installation had issues, but continuing"; fi
+    if ! setup_taskwarrior_config; then log_warning "⚠️ Taskwarrior setup failed, but continuing"; fi
+    if ! archive_backup;           then log_warning "⚠️ Backup archiving failed, but installation complete"; fi
+    if ! update_submodules;        then log_warning "⚠️ Submodule update failed, but continuing"; fi
+    if ! clone_repos;              then log_warning "⚠️ Repository cloning failed, but continuing"; fi
+    if ! symlink_external_repos;   then log_warning "⚠️ External repo symlinking failed, but continuing"; fi
+    if ! symlink_config_folders;   then log_warning "⚠️ Config folder symlinking failed, but continuing"; fi
+    if ! source_bashrc;            then log_warning "⚠️ Bashrc sourcing failed, but continuing"; fi
+
+    mark_installation_complete
+
+    log_info ""
+    log_success "========================================="
+    log_success "✓ Installation Complete!"
+    log_success "========================================="
+    log_info "Log saved to: $LOG"
+    log_info ""
+    log_info "Next steps:"
+    log_info "  1. Restart your shell: exec bash"
+    log_info "  2. Or reload config: reload"
+    log_info "  3. Test package functions: version"
+    log_info "  4. Check for warnings above"
+    log_info ""
+    log_info "For troubleshooting, see: README.md"
+    log_info "To revert changes: ./run_me_first.sh --revert"
+    log_success "========================================="
+}
+
+# =============================================================================
 # SCRIPT INITIALIZATION
 # =============================================================================
 
 trap cleanup_on_exit EXIT
 trap 'exit $EXIT_ABORT' INT TERM
 
-if [ "${TRACE_DEBUG:-0}" -eq 1 ]; then 
+if [ "${TRACE_DEBUG:-0}" -eq 1 ]; then
     set -x
     trap 'read -p "DEBUG: Press Enter..."' DEBUG
 fi
@@ -1851,79 +1792,6 @@ if [ "$EUID" -eq 0 ]; then
     exit $EXIT_PERM
 fi
 
-# =============================================================================
-# COMMAND LINE ARGUMENT PARSING
-# =============================================================================
-
-case "${1:-}" in
-    -h|--help)
-        show_help
-        exit 0
-        ;;
-    -\?|--info)
-        show_info
-        exit 0
-        ;;
-    -v|--version)
-        show_version
-        exit 0
-        ;;
-    -r|--revert)
-        logfile_init
-        revert_changes
-        exit 0
-        ;;
-    --check)
-        CHECK_MODE=1
-        main
-        exit 0
-        ;;
-    --select-apps)
-        INTERACTIVE_APP_SELECTION=1
-        main
-        exit 0
-        ;;
-    --skip-apps)
-        SKIP_APP_INSTALL=1
-        main
-        exit 0
-        ;;
-    -d|--debug)
-        DEBUG=1
-        main
-        exit 0
-        ;;
-    --dry-run)
-        DRY_RUN=1
-        log_warning "🔍 DRY RUN — no changes will be made"
-        main
-        exit 0
-        ;;
-    --trace)
-        TRACE_DEBUG=1
-        main
-        exit 0
-        ;;
-    --test-notify)
-        echo -e "${YELLOW}⚠️  Notification system not yet configured.${NC}"
-        echo "   Add notify integration and re-run --test-notify."
-        exit 0
-        ;;
-    --notify-only)
-        echo -e "${YELLOW}⚠️  Notification system not yet configured.${NC}"
-        echo "   Add notify integration before using --notify-only."
-        exit $EXIT_ERROR
-        ;;
-    "")
-        main
-        exit 0
-        ;;
-    *)
-        echo -e "${RED}❌ Unknown option: $1${NC}"
-        echo ""
-        show_help
-        exit $EXIT_ERROR
-        ;;
-esac
+parse_args "$@"
 
 # End of run_me_first.sh
