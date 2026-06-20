@@ -57,7 +57,7 @@ unset -f setup_prompt
 #   2. Set in your environment: export BASHRC_SKIP_IN_TMUX="no"
 #   3. Use 'reload' alias to force reload regardless of setting
 # =============================================================================
-: "${BASHRC_SKIP_IN_TMUX:=no}"  # Default: skip in tmux
+: "${BASHRC_SKIP_IN_TMUX:=no}"  # Default: always load (set to "yes" to skip in tmux)
 
 # =============================================================================
 # TMUX GUARD - Skip loading if configured and in tmux
@@ -384,3 +384,10 @@ fi
 #echo "✅ ~/.bashrc (re)loaded successfully (level: $BASHRC_SOURCED)"
 
 . "$HOME/.cargo/env"
+
+# =============================================================================
+# TMUX AUTO-START
+# =============================================================================
+if [ -n "$PS1" ] && [ "$BASHRC_SOURCED" -eq 1 ] && [ -z "$TMUX" ]; then
+    [ -x "$HOME/.start_tmux.sh" ] && "$HOME/.start_tmux.sh"
+fi

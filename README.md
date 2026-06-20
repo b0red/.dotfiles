@@ -20,6 +20,7 @@ A comprehensive, cross-platform dotfiles setup with modular bash configuration, 
 - **Cross-Platform**: Supports Debian, Ubuntu, RHEL, Fedora, Arch, Gentoo, Alpine, Void, FreeBSD, OpenBSD, macOS
 - **Docker Integration**: Conditional loading — Docker shortcuts only appear when Docker is installed
 - **Smart File Loading**: Core files load everywhere, interactive files only in interactive shells
+- **Tmux Auto-Start**: New terminal windows automatically launch a configured tmux session via `~/.start_tmux.sh`
 
 ---
 
@@ -68,6 +69,16 @@ TRACE_DEBUG=1 ./run_me_first.sh     # Trace with environment variable
 ---
 
 ## Recent Changes
+
+### v15.7.1 (2026-06-20)
+- **Tmux Auto-Start**: `.bashrc` now launches `~/.start_tmux.sh` automatically on first interactive login (guarded: interactive shell only, first load only, not already in tmux)
+- **Bug Fixes**:
+  - `colorcodes.bash`: `NC` was mapped to black (`\033[0;30m`) instead of reset (`\033[0m`) — text following colored output was invisible on dark terminals
+  - `aliases.bash`: `list_extensions()` used double-quoted perl string — bash expanded `$1` before perl saw it, silently breaking capture group printing; fixed with single quotes
+  - `aliases.bash`: `please` alias ran `$(fc -ln -1)` at definition time (shell startup), not at invocation time — converted to a function
+  - `aliases.bash`: `ghost` alias embedded `$1` which is always empty in aliases — converted to a function
+  - `aliases.bash`: `tm` alias had a trailing `\;` that passed an empty command to tmux — removed
+  - `pkg_aliases.bash`: `set_package_aliases()` printed "Package functions configured for…" on every shell startup — silenced
 
 ### v15.7.0 (2026-05-11)
 - **Enhanced Installer Options**: Added `--select-apps` for interactive package selection and `--skip-apps` to bypass package installation entirely
@@ -583,10 +594,10 @@ Prefix + C, opens the Coffee TUI. It has 4 menus;
 
 #### Session Creation
 
-Create the default multi-pane session:
+The session is created automatically when you open a new terminal (`.bashrc` calls `~/.start_tmux.sh` on first load). To launch it manually:
+
 ```bash
-cd ~/.dotfiles/tmux
-./start_tmux.sh
+~/.start_tmux.sh
 ```
 
 This creates a session with:
@@ -919,6 +930,14 @@ Already updated (ahead of migration): `.bashrc`, `aliases.bash` (`dotupdate`), `
 ---
 
 ## Version History
+- **v15.7.1** (2026-06-20)
+  - Tmux auto-start on new terminal via `~/.start_tmux.sh` (guarded for interactive, first-load, non-tmux)
+  - Fixed `NC` color code in `colorcodes.bash` (was black, now proper reset)
+  - Fixed `list_extensions()` perl quoting bug (bash was eating `$1` before perl)
+  - Fixed `please` and `ghost` from broken aliases to proper functions
+  - Fixed `tm` alias trailing `\;` sending empty tmux command
+  - Silenced noisy `pkg_aliases.bash` startup message
+
 - **v15.6.1** (2026-05-13)
   - Changed info regarding tmux plugin manager from TPM to Coffee (modern replacement)
   - Updated tmux configuration instructions to reflect Coffee usage
@@ -983,6 +1002,6 @@ If you find this useful, consider supporting: [PayPal](https://paypal.me/fotosby
 
 ---
 
-**Last Updated**: 2026-05-06
-**Script Version**: v15.6.0
+**Last Updated**: 2026-06-20
+**Script Version**: v15.7.1
 **Guidelines**: Vibecoding v5.6 / Semantic Versioning 2.0.0

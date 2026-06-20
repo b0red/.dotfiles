@@ -11,6 +11,9 @@
  - [ ] Check for variable set from ~/.dotfiles/run_me_first.sh. If it's then skip this script and exit gracefully.
  - [ ] Set this check in run_me_first.sh so it runs before anything else.
 
+## Completed (June 20, 2026)
+ - [x] Auto-start ~/.start_tmux.sh from .bashrc on first interactive login (guarded: PS1 set, BASHRC_SOURCED=1, not already in tmux)
+
 ## tmux-menus
 1) Create a meny for different scripts (from ~/bash) that can easily be exeecuted from the meny
     2 olika, en för Docker containers och en för "vanliga script"

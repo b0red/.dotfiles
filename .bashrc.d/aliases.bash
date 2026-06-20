@@ -177,7 +177,7 @@ alias rm='rm -i'  # Interactive confirm
 alias nano='nano -c'
 alias vi='vim'
 alias less='less -R'  # Colored pipe support
-alias ghost='ghostwriter $1'
+function ghost() { ghostwriter "$@"; }
 
 # Colored grep (safe, no deprecated GREP_OPTIONS)
 alias grep='grep --color=always --line-number --no-messages --binary-files=without-match'
@@ -191,9 +191,9 @@ alias nocomment="grep -Ev '^(#|$)'"
 alias no_extensions='find . -type f ! -name "*.*"'
 
 # Extension lister
-# was alias, changed to function to fix quoting issue
+# double-quoted perl would let bash expand $1 before perl sees it
 function list_extensions() {
-  find . -type f | perl -ne "print $1 if m/\.([^.\/]+)$/" | sort -u
+  find . -type f | perl -ne 'print $1, "\n" if m/\.([^.\/]+)$/' | sort -u
 }
 
 # Chmod aliases (originals)
@@ -290,7 +290,8 @@ function f() {
 }
 alias root='sudo su -'
 alias su='sudo -i'
-alias please='sudo $(fc -ln -1)'
+# shellcheck disable=SC2046
+function please() { sudo $(fc -ln -1); }
 # alias wget="wget -c $1"
 alias wget='wget -c'
 
@@ -304,7 +305,7 @@ alias crontab='crontab -i'
 # 7. Git/Tmux/Dev
 #----------------------------------------------------------------------------
 alias {module-update,modup}='git submodule foreach '"'"'git pull origin master'"'"
-alias tm='tmux new-session -s main \; split-window -h \; split-window -v -p 30 \;'
+alias tm='tmux new-session -s main \; split-window -h \; split-window -v -p 30'
 alias tmx='tmux attach -t 0 2>/dev/null || tmux new-session'
 alias tmkill='tmux ls 2>/dev/null | grep : | cut -d: -f1 | xargs -r tmux kill-session -t'
 

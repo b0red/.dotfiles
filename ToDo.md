@@ -1,6 +1,6 @@
 # ToDo.md - Dotfiles Project Task Tracker
-# Version: 1.3.0 (2026-05-11)
-# Last Updated: 2026-05-11
+# Version: 1.4.0 (2026-06-20)
+# Last Updated: 2026-06-20
 
 ### ToDO:
 #### General:
@@ -12,14 +12,19 @@
 [x] create a small header when run, write this to affected files @done (add_file_header function exists)
 [x] check logic/flow, everything must be in the correct order @done (2026-05-11)
 [x] make so when it reverts, it actually shows whats getting done @done (2026-05-11)
-[] echo found distro on top of screen when running for the first time! @done (2026-05-11)
-[] maybe make so run_me_first.sh checks for previous runs or if first run? @done (2026-05-11)
+[x] echo found distro on top of screen when running for the first time! @done (2026-05-11)
+[x] maybe make so run_me_first.sh checks for previous runs or if first run? @done (2026-05-11)
 [] refactor the code to be more modular, functions for each task, easier to read and maintain
-[] add error handling, if a command fails, it should log the error and continue with the next one @done (2026-05-11)
+[x] add error handling, if a command fails, it should log the error and continue with the next one @done (2026-05-11)
 
 ---
 
 ## Changelog
+
+### v1.4.0 (2026-06-20)
+- Fixed three improperly formatted done items (had @done text but `[]` checkbox)
+- Bug fixes to colorcodes.bash (NC), aliases.bash (list_extensions, please, ghost, tm), pkg_aliases.bash (startup noise)
+- Tmux auto-start wired into .bashrc (runs ~/.start_tmux.sh on first interactive login)
 
 ### v1.3.0.1 (2026-05-17)
 - Added Taskwarrior config detection and symlink setup

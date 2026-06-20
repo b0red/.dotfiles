@@ -19,7 +19,7 @@ export HI_BLACK HI_RED HI_GREEN HI_YELLOW HI_BLUE HI_PURPLE HI_CYAN HI_WHITE
 export RESET
 
 # Standard Colors (original verbatim)
-NC='\033[0;30m'     # No Color
+NC='\033[0m'        # No Color (reset)
 BLACK='\033[0;30m'
 WHITE='\033[1;37m'
 RED='\033[0;31m'

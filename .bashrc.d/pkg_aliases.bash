@@ -425,7 +425,7 @@ function set_package_aliases() {
         alias fullupdate='p_update && p_clean'
     fi
     
-    echo "Package functions configured for $DISTROBASE"
+    #echo "Package functions configured for $DISTROBASE"
 }
 
 # =================================================================================================
