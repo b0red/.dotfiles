@@ -241,7 +241,7 @@ Checks EUID, USER, and LOGNAME to determine privilege.
 │   └── gitconfig           # Git configuration template
 │
 ├── helpers/
-│   └── debug.sh            # Standalone test script for pkg_aliases.bash (run manually)
+│   └── diagnose.sh         # Diagnostic and test utility: --quick (default), --test, --pkg, --all
 │
 ├── .install_apps.inc       # Application list for run_me_first.sh
 ├── .gitignore              # Excludes: extra_alias.bash, local_alias.bash, logs, oldfiles
@@ -920,7 +920,7 @@ The `loaded_files` associative array in `.bashrc` prevents duplicate loading. If
 4. **Trace mode**: `TRACE_DEBUG=1 ./run_me_first.sh`
 5. **Version check**: `./run_me_first.sh --version`
 6. **Shell reload check**: `reload` (should show visual feedback)
-7. **Test pkg_aliases**: `source ~/.dotfiles/helpers/debug.sh`
+7. **Run diagnostics**: `~/.dotfiles/helpers/diagnose.sh` (quick check) or `--test` / `--pkg` for deeper inspection
 
 ---
 
@@ -977,7 +977,7 @@ The `loaded_files` associative array in `.bashrc` prevents duplicate loading. If
   - Updated Known Issues / Migration TODOs to reflect changes and new tmux setup
 
 - **v15.6.0** (2026-05-06)
-  - Restructured repo: `debug.sh` moved from `.bashrc.d/` to `helpers/`
+  - Restructured repo: diagnostic scripts moved from `.bashrc.d/` to `helpers/`
   - Added `extra_alias.bash` and `local_alias.bash` to `.gitignore` (safe local customizations)
   - README fully restructured for new-user-first flow
   - README completed with all sections from original (previously omitted in migration)
