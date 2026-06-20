@@ -797,22 +797,29 @@ version() {
     install_tool() {
         local pkg="$1"
         echo "📦 Attempting to install $pkg..."
+        local _pm=""
         if command -v p_install >/dev/null 2>&1; then
             if p_install "$pkg"; then
                 echo "✅ $pkg installed successfully."
+                return 0
             else
-                echo "❌ p_install failed to install $pkg. Please check logs or install manually."
+                echo "❌ p_install failed for $pkg. Install manually."
                 return 1
             fi
-        elif command -v apt-get >/dev/null 2>&1; then
-            if sudo apt-get install -y "$pkg"; then
-                echo "✅ $pkg installed successfully."
-            else
-                echo "❌ apt-get failed to install $pkg. Please check your network or apt configuration."
-                return 1
-            fi
+        elif command -v apt-get >/dev/null 2>&1; then _pm="sudo apt-get install -y"
+        elif command -v dnf     >/dev/null 2>&1; then _pm="sudo dnf install -y"
+        elif command -v pacman  >/dev/null 2>&1; then _pm="sudo pacman -S --noconfirm"
+        elif command -v zypper  >/dev/null 2>&1; then _pm="sudo zypper install -y"
+        elif command -v apk     >/dev/null 2>&1; then _pm="sudo apk add"
+        elif command -v brew    >/dev/null 2>&1; then _pm="brew install"
         else
-            echo "❌ Error: Could not determine package manager."
+            echo "❌ No supported package manager found. Install $pkg manually."
+            return 1
+        fi
+        if $_pm "$pkg"; then
+            echo "✅ $pkg installed successfully."
+        else
+            echo "❌ Failed to install $pkg via $_pm."
             return 1
         fi
     }

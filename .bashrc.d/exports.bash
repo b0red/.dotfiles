@@ -94,8 +94,8 @@ if [ -z "${uname_s:-}" ]; then
     uname_v="$(uname -v)"   # Version info
     uname_m="$(uname -m)"   # Machine hardware name
     uname_p="$(uname -p)"   # Processor type
-    uname_i="$(uname -i)"   # Hardware platform
-    uname_o="$(uname -o)"   # Operating system
+    uname_i="$(uname -i 2>/dev/null || true)"   # Hardware platform (GNU only)
+    uname_o="$(uname -o 2>/dev/null || true)"   # Operating system (GNU only)
     export uname_s uname_n uname_r uname_v uname_m uname_p uname_i uname_o
 fi
 

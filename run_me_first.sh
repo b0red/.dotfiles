@@ -875,10 +875,20 @@ install_apps_direct() {
                 pkg_install="sudo yum install -y"
             fi
             ;;
-        suse) pkg_install="sudo zypper install -y" ;;
-        arch) pkg_install="sudo pacman -S --noconfirm" ;;
+        suse)    pkg_install="sudo zypper install -y" ;;
+        arch)    pkg_install="sudo pacman -S --noconfirm" ;;
+        alpine)  pkg_install="sudo apk add" ;;
+        macos)
+            if command -v brew >/dev/null 2>&1; then
+                pkg_install="brew install"
+            else
+                log_error "❌ Homebrew not found — install it first: https://brew.sh"
+                return 1
+            fi
+            ;;
         *)
-            log_error "❌ Unknown distro: $DISTRO_BASE"
+            log_error "❌ No package manager configured for distro: $DISTRO_BASE"
+            log_warning "⚠️ Install packages manually and re-run with --skip-apps"
             return 1
             ;;
     esac
