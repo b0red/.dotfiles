@@ -1,21 +1,19 @@
-# Tmux + Coffee - Quick Reference Card
+# Tmux + Coffee — Quick Reference Card
 
 ## Installation (First Time)
+
+Tmux configuration is bundled with the dotfiles repo. The main installer handles everything:
+
 ```bash
-# 1. Clone repo (if not done)
-git clone git@bitbucket.org:b0red/tmux.git ~/.tmux
+# Clone dotfiles (if not done)
+git clone git@github.com:b0red/.dotfiles.git ~/.dotfiles
+cd ~/.dotfiles
 
-# 2. Run automated installer
-~/.tmux/tmux_installer.sh
+# Run the installer (handles tmux symlinks and submodules)
+./run_me_first.sh
 
-# 3. Add Coffee to PATH (add to ~/.bashrc or ~/.zshrc)
-export PATH="$HOME/.local/share/coffee/bin:$PATH"
-
-# 4. Reload shell
-source ~/.bashrc
-
-# 5. Start tmux
-tmux
+# OR install Coffee and plugins manually:
+~/.dotfiles/tmux/tmux_installer.sh
 ```
 
 ## Coffee Plugin Manager
@@ -48,7 +46,6 @@ coffee disable <plugin>     # Disable plugin
 |-----------|--------|
 | `Ctrl-a` + `r` | Reload config |
 | `Ctrl-a` + `C` | Open Coffee TUI |
-| `~~ Ctrl-a` + `I` | Install plugins (alternative to coffee install) ~~|
 | `Ctrl-a` + `c` | New window |
 | `Ctrl-a` + `-` | Split horizontal |
 | `Ctrl-a` + `\|` | Split vertical |
@@ -106,17 +103,19 @@ tmux kill-server
 
 # Start new session
 tmux new-session
-or
-~/.tmux/start-tmux.sh (preconfigured layout)
+
+# OR start with preconfigured layout:
+~/.dotfiles/tmux/start_tmux.sh
 ```
 
 ## File Locations
 ```
-~/.tmux.conf                        # Symlink to config
-~/.tmux/.tmux.conf                  # Actual config file
-~/.local/share/coffee/              # Coffee installation
-~/.local/share/coffee/.venv/        # Python virtual environment
-~/.tmux/plugins/                    # Installed plugins
+~/.tmux.conf                         # Symlink → ~/.dotfiles/tmux/.tmux.conf
+~/.dotfiles/tmux/.tmux.conf          # Actual config file
+~/.local/share/coffee/               # Coffee installation
+~/.local/share/coffee/.venv/         # Python virtual environment
+~/.dotfiles/tmux/coffee/plugins/     # Installed plugins
+~/.dotfiles/tmux/start_tmux.sh       # Preconfigured session layout script
 ```
 
 ## Migration from TPM
@@ -134,7 +133,7 @@ coffee install              # Install plugins with Coffee
    set -g @plugin 'author/plugin-name'
    ```
 2. Reload config: `Ctrl-a` + `r`
-3. Install: `coffee install` OR `Ctrl-a` + `I`
+3. Install: `coffee install`
 
 ### Update All Plugins
 ```bash
@@ -149,7 +148,7 @@ coffee list
 
 ## Start tmux with Layout
 ```bash
-~/.tmux/start-tmux.sh
+~/.dotfiles/tmux/start_tmux.sh
 ```
 
 This creates:
@@ -160,5 +159,5 @@ This creates:
 
 ## Resources
 - Coffee: https://github.com/PraaneshSelvaraj/coffee.tmux
-- Your config: https://github.com/b0red (or bitbucket)
-- Full README: ~/.tmux/README.md
+- Dotfiles repo: https://github.com/b0red/.dotfiles
+- Full tmux README: `~/.dotfiles/tmux/README.md` (if present)

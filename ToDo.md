@@ -6,7 +6,7 @@
 #### General:
 [x] Add interactive package selection and skip-install options @done (2026-05-11)
 [x] Improve backup/revert flow with manifest-backed backups @done (2026-05-11)
-[x] Keep canonical repo on Bitbucket and document it in README @done (2026-05-11)
+[x] Keep canonical repo on GitHub and document it in README @done (2026-06-21)
 [x] Add Taskwarrior config detection and symlink setup @done (2026-05-11)
 [x] Create a function that reads apps to be installed from file, easier maintance @done (existing load_app_list function)
 [x] create a small header when run, write this to affected files @done (add_file_header function exists)
