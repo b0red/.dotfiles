@@ -54,17 +54,21 @@ The script will:
 ```bash
 ./run_me_first.sh                   # Normal installation
 ./run_me_first.sh --help            # Show help message
+./run_me_first.sh -?                # Show detailed info
 ./run_me_first.sh --version         # Show version (v15.8.0)
+./run_me_first.sh --check           # Validate existing installation, optionally re-run
 ./run_me_first.sh --revert          # Revert changes (restore backups)
-./run_me_first.sh --select-apps      # Choose specific packages to install
-./run_me_first.sh --skip-apps        # Skip package installation
+./run_me_first.sh --select-apps     # Choose specific packages to install
+./run_me_first.sh --skip-apps       # Skip package installation
+./run_me_first.sh --dry-run         # Preview all actions without making changes (exits 4)
 ./run_me_first.sh --debug           # Enable debug mode
 ./run_me_first.sh --trace           # Enable trace mode (set -x)
+./run_me_first.sh --test-notify     # Test notification system
 DEBUG=1 ./run_me_first.sh           # Debug with environment variable
 TRACE_DEBUG=1 ./run_me_first.sh     # Trace with environment variable
 ```
 
-> **Note:** `--notify-only` is not yet implemented. See [Known Issues / Migration TODOs](#known-issues--migration-todos).
+> **Note:** `--notify-only` and `--test-notify` output a placeholder — the notification backend is not yet wired up.
 
 ---
 
@@ -102,7 +106,7 @@ TRACE_DEBUG=1 ./run_me_first.sh     # Trace with environment variable
 ### v15.7.0 (2026-05-11)
 - **Enhanced Installer Options**: Added `--select-apps` for interactive package selection and `--skip-apps` to bypass package installation entirely
 - **Improved Backup System**: Implemented manifest-backed backups for robust revert functionality with detailed change tracking
-- **Repository Migration**: Updated all references to canonical Bitbucket repository (`git@bitbucket.org:b0red/dotfiles.git`)
+- **Repository Migration**: Updated all references to canonical GitHub repository (`git@github.com:b0red/.dotfiles.git`)
 - **Taskwarrior Integration**: Added automatic detection and setup of Taskwarrior configuration (`.taskrc`) if installed
 - **Documentation Updates**: Refreshed help text, examples, and README with new features and options
 
@@ -120,7 +124,6 @@ The installer creates these symlinks in your home directory. Your originals are 
 | `~/.bashrc` | `~/.dotfiles/.bashrc` |
 | `~/.bash_profile` | `~/.dotfiles/.bash_profile` |
 | `~/.profile` | `~/.dotfiles/.profile` |
-| `~/.inputrc` | `~/.dotfiles/.inputrc` |
 | `~/.tmux.conf` | `~/.tmux/.tmux.conf` |
 | `~/.vimrc` | `~/.vim/.vimrc` |
 
@@ -132,28 +135,30 @@ Understanding the installer's output at a glance:
 
 | Symbol | Color | Meaning |
 |--------|-------|---------|
-| `✔` | Green | Success — file backed up, symlink created, package installed |
+| `✓` | Green | Success — file backed up, symlink created |
+| `✅` | Green | Success — package installed, function configured |
 | `⚠️` | Yellow | Warning — skipped unchanged file, missing optional dependency |
-| `✗` | Red | Error — failed operation, missing required file, permission issue |
+| `❌` | Red | Error — failed operation, missing required file, permission issue |
 | `⏭️` | — | Skipped — file unchanged from repo version, no backup needed |
 
 Example install run:
 ```
 =========================================
 Starting Dotfiles Installation
-Version: v15.7.0 (2026-05-11)
+Version: v15.8.0 (2026-06-21)
 =========================================
 🎨 Color output enabled
 Detected: OS=linux, Distro=ubuntu, Base=debian, Kernel=6.6.87, Arch=x86_64
 ✅ Package functions configured for debian
-✔ Loaded 25 applications from .install_apps.inc
+✅ All package functions verified
+✓ Loaded 29 applications from .install_apps.inc
 
 🔐 Checking sudo access...
-✔ Sudo access verified
+✓ Sudo access verified
 
 Backing up existing dotfiles...
 ⏭️  Skipping /home/user/.bashrc (unchanged from repo)
-✔ Backed up: /home/user/.profile
+✓ Backed up: /home/user/.profile
 Backed up 1 files to /home/user/.dotfiles/oldfiles/
 ```
 
@@ -164,18 +169,18 @@ Backed up 1 files to /home/user/.dotfiles/oldfiles/
 When you open a new shell or run `reload`, each config file loads with visual feedback:
 
 ```
-✔ Loading: exports.bash
-✔ Loading: env.bash
-✔ Loading: functions.bash
-✔ Loading: pkg_aliases.bash
-✔ Loading: git.bash
-✔ Loading: docker.bash      # Only if Docker is installed
-✔ Loading: aliases.bash
+✓ Loading: exports.bash
+✓ Loading: env.bash
+✓ Loading: functions.bash
+✓ Loading: pkg_aliases.bash
+✓ Loading: git.bash
+✓ Loading: docker.bash      # Only if Docker is installed
+✓ Loading: aliases.bash
 ✅ All dotfiles loaded
 ```
 
 - Files appear in the upper-left corner with cursor positioning
-- Green `✔` for success, Red `✗` for errors
+- Green `✓` for success, Red `❌` for errors
 - Screen clears before and after loading for a clean display
 
 ### Adjusting Loading Speed
@@ -208,7 +213,7 @@ Checks EUID, USER, and LOGNAME to determine privilege.
 ~/.dotfiles/
 ├── .bashrc                 # Main bash config (tmux guard, recursion guard, SSH agent)
 ├── .bash_profile           # Login shell config (sources .bashrc, sets BASHRC_SKIP_IN_TMUX)
-├── .profile                # POSIX shell config (loads .bashrc.d and .profile.d)
+├── .profile                # POSIX shell config (sources .bashrc for bash, loads .profile.d)
 ├── .bashrc.d/              # Modular bash configs
 │   ├── Core Files (load everywhere — no interactive guard):
 │   │   ├── exports.bash        # Environment variables, PATH, locale, history
@@ -222,15 +227,18 @@ Checks EUID, USER, and LOGNAME to determine privilege.
 │       ├── git.bash            # Git shortcuts (50+ aliases)
 │       ├── docker.bash         # Docker shortcuts (conditional on Docker being installed)
 │       ├── colorcodes.bash     # ANSI color code definitions
-│       ├── variables.bash      # Custom variables
+│       ├── variables.bash      # Custom variables (kept for future use)
 │       ├── profile.bash        # Login shell settings
-│       └── logout.bash         # Exit handlers
+│       └── logout.bash         # Exit handlers + log rotation
 │
-├── .profile.d/             # POSIX shell modules (sourced by .bashrc and .profile)
+├── .profile.d/             # POSIX shell modules (sourced by .profile on login)
 │   ├── browser.sh
 │   ├── pager.sh
 │   ├── timezone.sh
 │   └── welcome.sh          # Optional: fortune, rem, verse (if installed)
+│
+├── git/
+│   └── gitconfig           # Git configuration template
 │
 ├── helpers/
 │   └── debug.sh            # Standalone test script for pkg_aliases.bash (run manually)
@@ -238,8 +246,10 @@ Checks EUID, USER, and LOGNAME to determine privilege.
 ├── .install_apps.inc       # Application list for run_me_first.sh
 ├── .gitignore              # Excludes: extra_alias.bash, local_alias.bash, logs, oldfiles
 ├── symlink.sh              # Distro-specific symlink helper (called by run_me_first.sh)
-├── system_detector.sh      # Standalone POSIX system info reporter
+├── system_detector.sh      # Standalone POSIX system info reporter (v5.2.0)
 ├── run_me_first.sh         # Main installer script (v15.8.0)
+├── tmux/                   # Tmux config subtree (symlinked to ~/.tmux)
+├── vim/                    # Vim config subtree (symlinked to ~/.vim)
 ├── oldfiles/               # Backup directory (pristine originals + archived old scripts)
 ├── logs/                   # Installation logs (gitignored)
 │   └── install-*.log
@@ -369,8 +379,10 @@ Enabled when `ENABLE_SHORT_ALIASES=1` in `pkg_aliases.bash`:
 
 ```bash
 ./system_detector.sh            # Show system info + shell capabilities
+./system_detector.sh -h         # Show help
+./system_detector.sh -?         # Same as --help (Vibecoding flag)
+./system_detector.sh --version  # Show version (v5.2.0)
 ./system_detector.sh --debug    # Enable set -x tracing
-./system_detector.sh --version
 ```
 
 Reports: OS, distro, kernel, arch, environment (WSL / native / Cygwin), login shell, execution shell, and shell capabilities (aliases, functions, arrays, associative arrays).
@@ -471,14 +483,14 @@ quickscan [host]   # Quick port scan of common ports (default: localhost)
 ```
 Backing up existing dotfiles...
 ⏭️  Skipping /home/user/.bashrc (unchanged from repo)
-✔ Backed up: /home/user/.profile
+✓ Backed up: /home/user/.profile
 Backed up 1 files to /home/user/.dotfiles/oldfiles/
 
-✔ Archived backups: backup-DESKTOP-JLMCRD0-2026-05-06_10-30-00.tar.gz
+✓ Archived backups: backup-DESKTOP-JLMCRD0-2026-05-06_10-30-00.tar.gz
 
 Cleaning up old backup archives (keeping 3 most recent)...
 🗑️  Deleted old archive: backup-DESKTOP-JLMCRD0-2026-01-10_10-00-00.tar.gz
-✔ Cleaned up 1 old archive(s), kept 3 most recent
+✓ Cleaned up 1 old archive(s), kept 3 most recent
 ```
 
 ---
@@ -685,7 +697,7 @@ The installer links your vim configuration from the repo:
 
 If you need to set it up manually:
 ```bash
-git clone git@bitbucket.org:b0red/dotfiles.git ~/.dotfiles
+git clone git@github.com:b0red/.dotfiles.git ~/.dotfiles
 ln -s ~/.dotfiles/vim ~/.vim
 ln -s ~/.vim/.vimrc ~/.vimrc
 ln -s ~/.vim/.gvimrc ~/.gvimrc
@@ -733,7 +745,7 @@ Plugin commands:
 
 ### Broot Integration
 
-If `broot` is installed, `.bashrc` sources its launcher at runtime via `$HOME/.config/broot/launcher/bash/br`. Note: `.bash_profile` currently has this path hardcoded — see [Known Issues / Migration TODOs](#known-issues--migration-todos).
+If `broot` is installed, `.bashrc` sources its launcher at runtime via `$HOME/.config/broot/launcher/bash/br`. `.bash_profile` guards this with an existence check (`[ -f ... ] && source ...`) so it is safe on systems without broot or cargo.
 
 ---
 
@@ -752,7 +764,7 @@ Restores original dotfiles from `oldfiles/` backups, removes all created symlink
 ```bash
 # 1. Restore pristine backups
 cd ~/.dotfiles/oldfiles/
-for f in .bashrc.bak-* .profile.bak-* .bash_profile.bak-* .inputrc.bak-*; do
+for f in .bashrc.bak-* .profile.bak-* .bash_profile.bak-*; do
     [ -f "$f" ] || continue
     original=$(echo "$f" | sed 's/\.bak-.*$//')
     cp "$f" ~/"$original"
@@ -760,7 +772,7 @@ for f in .bashrc.bak-* .profile.bak-* .bash_profile.bak-* .inputrc.bak-*; do
 done
 
 # 2. Remove symlinks
-rm -f ~/.bashrc ~/.bash_profile ~/.profile ~/.inputrc
+rm -f ~/.bashrc ~/.bash_profile ~/.profile
 
 # 3. Restart shell
 exec bash
@@ -774,7 +786,7 @@ exec bash
 
 ```bash
 cd ~/.dotfiles
-git pull origin main
+git pull origin master
 reload
 ```
 
@@ -884,7 +896,7 @@ The `loaded_files` associative array in `.bashrc` prevents duplicate loading. If
 
 ### `functions -?` Showing Wrong File
 
-See [Known Issues / Migration TODOs](#known-issues--migration-todos) — `functions.bash` has a hardcoded `~/dotfiles/` path that breaks after migration.
+`functions.bash` locates itself via `$HOME/.dotfiles/.bashrc.d/functions.bash` — if you cloned the repo somewhere else, update `DOTFILES_DIR` in `exports.bash`.
 
 ---
 
@@ -918,18 +930,16 @@ See [Known Issues / Migration TODOs](#known-issues--migration-todos) — `functi
 
 | File | Location | Issue |
 |------|----------|-------|
-| `.bash_profile` | line 29 | Hardcoded `/home/patrick/.config/broot/...` → use `$HOME` |
-| `.bashrc` header | line 3 | Still says "Created by RunMe.sh" — auto-corrected on next `./run_me_first.sh` run |
-| `system_detector.sh` | — | Missing `-?/--info`, `--dry-run`, compliant header (low priority — standalone utility) |
-| `symlink.sh` | — | No flags (called by installer, not user-facing — acceptable) |
+| `run_me_first.sh` | `--notify-only` / `--test-notify` | Notification backend not wired up — flags are accepted but do nothing |
+| `symlink.sh` | — | No flags (called by installer, not user-facing — acceptable by design) |
 
 ### Vibecoding v5.6 Compliance Gaps
 
 | File | Guideline | Issue |
 |------|-----------|-------|
-| `run_me_first.sh` | Part V §1 | Inline ANSI codes only — no `ColorCodes.inc` sourcing |
-| `system_detector.sh` | Part II §2 | Missing compliant script header |
-| `symlink.sh` | Part II §2 | Missing compliant script header |
+| `run_me_first.sh` | Part V §1 | Inline ANSI codes only — `ColorCodes.inc` referenced but not present in repo |
+| `system_detector.sh` | Part II §2 | Uses `#!/bin/sh` (intentional POSIX exception) — no Vibecoding canonical header |
+| `symlink.sh` | Part II §2 | Missing compliant script header (called internally, not user-facing) |
 
 ---
 
@@ -939,6 +949,16 @@ See [Known Issues / Migration TODOs](#known-issues--migration-todos) — `functi
   - 9 logical bug fixes in `run_me_first.sh` (state file conflict, validate_installation false positives, revert double-restore, symlink log direction, add_file_header regex, PIPESTATUS, distro case patterns, taskwarrior backup order)
   - 6 `.bashrc.d` bug fixes (ltree/myip alias shadowing, docker.bash lzd/lzj conflict + unquoted IDs, exports.bash PAGER fallback + export/assign split + uname consolidation, env.bash dead variable, logout.bash log rotation)
   - Repository migration complete: all Bitbucket URLs → GitHub; `~/dotfiles` → `~/.dotfiles`
+  - **Final scan / hardening pass:**
+    - Fixed all DRY_RUN guard gaps (`add_file_header`, `archive_backup`, `symlink_dotfiles`, `sudo -v` check)
+    - Fixed `set_package_aliases` running in pipe subshell — moved to direct call so functions persist in current shell
+    - Fixed `symlink.sh` file mode (`644` → `755`) — was silently skipped every run
+    - Hardened `symlink.sh`: added source-existence check in `linkwork()` (skips files not in repo), added cases for all major distros (fedora, centos/rhel/rocky, arch/manjaro, opensuse, raspbian)
+    - `system_detector.sh` v5.2.0: removed dead `OSSYS`/`os_status` variables, renamed `DistroBasedOn` → `DISTRO_FAMILY`, added `-h/-?/--info/--version` flags
+    - Removed Cygwin leftovers: `.inputrc` removed from `DOT_ARRAY`/`OLD_FILE_ARRAY`; `symlink_config_folders()` function removed (135 lines)
+    - Portability: guarded `uname -i` and `uname -o` (GNU-only) with `2>/dev/null || true`; added `alpine` and `macos` cases to `install_apps_direct()`; replaced hardcoded `apt-get` fallback in `functions.bash` with distro-aware probe
+    - `.bash_profile` and `.profile`: guarded `broot` launcher and `cargo` env with existence checks
+    - Branch cleanup: deleted stub `main` branch, pruned stale tracking refs (`development`, `dev_1`), removed `bitbucket` remote; `master` set as GitHub default branch
 
 - **v15.7.1** (2026-06-20)
   - Tmux auto-start on new terminal via `~/.start_tmux.sh` (guarded for interactive, first-load, non-tmux)
@@ -969,7 +989,7 @@ See [Known Issues / Migration TODOs](#known-issues--migration-todos) — `functi
   - Renamed installer: `RunMe.sh` → `run_me_first.sh`
   - Replaced `SystemDetector.sh` with portable POSIX `system_detector.sh`
   - Moved diagnostic/test scripts to `oldfiles/`
-  - Added `symlink_config_folders` for `~/.config` directory linking
+  - Added `symlink_config_folders` for `~/.config` directory linking *(removed in v15.8.0 — `~/.config` should live outside the repo)*
   - Added `archive_backup` and automatic cleanup of old archives (keeps 3)
   - Added revert functionality (`--revert`)
   - Added tmux guard with `BASHRC_SKIP_IN_TMUX` control + `bashrc-toggle-tmux` alias
