@@ -115,6 +115,11 @@ validate_installation() {
         log_warning "  ⚠️  Vim repo not linked: ~/.vim"
         issues=$((issues + 1))
     fi
+
+    if [ ! -L "$HOME/.start_tmux.sh" ] || [ ! -x "$HOME/.start_tmux.sh" ]; then
+        log_warning "  ⚠️  Tmux auto-start not linked: ~/.start_tmux.sh"
+        issues=$((issues + 1))
+    fi
     
     # Check submodules
     if [ -d "$DIR/.git" ]; then
@@ -1276,11 +1281,13 @@ clone_repos() {
 
     log_info ""
     log_info "Repo link summary:"
-    if [ -L "$HOME/.tmux" ]; then log_success "  tmux   : ✓ Linked ($DIR/tmux)"
-    else log_warning "  tmux   : ❌ Not linked"; fi
-    if [ -L "$HOME/.vim"  ]; then log_success "  vim    : ✓ Linked ($DIR/vim)"
-    else log_warning "  vim    : ❌ Not linked"; fi
-    log_success "  Coffee : ✓ Plugin config path available (tmux/coffee/plugins)"
+    if [ -L "$HOME/.tmux" ]; then log_success "  tmux       : ✓ Linked ($DIR/tmux)"
+    else log_warning "  tmux       : ❌ Not linked"; fi
+    if [ -L "$HOME/.vim"  ]; then log_success "  vim        : ✓ Linked ($DIR/vim)"
+    else log_warning "  vim        : ❌ Not linked"; fi
+    if [ -L "$HOME/.start_tmux.sh" ]; then log_success "  start_tmux : ✓ Linked (~/.start_tmux.sh)"
+    else log_warning "  start_tmux : ❌ Not linked"; fi
+    log_success "  Coffee     : ✓ Plugin config path available (tmux/coffee/plugins)"
 
     return $errors
 }
@@ -1332,6 +1339,24 @@ symlink_external_repos() {
         log_warning "⚠️ ~/.vim directory not found, skipping .vimrc symlink"
     fi
     
+    local start_tmux_src="$DIR/tmux/start_tmux.sh"
+    local start_tmux_link="$HOME/.start_tmux.sh"
+    if [ -f "$start_tmux_src" ]; then
+        if [ -e "$start_tmux_link" ] || [ -L "$start_tmux_link" ]; then
+            if backup_target "$start_tmux_link"; then
+                rm -f "$start_tmux_link" 2>/dev/null || true
+            fi
+        fi
+        if safe_exec ln -sf "$start_tmux_src" "$start_tmux_link"; then
+            log_success "✓ Linked: ~/.start_tmux.sh -> $start_tmux_src"
+        else
+            log_error "❌ Failed to link .start_tmux.sh"
+            errors=$((errors + 1))
+        fi
+    else
+        log_warning "⚠️ $start_tmux_src not found, skipping"
+    fi
+
     if [ $errors -gt 0 ]; then
         log_warning "⚠️ $errors error(s) occurred during external repo symlinking"
         return 1
@@ -1384,7 +1409,7 @@ revert_changes() {
     local reverted=0 failed=0 removed=0
 
     log_info "Removing symlinks created by the installer..."
-    for src in "${DOT_ARRAY[@]}" "$HOME/.tmux" "$HOME/.vim" "$HOME/.tmux.conf" "$HOME/.vimrc"; do
+    for src in "${DOT_ARRAY[@]}" "$HOME/.tmux" "$HOME/.vim" "$HOME/.tmux.conf" "$HOME/.vimrc" "$HOME/.start_tmux.sh"; do
         if [ -L "$src" ]; then
             if rm -f "$src" 2>/dev/null; then
                 log_success "✓ Removed symlink: $src"
