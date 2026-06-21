@@ -945,6 +945,16 @@ The `loaded_files` associative array in `.bashrc` prevents duplicate loading. If
 | `run_me_first.sh` | `--notify-only` / `--test-notify` | Notification backend not wired up — flags are accepted but do nothing |
 | `symlink.sh` | — | No flags (called by installer, not user-facing — acceptable by design) |
 
+### Audit Methodology Note
+
+Static analysis (shellcheck, syntax checks, pattern greps) does **not** catch installer-runtime gaps. When auditing this repo, always trace the other direction too:
+
+1. What does `.bashrc` / `.bash_profile` call at startup? → verify the installer creates every dependency (symlinks, directories, sourced files).
+2. What does `.tmux.conf` load unconditionally? → guard with `if-shell '[ -f ... ]'` if the file may be absent on a fresh install.
+3. What do shell functions assume exists in `PATH` or `~`? → cross-check against `symlink_external_repos()` and `install_apps_direct()`.
+
+Static tools only see what the code says. Runtime tracing reveals what the install *produces*.
+
 ### Vibecoding v5.6 Compliance Gaps
 
 | File | Guideline | Issue |
