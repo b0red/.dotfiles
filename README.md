@@ -55,7 +55,7 @@ The script will:
 ./run_me_first.sh                   # Normal installation
 ./run_me_first.sh --help            # Show help message
 ./run_me_first.sh -?                # Show detailed info
-./run_me_first.sh --version         # Show version (v15.8.0)
+./run_me_first.sh --version         # Show version (v15.9.0)
 ./run_me_first.sh --check           # Validate existing installation, optionally re-run
 ./run_me_first.sh --revert          # Revert changes (restore backups)
 ./run_me_first.sh --select-apps     # Choose specific packages to install
@@ -73,6 +73,18 @@ TRACE_DEBUG=1 ./run_me_first.sh     # Trace with environment variable
 ---
 
 ## Recent Changes
+
+### v15.9.0 (2026-06-21)
+- **`tmux_installer.sh` refactored to Vibecoding v5.6 canonical structure** (v2.0.0):
+  - Added compliant header block, `IFS=$'\n\t'`, `SCRIPT_DIR`, `VERSION`, `DRY_RUN`, `DEBUG`, `INTERACTIVE` globals
+  - Inline color fallback (no `ColorCodes.inc` dependency — standalone script)
+  - `safe_exec()` added; all mutating commands (`rm`, `mv`, `ln -s`, `git clone/pull`, `mkdir`) route through it
+  - `--dry-run` support: full preview with no state changes, exits 4
+  - All required flags: `-h/--help`, `-?/--info`, `-v/--version`, `-d/--debug`, `--dry-run`, `--test-notify`, `--notify-only`
+  - All six exit codes (0 success, 1 error, 2 bad args, 3 missing deps, 4 dry-run, 5 notify test)
+  - `validate_environment()`, `cleanup()` + `trap`, execution guard
+  - `local backup` declaration split from assignment; `SCRIPT_DIR` split from `readonly`; tilde replaced with `$HOME`
+  - Paths derived from `SCRIPT_DIR` — works regardless of where the dotfiles repo is cloned
 
 ### v15.8.0 (2026-06-21)
 - **`run_me_first.sh` refactor**: Modularised into canonical Vibecoding v5.6 structure — `parse_args()`, `show_brief_help()`, `show_version()`, `show_info()`, `IFS`, `SCRIPT_DIR`, `VERSION_DATE` globals added; `main()` moved to canonical bottom position; dead `_clone_if_missing_UNUSED` (115 lines) removed; all Bitbucket URLs → GitHub
@@ -247,7 +259,7 @@ Checks EUID, USER, and LOGNAME to determine privilege.
 ├── .gitignore              # Excludes: extra_alias.bash, local_alias.bash, logs, oldfiles
 ├── symlink.sh              # Distro-specific symlink helper (called by run_me_first.sh)
 ├── system_detector.sh      # Standalone POSIX system info reporter (v5.2.0)
-├── run_me_first.sh         # Main installer script (v15.8.0)
+├── run_me_first.sh         # Main installer script (v15.9.0)
 ├── tmux/                   # Tmux config subtree (symlinked to ~/.tmux)
 ├── vim/                    # Vim config subtree (symlinked to ~/.vim)
 ├── oldfiles/               # Backup directory (pristine originals + archived old scripts)
@@ -944,6 +956,8 @@ The `loaded_files` associative array in `.bashrc` prevents duplicate loading. If
 ---
 
 ## Version History
+- **v15.9.0** (2026-06-21)
+  - `tmux_installer.sh` rewritten to Vibecoding v5.6 canonical structure (v2.0.0): `safe_exec`, dry-run, all required flags/exit codes, split declarations, `SCRIPT_DIR`-relative paths
 - **v15.8.0** (2026-06-21)
   - Full refactor of `run_me_first.sh` to Vibecoding v5.6 canonical structure
   - 9 logical bug fixes in `run_me_first.sh` (state file conflict, validate_installation false positives, revert double-restore, symlink log direction, add_file_header regex, PIPESTATUS, distro case patterns, taskwarrior backup order)

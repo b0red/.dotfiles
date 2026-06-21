@@ -4,7 +4,7 @@
 # =============================================================================
 # Author      : b0red
 # Repository  : https://github.com/b0red/.dotfiles
-# Version     : 15.8.0
+# Version     : 15.9.0
 # Date        : 2026-06-21
 # Description : Backs up existing dotfiles, creates symlinks, installs apps,
 #               updates submodules, and clones companion repos (.tmux, .vim).
@@ -26,7 +26,7 @@ IFS=$'\n\t'
 # =============================================================================
 SCRIPT_NAME=$(basename "$0")
 SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
-VERSION="15.8.0"
+VERSION="15.9.0"
 VERSION_DATE="2026-06-21"
 INTERACTIVE=0
 
