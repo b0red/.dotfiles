@@ -103,7 +103,7 @@ sudo apt-get install -y bat fd-find ripgrep broot most prettyping btop ncdu
 | `fzf` | Various functions | Fuzzy finder |
 | `jq` | `docker.bash` functions | JSON processor |
 | `entr` | — | File watcher for automation |
-| `tldr` | — | Simplified man pages |
+| `tldr` | — | Simplified man pages — **requires `pipx`** (see below) |
 | `ncdu` | `du` alias | Interactive disk usage |
 | `pydf` | — | Coloured `df` replacement |
 
@@ -202,16 +202,20 @@ sudo apt-get install -y curl wget vim zip unzip tree
 sudo apt-get install -y bc
 snap install yq
 
-# Nice to have
+# Nice to have (apt)
 sudo apt-get install -y bat fd-find ripgrep most ncdu fzf \
-  btop htop atop taskwarrior mc tldr entr pydf jq ghostwriter
+  btop htop atop taskwarrior mc entr pydf jq ghostwriter
+
+# tldr — the apt package is outdated; install via pipx instead
+sudo apt-get install -y pipx
+pipx install tldr
 
 # Modern tools not in apt (follow upstream install instructions)
-# eza:       https://github.com/eza-community/eza
-# broot:     https://github.com/Canop/broot
+# eza:        https://github.com/eza-community/eza
+# broot:      https://github.com/Canop/broot
 # prettyping: https://github.com/denilsonsa/prettyping
-# fastfetch: https://github.com/fastfetch-cli/fastfetch
-# onefetch:  https://github.com/o2sh/onefetch
-# bottom:    https://github.com/ClementTsang/bottom
-# lazyports: https://github.com/b0red/lazyports (private)
+# fastfetch:  https://github.com/fastfetch-cli/fastfetch
+# onefetch:   https://github.com/o2sh/onefetch
+# bottom:     https://github.com/ClementTsang/bottom
+# lazyports:  https://github.com/b0red/lazyports (private)
 ```

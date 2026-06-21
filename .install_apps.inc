@@ -40,7 +40,9 @@ most        # alternative to less/more
 
 # === MODERN CLI REPLACEMENTS ===
 bat         # cat replacement
-tldr        # man page summaries
+# tldr — apt package is outdated; install via pipx instead:
+#   sudo apt-get install -y pipx && pipx install tldr
+pipx        # Python app installer (needed for tldr and similar tools)
 procs       # ps aux replacement
 
 # === DATA PROCESSING ===

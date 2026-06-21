@@ -34,4 +34,5 @@ tmux/coffee/plugins/tmux-prefix-highlight/
 tmux/coffee/plugins/tmux-resurrect/
 tmux/coffee/plugins/tmux-sidebar/
 tmux/coffee/plugins/tmux-task-monitor/
+tmux/coffee/plugins/tmux-mullvad/
 tmux/coffee/plugins/tmux-weather/
