@@ -215,6 +215,7 @@ log_info() {
     _log_write "INFO" "$msg"
 }
 
+# shellcheck disable=SC2329
 log_debug() {
     [ "${DEBUG:-0}" -eq 1 ] || return 0
     local msg="$1"
@@ -256,7 +257,7 @@ backup_target() {
     if [ ! -f "$BACKUP_MANIFEST" ]; then
         backup_manifest_init || true
     fi
-    local rel="${src#$HOME}"
+    local rel="${src#"$HOME"}"
     local backup_path="$OLD_FILES${rel}.bak-$DATE"
     mkdir -p "$(dirname "$backup_path")" 2>/dev/null || return 1
     if safe_exec cp -a "$src" "$backup_path"; then
@@ -268,6 +269,7 @@ backup_target() {
 
 restore_backup_manifest() {
     local manifest
+    # shellcheck disable=SC2012
     manifest=$(ls -1t "$OLD_FILES"/backup-manifest-*.txt 2>/dev/null | head -n1 || true)
     if [ -z "$manifest" ]; then
         return 1
@@ -466,6 +468,7 @@ EOF
     fi
 }
 
+# shellcheck disable=SC2329
 cleanup_on_exit() {
     local exit_code=$?
     local f
@@ -953,7 +956,8 @@ setup_taskwarrior_config() {
 
     # Backup existing repo file if it exists
     if [ -f "$repo_taskrc" ]; then
-        local backup_file="$OLD_FILES/taskwarrior_$(date +%Y%m%d_%H%M%S).taskrc"
+        local backup_file
+        backup_file="$OLD_FILES/taskwarrior_$(date +%Y%m%d_%H%M%S).taskrc"
         if cp "$repo_taskrc" "$backup_file"; then
             log_info "✓ Backed up existing repo .taskrc to $backup_file"
         else
@@ -1175,7 +1179,7 @@ cleanup_old_archives() {
     
     local count=${#archives[@]}
     
-    if [ $count -le 3 ]; then
+    if [ "$count" -le 3 ]; then
         log_info "Keeping all $count archive(s) (3 or fewer exist)"
         return 0
     fi
@@ -1183,6 +1187,7 @@ cleanup_old_archives() {
     local to_delete=$((count - 3))
     local deleted=0
     local old_archives
+    # shellcheck disable=SC2012
     mapfile -t old_archives < <(ls -t "$DIR"/backup-*-[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]_[0-9][0-9]-[0-9][0-9]-[0-9][0-9].tar.gz 2>/dev/null | tail -n $to_delete)
     
     for archive in "${old_archives[@]}"; do
@@ -1271,10 +1276,10 @@ clone_repos() {
 
     log_info ""
     log_info "Repo link summary:"
-    [ -L "$HOME/.tmux" ] && log_success "  tmux   : ✓ Linked ($DIR/tmux)" \
-                         || log_warning  "  tmux   : ❌ Not linked"
-    [ -L "$HOME/.vim"  ] && log_success "  vim    : ✓ Linked ($DIR/vim)"  \
-                         || log_warning  "  vim    : ❌ Not linked"
+    if [ -L "$HOME/.tmux" ]; then log_success "  tmux   : ✓ Linked ($DIR/tmux)"
+    else log_warning "  tmux   : ❌ Not linked"; fi
+    if [ -L "$HOME/.vim"  ]; then log_success "  vim    : ✓ Linked ($DIR/vim)"
+    else log_warning "  vim    : ❌ Not linked"; fi
     log_success "  Coffee : ✓ Plugin config path available (tmux/coffee/plugins)"
 
     return $errors

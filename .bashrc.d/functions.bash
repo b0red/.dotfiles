@@ -23,7 +23,7 @@ function up() {
             x=$((x+1))
         done
     else
-        dir="${PWD%/$1/*}/$1"
+        dir="${PWD%/"$1"/*}/$1"
     fi
     cd "$dir" || { echo "Directory $dir does not exist"; return 1; }
 }

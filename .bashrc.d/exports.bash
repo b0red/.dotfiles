@@ -102,4 +102,5 @@ fi
 # End of exports.bash
 
 # Explicit success return
+# shellcheck disable=SC2317
 return 0 2>/dev/null || true

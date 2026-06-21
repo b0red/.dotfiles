@@ -19,7 +19,8 @@ IFS=$'\n\t'
 # Globals
 # =============================================================================
 readonly SCRIPT_NAME="diagnose.sh"
-readonly SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+readonly SCRIPT_DIR
 readonly VERSION="1.0.0"
 readonly DOTFILES_D="${HOME}/.dotfiles/.bashrc.d"
 

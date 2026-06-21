@@ -7,7 +7,6 @@ set -euo pipefail
 
 # Accept distro info from command line
 DISTRO="${1:-unknown}"
-DISTRO_BASE="${2:-unknown}"
 
 # Resolve repository directory (the directory of this script)
 REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"

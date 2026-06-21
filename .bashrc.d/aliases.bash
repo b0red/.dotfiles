@@ -150,6 +150,7 @@ alias cls='clear'
 
 # Standard ls with colors (Ubuntu default)
 if [[ -x /usr/bin/dircolors ]]; then
+  # shellcheck disable=SC2015
   test -r ~/.dircolors && eval "$(dircolors -b ~/.dircolors)" || eval "$(dircolors -b)"
   alias ls='ls --color=auto --group-directories-first'
 fi
@@ -304,6 +305,7 @@ alias crontab='crontab -i'
 #----------------------------------------------------------------------------
 # 7. Git/Tmux/Dev
 #----------------------------------------------------------------------------
+# shellcheck disable=SC2139
 alias {module-update,modup}='git submodule foreach '"'"'git pull origin master'"'"
 alias tm='tmux new-session -s main \; split-window -h \; split-window -v -p 30'
 alias tmx='tmux attach -t 0 2>/dev/null || tmux new-session'
