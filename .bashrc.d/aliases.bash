@@ -349,7 +349,7 @@ command -v fdfind >/dev/null 2>&1 && alias fd='fdfind'
 
 # btop/bottom/procs (modern top/ps)
 command -v btop >/dev/null 2>&1 && alias top='btop'
-command -v bottom >/dev/null 2>&1 && alias btm='bottom'  
+command -v bottom >/dev/null 2>&1 && alias btm='bottom'
 command -v procs >/dev/null 2>&1 && alias ps='procs'
 
 # ncdu (modern du)
