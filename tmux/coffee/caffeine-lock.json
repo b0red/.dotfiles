@@ -1,6 +1,21 @@
 {
     "plugins": [
         {
+            "name": "tmux-claude-usage",
+            "source": [
+                "/home/patrick/.tmux/coffee/plugins/tmux-claude-usage/claude-usage.tmux"
+            ],
+            "enabled": true,
+            "install_path": "/home/patrick/.tmux/coffee/plugins/tmux-claude-usage",
+            "skip_auto_update": false,
+            "git": {
+                "repo": "docker-run/tmux-claude-usage",
+                "tag": "v1.0.0",
+                "commit_hash": "9b825bd5c3a99fed56a08bed046a176c66599795",
+                "last_pull": "2026-06-27T16:32:51.921080+00:00"
+            }
+        },
+        {
             "name": "tmux-mullvad",
             "source": [
                 "/home/patrick/.tmux/coffee/plugins/tmux-mullvad/mullvad.tmux"
