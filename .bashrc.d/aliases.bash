@@ -218,9 +218,7 @@ alias hr='history | sort -rn'
 
 # Process tools (Ubuntu ps)
 alias ps='ps aux'
-function psg() {
-  pgrep -af -i "$1" || true
-}
+# psg() lives in env.bash (core file) so it also works in scripts
 
 # Memory/disk hogs (safe escapes)
 alias ds='du -ks * 2>/dev/null | sort -n'

@@ -25,14 +25,13 @@ shopt -s nocaseglob 2>/dev/null || true      # Case-insensitive globs
 [[ -x /usr/bin/lesspipe ]] && eval "$(SHELL=/bin/sh lesspipe)"
 
 # =============================================================================
-# PROCESS ALIASES (only if not already defined)
+# PROCESS ALIASES
 # =============================================================================
-# Check if psg function exists, if not create function version
-if ! command -v psg >/dev/null 2>&1; then
-    psg() {
-        pgrep -i -f "$1" || true
-    }
-fi
+# Defined here (core file) rather than aliases.bash so it also works in
+# scripts/non-interactive shells, not just at the interactive prompt.
+psg() {
+    pgrep -af -i "$1" || true
+}
 
 # Modern process viewer (procs) if available, else standard ps
 if command -v procs >/dev/null 2>&1; then

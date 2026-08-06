@@ -122,7 +122,6 @@ alias gstp='git stash pop'
 alias gstd='git stash drop'
 
 ### Other useful aliases
-alias gclean='git clean -fd'
 alias gf='git fetch'
 alias gfa='git fetch --all'
 alias gm='git merge'
@@ -222,6 +221,13 @@ function gclone() {
         return 1
     fi
     git clone "$1" && cd "$(basename "$1" .git)" || return 1
+}
+
+function gclean() {
+    ### Remove untracked files/directories (with confirmation)
+    echo "WARNING: Delete all untracked files/directories? (y/n)"
+    read -r confirm
+    [[ "$confirm" =~ ^[Yy] ]] && git clean -fd || echo "Cancelled"
 }
 
 function gundo() {

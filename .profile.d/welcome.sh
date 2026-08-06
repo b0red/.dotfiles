@@ -15,8 +15,7 @@ esac
 (
 # Temporary helper function
 welcome() {
-    [ -e "$HOME"/.welcome/"$1" ] || return
-    command -v "$1" >/dev/null 2>&1 || return
+    command -v "$1" >/dev/null 2>&1
 }
 
 # Show a fortune
