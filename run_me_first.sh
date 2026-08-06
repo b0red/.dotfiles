@@ -4,8 +4,8 @@
 # =============================================================================
 # Author      : b0red
 # Repository  : https://github.com/b0red/.dotfiles
-# Version     : 15.9.0
-# Date        : 2026-06-21
+# Version     : 15.10.0
+# Date        : 2026-08-06
 # Description : Backs up existing dotfiles, creates symlinks, installs apps,
 #               updates submodules, and clones companion repos (.tmux, .vim).
 # Usage       : ./run_me_first.sh [-h|-?] [--dry-run] [-v] [-d] [-r]
@@ -26,8 +26,8 @@ IFS=$'\n\t'
 # =============================================================================
 SCRIPT_NAME=$(basename "$0")
 SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
-VERSION="15.9.0"
-VERSION_DATE="2026-06-21"
+VERSION="15.10.0"
+VERSION_DATE="2026-08-06"
 INTERACTIVE=0
 
 DEBUG=${DEBUG:-0}

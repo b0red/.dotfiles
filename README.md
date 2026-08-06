@@ -20,7 +20,7 @@ A comprehensive, cross-platform dotfiles setup with modular bash configuration, 
 - **Cross-Platform**: Supports Debian, Ubuntu, RHEL, Fedora, Arch, Gentoo, Alpine, Void, FreeBSD, OpenBSD, macOS
 - **Docker Integration**: Conditional loading — Docker shortcuts only appear when Docker is installed
 - **Smart File Loading**: Core files load everywhere, interactive files only in interactive shells
-- **Tmux Auto-Start**: New terminal windows automatically launch a configured tmux session via `~/.start_tmux.sh`
+- **Tmux Auto-Start**: New terminal windows prompt for custom (`~/.start_tmux.sh`) or plain `tmux` — defaults to custom after 3 seconds of no input
 
 ---
 
@@ -55,7 +55,7 @@ The script will:
 ./run_me_first.sh                   # Normal installation
 ./run_me_first.sh --help            # Show help message
 ./run_me_first.sh -?                # Show detailed info
-./run_me_first.sh --version         # Show version (v15.9.0)
+./run_me_first.sh --version         # Show version (v15.10.0)
 ./run_me_first.sh --check           # Validate existing installation, optionally re-run
 ./run_me_first.sh --revert          # Revert changes (restore backups)
 ./run_me_first.sh --select-apps     # Choose specific packages to install
@@ -73,6 +73,9 @@ TRACE_DEBUG=1 ./run_me_first.sh     # Trace with environment variable
 ---
 
 ## Recent Changes
+
+### v15.10.0 (2026-08-06)
+- **Tmux Auto-Start prompt**: `.bashrc` now asks whether to launch the custom `~/.start_tmux.sh` layout or plain `tmux` (useful for a bare session to SSH into another shell from) — `read -t 3` falls through to the custom launcher if no answer arrives within 3 seconds
 
 ### v15.9.0 (2026-06-21)
 - **`tmux_installer.sh` refactored to Vibecoding v5.6 canonical structure** (v2.0.0):
@@ -259,7 +262,7 @@ Checks EUID, USER, and LOGNAME to determine privilege.
 ├── .gitignore              # Excludes: extra_alias.bash, local_alias.bash, logs, oldfiles
 ├── symlink.sh              # Distro-specific symlink helper (called by run_me_first.sh)
 ├── system_detector.sh      # Standalone POSIX system info reporter (v5.2.0)
-├── run_me_first.sh         # Main installer script (v15.9.0)
+├── run_me_first.sh         # Main installer script (v15.10.0)
 ├── tmux/                   # Tmux config subtree (symlinked to ~/.tmux)
 ├── vim/                    # Vim config subtree (symlinked to ~/.vim)
 ├── oldfiles/               # Backup directory (pristine originals + archived old scripts)
@@ -637,7 +640,7 @@ Prefix + C, opens the Coffee TUI. It has 4 menus;
 
 #### Session Creation
 
-The session is created automatically when you open a new terminal (`.bashrc` calls `~/.start_tmux.sh` on first load). To launch it manually:
+On first load, `.bashrc` asks whether to start the custom layout or plain `tmux` (handy for a bare session you SSH into another shell from). No answer within 3 seconds defaults to the custom layout. To launch it manually:
 
 ```bash
 ~/.start_tmux.sh
@@ -966,6 +969,9 @@ Static tools only see what the code says. Runtime tracing reveals what the insta
 ---
 
 ## Version History
+- **v15.10.0** (2026-08-06)
+  - `.bashrc` Tmux Auto-Start now prompts for custom (`~/.start_tmux.sh`) vs. plain `tmux`, defaulting to custom after a 3-second timeout (`read -t 3 -n 1`)
+
 - **v15.9.0** (2026-06-21)
   - `tmux_installer.sh` rewritten to Vibecoding v5.6 canonical structure (v2.0.0): `safe_exec`, dry-run, all required flags/exit codes, split declarations, `SCRIPT_DIR`-relative paths
 - **v15.8.0** (2026-06-21)

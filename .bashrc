@@ -387,6 +387,23 @@ fi
 # =============================================================================
 # TMUX AUTO-START
 # =============================================================================
+# Ask whether to launch the custom ~/.start_tmux.sh or plain tmux (plain is
+# handy when you want a bare session to SSH into another shell from).
+# No answer within 3 seconds falls through to the custom launcher.
 if [ -n "$PS1" ] && [ "$BASHRC_SOURCED" -eq 1 ] && [ -z "$TMUX" ]; then
-    [ -x "$HOME/.start_tmux.sh" ] && "$HOME/.start_tmux.sh"
+    tmux_choice=""
+    echo -e "${LOAD_GREEN}❯ Start tmux: [C]ustom (default) or [P]lain?${LOAD_NC}"
+    read -r -n 1 -t 3 -p "Choice [C/p]: " tmux_choice
+    echo
+
+    case "$tmux_choice" in
+        p|P)
+            command -v tmux >/dev/null 2>&1 && tmux
+            ;;
+        *)
+            [ -x "$HOME/.start_tmux.sh" ] && "$HOME/.start_tmux.sh"
+            ;;
+    esac
+
+    unset -v tmux_choice
 fi
