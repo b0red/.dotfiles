@@ -56,3 +56,11 @@ tmux/coffee/plugins/tmux-weather/
 
 # vim-plug-managed plugins — installed/updated via :PlugInstall, not tracked here.
 vim/plugged/*/
+
+# Ignore packed files
+*.rar
+*.zip
+*.tar.gz
+*.tar.bz2
+*.tar.xz
+*.7z

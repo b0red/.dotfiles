@@ -10,9 +10,9 @@
             "skip_auto_update": false,
             "git": {
                 "repo": "docker-run/tmux-claude-usage",
-                "tag": "v1.0.0",
-                "commit_hash": "9b825bd5c3a99fed56a08bed046a176c66599795",
-                "last_pull": "2026-06-27T16:32:51.921080+00:00"
+                "tag": "v1.1.0",
+                "commit_hash": "474ce2624a4fbe3e66aecf2d6ff50f3089cedff6",
+                "last_pull": "2026-08-06T10:02:28.951148+00:00"
             }
         },
         {
