@@ -16,7 +16,11 @@
 # HELPER FUNCTIONS
 # =================================================================================================
 
-command_check() {
+### Silent, private command-existence check for internal use only.
+### The user-facing command_check() (with interactive output) lives in
+### functions.bash — kept separate so package-manager setup never prints
+### to stdout during shell startup.
+_pkg_has_cmd() {
     command -v "$1" >/dev/null 2>&1
 }
 
@@ -25,9 +29,9 @@ export ENABLE_SHORT_ALIASES=1
 # Determine sudo command - check for sudo, doas, or run as root
 if [[ $EUID -eq 0 ]]; then
     SUDOCMD=""
-elif command_check sudo; then
+elif _pkg_has_cmd sudo; then
     SUDOCMD="sudo"
-elif command_check doas; then
+elif _pkg_has_cmd doas; then
     SUDOCMD="doas"
 else
     SUDOCMD=""
@@ -198,7 +202,7 @@ function set_package_aliases() {
         
         rhel)
             # RHEL/CentOS/Fedora/Rocky/AlmaLinux - dnf/yum-based
-            if command_check dnf; then
+            if _pkg_has_cmd dnf; then
                 p_install() { $SUDOCMD dnf install -y "$@"; }
                 p_remove() { $SUDOCMD dnf remove -y "$@"; }
                 p_uninstall() { $SUDOCMD dnf remove -y "$@"; }
@@ -319,7 +323,7 @@ function set_package_aliases() {
         
         macos)
             # macOS - Homebrew-based
-            if command_check brew; then
+            if _pkg_has_cmd brew; then
                 p_install() { brew install "$@"; }
                 p_remove() { brew uninstall "$@"; }
                 p_uninstall() { brew uninstall "$@"; }
@@ -439,6 +443,6 @@ fi
 
 # Export the main function so it's available everywhere
 export -f set_package_aliases
-export -f command_check
+export -f _pkg_has_cmd
 
 #echo "sleep 1; Package alias setup script loaded."

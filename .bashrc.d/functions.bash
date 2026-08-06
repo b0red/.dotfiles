@@ -54,9 +54,9 @@ function command_check() {
     fi
     
     if command -v "$1" >/dev/null 2>&1; then
-        echo -e "\033[32mcommand exists\033[0m"
+        echo -e "$1: \033[32mcommand exists\033[0m"
     else
-        echo -e "\033[31mcommand not found\033[0m"
+        echo -e "$1: \033[31mcommand not found\033[0m"
     fi
 }
 

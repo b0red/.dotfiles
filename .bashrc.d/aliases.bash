@@ -35,10 +35,6 @@ command_exists() {
   fi
 }
 
-command_check() {
-  command -v "$1" >/dev/null 2>&1
-}
-
 #--------------------------------------
 # 1. Reload and Sourcing - IMPROVED FOR TMUX
 #--------------------------------------
