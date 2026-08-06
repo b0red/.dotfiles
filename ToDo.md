@@ -1,5 +1,5 @@
 # ToDo.md - Dotfiles Project Task Tracker
-# Version: 1.9.0 (2026-08-06)
+# Version: 1.10.0 (2026-08-06)
 # Last Updated: 2026-08-06
 
 ### ToDO:
@@ -27,6 +27,10 @@
 [x] link ~/.gitconfig and restore ~/.config/mc @done (2026-08-06, run_me_first.sh v15.12.0 setup_config_symlinks() — also fixed a dangling ~/.config/mc symlink and restored config/mc/ from the last known-good Feb 2026 backup)
 [x] fix ghost gitlink bug recurrence (tmux-claude-usage) @done (2026-08-06, same bug class as the already-fixed tmux-mullvad; also cleaned up dead tmux/plugins/tmux-resurrect and untracked vim/plugged/* gitlinks)
 [x] untrack accidentally-committed machine state (.installation-state, stale tmux.conf/*.old backups, duplicate workspace file) @done (2026-08-06); removed dead .cygwin.d/ entirely; fixed .installation-state's broken .gitignore pattern (was ~/dotfiles/... — wrong path, predated the ~/.dotfiles migration)
+[x] fix command_check() defined 4x across functions.bash/pkg_aliases.bash/aliases.bash/docker.bash, silently clobbering the colored interactive version @done (2026-08-06, functions.bash is now the one public version; pkg_aliases.bash's internal copy renamed to private _pkg_has_cmd())
+[x] activate welcome.sh's fortune/rem/verse greeting @done (2026-08-06, removed a dead ~/.welcome/<tool> marker-file gate nothing ever created — now matches README's documented "if installed" behavior)
+[x] fix psg() defined differently in env.bash (core, weaker) vs aliases.bash (interactive, better) — scripts silently got the worse version @done (2026-08-06, unified into env.bash with the -af implementation so it's identical everywhere)
+[x] add confirmation prompt to gclean (was the only destructive git.bash command without one) @done (2026-08-06, converted alias to function matching gundohard/greset/gcleanup's y/n pattern)
 [] Coffee-managed tmux plugins (tmux/coffee/plugins/) still need manual tinkering — not fully hands-off yet
 [] .bashrc.d/.bashrc.d.rar — untracked but still sitting on disk, unreviewed (unrar not installed, contents unknown)
 [] tmux/.tmux-git.conf is tracked but unlinked — depends on ~/.tmux-extras/tmux-git.sh which lives outside the repo; low priority, guarded by an existence check so it's not broken, just inert
@@ -35,6 +39,11 @@
 ---
 
 ## Changelog
+
+### v1.10.0 (2026-08-06)
+- Fixed a real cross-file bug: command_check() was defined 4 times, and the colored interactive version in functions.bash was permanently shadowed by three duplicate silent one-liners loading after it
+- Ran a full scan for the same bug class: found and fixed welcome.sh's dead marker-file gate (fortune/rem/verse had never fired on any machine) and psg()'s script-vs-interactive inconsistency; added a missing confirmation prompt to gclean for consistency with the rest of git.bash's destructive commands
+- Added project CLAUDE.md: always update ToDo.md/README.md after code changes, then push
 
 ### v1.9.0 (2026-08-06)
 - Restored mc config (config/mc/, seeded from the Feb 2026 backup) and wired up ~/.gitconfig + ~/.config/mc symlinking in run_me_first.sh (v15.12.0, setup_config_symlinks())

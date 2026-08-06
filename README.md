@@ -74,6 +74,14 @@ TRACE_DEBUG=1 ./run_me_first.sh     # Trace with environment variable
 
 ## Recent Changes
 
+### v15.14.0 (2026-08-06)
+- **Fixed `command_check()` — defined 4 times, silently broken**: `functions.bash` (colored interactive output), `pkg_aliases.bash`, `aliases.bash`, and `docker.bash` (three identical silent one-liners) all defined a function with this name. `.bashrc` sources them in that exact order, so bash's last-definition-wins semantics meant the colored version never actually ran in a real shell — whichever dumb duplicate loaded last always won. `functions.bash` is now the one public `command_check()` (and names the command in its output); `pkg_aliases.bash`'s internal copy was renamed to a private `_pkg_has_cmd()` since its sudo/doas/dnf/brew detection must stay silent; the two dead duplicates in `aliases.bash`/`docker.bash` were removed.
+- **Scanned for the same bug class and fixed three more**:
+  - `.profile.d/welcome.sh`'s fortune/rem/verse greeting had never fired on any machine — it required a `~/.welcome/<tool>` marker file that nothing in the repo ever created. Removed that dead gate; it now shows a tool whenever installed, matching what the README already documented.
+  - `psg()` was defined in both `env.bash` (core, weaker: no `-a` flag) and `aliases.bash` (interactive, better: `-af`). Interactive shells got the good version by luck of load order, but scripts/non-interactive shells only ever saw the weaker one. Unified into `env.bash` with the better implementation so it's identical everywhere.
+  - `gclean` was a bare `git clean -fd` alias with no confirmation — the only destructive command in `git.bash` without one (`gundohard`/`greset`/`gcleanup` all prompt). Converted to a function with the same y/n confirmation pattern.
+- Added a project `CLAUDE.md`: always update `ToDo.md`/`README.md` after code changes in this repo, then push.
+
 ### v15.13.0 (2026-08-06)
 - **`~/.gitconfig` and `~/.config/mc` now linked by the installer**: new `setup_config_symlinks()` step (`run_me_first.sh`) links `git/gitconfig` → `~/.gitconfig` and the new `config/mc/` → `~/.config/mc`. Fills in the `CONFIG FOLDER SYMLINKING` section that had sat as an empty stub since `symlink_config_folders()` was removed in v15.8.0. Idempotent (skips already-correct symlinks) and included in `--revert` and `--check`/`validate_installation`.
 - **`config/mc/` added to the repo**: seeded from `oldfiles/mc.bak-2026-02-16_21-37-51/` (`ini` + `panels.ini`) — this was the last known-good mc config, previously backed up but never committed. This also fixes a **dangling `~/.config/mc` symlink** that was pointing at a target that never existed in the repo.
@@ -997,6 +1005,11 @@ Static tools only see what the code says. Runtime tracing reveals what the insta
 ---
 
 ## Version History
+- **v15.14.0** (2026-08-06)
+  - Fixed `command_check()` being defined 4 times across `functions.bash`/`pkg_aliases.bash`/`aliases.bash`/`docker.bash` — the colored interactive version was permanently shadowed by load order; consolidated to one public version plus a private `_pkg_has_cmd()` for `pkg_aliases.bash`'s internal silent checks
+  - Fixed `welcome.sh`'s dead `~/.welcome/<tool>` marker-file gate (fortune/rem/verse had never fired), unified `psg()` (was weaker in scripts than interactively), added a missing confirmation prompt to `gclean`
+  - Added project `CLAUDE.md` codifying the doc-update-then-push workflow
+
 - **v15.13.0** (2026-08-06)
   - `run_me_first.sh` (v15.12.0): new `setup_config_symlinks()` links `~/.gitconfig` and `~/.config/mc` — fills in the `CONFIG FOLDER SYMLINKING` stub left empty since v15.8.0's removal of `symlink_config_folders()`; wired into `main()`, `revert_changes()`, and `validate_installation()`
   - `config/mc/` added to the repo (seeded from the last known-good `oldfiles/mc.bak-2026-02-16_21-37-51/` backup), fixing a dangling `~/.config/mc` symlink
