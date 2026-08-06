@@ -1,7 +1,18 @@
 #!/usr/bin/env bash
-
-# symlink.sh - Distro-specific profile symlink management
-# Called from run_me_first.sh with distro information as arguments
+# =============================================================================
+# Name:         symlink.sh
+# Author:       b0red
+# Version:      1.0.0
+# Created:      2020-01-22
+# Last Modified:2026-08-06
+# Description:  Distro-specific profile symlink management. Links a shared
+#               .common_profile plus a per-distro profile file into $HOME.
+#               Called from run_me_first.sh with the detected distro as $1.
+# Usage:        ./symlink.sh <distro>
+# Dependencies: bash >= 4.0
+# Note:         Internal helper, not user-facing — no CLI flags by design
+#               (see README Known Issues / Migration TODOs).
+# =============================================================================
 
 set -euo pipefail
 

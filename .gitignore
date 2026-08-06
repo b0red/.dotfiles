@@ -21,6 +21,9 @@ old-files/
 # Claude Code working directory
 .claude/
 
+# vs workspace settings
+.dotfiles.code-workspace
+
 # Coffee-managed tmux plugins — installed/updated by Coffee, not tracked here.
 # The *.yaml files alongside them ARE tracked (they tell Coffee what to install).
 tmux/coffee/plugins/tmux-battery/

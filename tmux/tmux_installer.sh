@@ -2,9 +2,9 @@
 # =============================================================================
 # Name:         tmux_installer.sh
 # Author:       b0red
-# Version:      2.0.0
+# Version:      2.2.0
 # Created:      2026-01-29
-# Last Modified:2026-06-21
+# Last Modified:2026-08-06
 # Description:  Install and configure tmux with the Coffee plugin manager.
 #               Creates ~/.tmux.conf symlink pointing into the dotfiles repo,
 #               installs Coffee, and verifies the configuration.
@@ -22,7 +22,7 @@ IFS=$'\n\t'
 readonly SCRIPT_NAME="tmux_installer.sh"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 readonly SCRIPT_DIR
-readonly VERSION="2.0.0"
+readonly VERSION="2.2.0"
 
 # Paths derived from SCRIPT_DIR so they're correct regardless of where the
 # dotfiles repo is cloned.
@@ -30,6 +30,10 @@ readonly TMUX_CONF_TARGET="${SCRIPT_DIR}/.tmux.conf"
 readonly TMUX_CONF_LINK="${HOME}/.tmux.conf"
 readonly COFFEE_REPO="https://github.com/PraaneshSelvaraj/coffee.tmux"
 readonly COFFEE_DIR="${HOME}/.local/share/coffee"
+LOG_DIR="$(dirname "${SCRIPT_DIR}")/logs"
+readonly LOG_DIR
+LOG=""
+readonly NOTIFY_VARS_FILE="${HOME}/bin/email_variables.inc"
 
 DRY_RUN=0
 DEBUG=0
@@ -52,12 +56,29 @@ fi
 # =============================================================================
 # Logging
 # =============================================================================
-log_success() { echo -e "${GREEN}✓${NC} $*"; }
-log_error()   { echo -e "${RED}❌${NC} $*" >&2; }
-log_warn()    { echo -e "${YELLOW}⚠️ ${NC} $*"; }
-log_info()    { echo -e "  $*"; }
-log_section() { echo -e "\n${BOLD}${CYAN}==========================================${NC}"; echo -e "${BOLD}${CYAN} $*${NC}"; echo -e "${BOLD}${CYAN}==========================================${NC}"; }
-log_dry()     { echo -e "${YELLOW}[DRY-RUN]${NC} Would: $*"; }
+_log_write() {
+    local prefix="$1" msg="$2"
+    [ -n "${LOG}" ] && echo "[$(date +'%Y-%m-%d %H:%M:%S')] ${prefix}: ${msg}" >> "${LOG}" 2>/dev/null || true
+}
+
+init_logging() {
+    if ! mkdir -p "${LOG_DIR}" 2>/dev/null; then
+        echo -e "${YELLOW}⚠️  Could not create log directory: ${LOG_DIR} — logging to file disabled${NC}" >&2
+        return 0
+    fi
+    LOG="${LOG_DIR}/tmux-install-$(date +%Y-%m-%d_%H-%M-%S).log"
+    if ! echo "[$(date +'%Y-%m-%d %H:%M:%S')] ${SCRIPT_NAME} v${VERSION} started (PID $$)" > "${LOG}" 2>/dev/null; then
+        echo -e "${YELLOW}⚠️  Could not write log file: ${LOG} — logging to file disabled${NC}" >&2
+        LOG=""
+    fi
+}
+
+log_success() { echo -e "${GREEN}✓${NC} $*"; _log_write "OK" "$*"; }
+log_error()   { echo -e "${RED}❌${NC} $*" >&2; _log_write "ERROR" "$*"; }
+log_warn()    { echo -e "${YELLOW}⚠️ ${NC} $*"; _log_write "WARN" "$*"; }
+log_info()    { echo -e "  $*"; _log_write "INFO" "$*"; }
+log_section() { echo -e "\n${BOLD}${CYAN}==========================================${NC}"; echo -e "${BOLD}${CYAN} $*${NC}"; echo -e "${BOLD}${CYAN}==========================================${NC}"; _log_write "SECTION" "$*"; }
+log_dry()     { echo -e "${YELLOW}[DRY-RUN]${NC} Would: $*"; _log_write "DRY-RUN" "$*"; }
 
 # =============================================================================
 # safe_exec: run a mutating command, or log+skip it in dry-run mode
@@ -68,6 +89,50 @@ safe_exec() {
         return 0
     fi
     "$@"
+}
+
+# =============================================================================
+# notify_send: Pushover -> Gotify -> Email, first configured backend wins.
+# Config is machine-local (never committed) — $NOTIFY_VARS_FILE for Pushover,
+# plain environment variables for Gotify/Email. Returns 0 only if a message
+# was actually accepted by a backend; 1 if nothing is configured or all
+# configured backends failed.
+# =============================================================================
+notify_send() {
+    local subject="$1" message="$2"
+
+    if [ -f "${NOTIFY_VARS_FILE}" ]; then
+        # shellcheck source=/dev/null
+        . "${NOTIFY_VARS_FILE}"
+    fi
+
+    if [ -n "${APP_TOKEN:-}" ] && [ -n "${USER_KEY:-}" ]; then
+        if curl -fsS -m 10 \
+            -F "token=${APP_TOKEN}" \
+            -F "user=${USER_KEY}" \
+            -F "title=${subject}" \
+            -F "message=${message}" \
+            https://api.pushover.net/1/messages.json >/dev/null 2>&1; then
+            return 0
+        fi
+    fi
+
+    if [ -n "${GOTIFY_URL:-}" ] && [ -n "${GOTIFY_TOKEN:-}" ]; then
+        if curl -fsS -m 10 \
+            -F "title=${subject}" \
+            -F "message=${message}" \
+            "${GOTIFY_URL%/}/message?token=${GOTIFY_TOKEN}" >/dev/null 2>&1; then
+            return 0
+        fi
+    fi
+
+    if [ -n "${NOTIFY_EMAIL:-}" ] && command -v mail >/dev/null 2>&1; then
+        if printf '%s\n' "${message}" | mail -s "${subject}" "${NOTIFY_EMAIL}" 2>/dev/null; then
+            return 0
+        fi
+    fi
+
+    return 1
 }
 
 # =============================================================================
@@ -316,6 +381,14 @@ ${BOLD}OPTIONS${NC}
   -v, --version   Show version
   -d, --debug     Enable set -x tracing
   --dry-run       Preview all actions without making changes (exits 4)
+  --test-notify   Send a test notification and exit (exits 5)
+  --notify-only   Send a notification only, no tmux setup runs
+
+${BOLD}NOTIFICATIONS${NC}
+  Priority: Pushover -> Gotify -> Email (first configured backend wins)
+  Pushover: APP_TOKEN + USER_KEY in ${NOTIFY_VARS_FILE}
+  Gotify:   GOTIFY_URL + GOTIFY_TOKEN environment variables
+  Email:    NOTIFY_EMAIL environment variable (requires 'mail')
 
 ${BOLD}WHAT IT DOES${NC}
   1. Checks for git and tmux (offers to install if missing)
@@ -326,6 +399,7 @@ ${BOLD}WHAT IT DOES${NC}
 ${BOLD}NOTES${NC}
   The dotfiles installer (run_me_first.sh) already handles step 2.
   Run this script to (re)install Coffee or reset the symlink manually.
+  Every run writes a timestamped log to ${LOG_DIR}/
 
 ${BOLD}EXIT CODES${NC}
   0   Success
@@ -360,9 +434,29 @@ parse_args() {
                 DRY_RUN=1
                 log_warn "DRY RUN — no changes will be made"
                 ;;
-            --test-notify|--notify-only)
-                echo "${SCRIPT_NAME}: notification backend not configured"
+            --test-notify)
+                init_logging
+                log_info "Testing notification backend (Pushover -> Gotify -> Email)..."
+                if notify_send "${SCRIPT_NAME} test" "Test notification from $(hostname) at $(date '+%Y-%m-%d %H:%M:%S')"; then
+                    log_success "Test notification sent"
+                else
+                    log_warn "No notification backend configured, or all configured backends failed."
+                    log_info "  Pushover: set APP_TOKEN + USER_KEY in ${NOTIFY_VARS_FILE}"
+                    log_info "  Gotify:   export GOTIFY_URL and GOTIFY_TOKEN"
+                    log_info "  Email:    export NOTIFY_EMAIL (requires the 'mail' command)"
+                fi
                 exit 5
+                ;;
+            --notify-only)
+                init_logging
+                log_info "Sending notification only (no tmux setup will run)..."
+                if notify_send "${SCRIPT_NAME}" "${SCRIPT_NAME} invoked with --notify-only on $(hostname) at $(date '+%Y-%m-%d %H:%M:%S')"; then
+                    log_success "Notification sent"
+                    exit 0
+                else
+                    log_error "No notification backend configured — nothing sent"
+                    exit 1
+                fi
                 ;;
             *)
                 log_error "Unknown option: $1"
@@ -399,10 +493,12 @@ trap cleanup EXIT INT TERM
 main() {
     parse_args "$@"
     validate_environment
+    init_logging
 
     echo ""
     echo -e "${BOLD}${SCRIPT_NAME} v${VERSION}${NC}"
     echo -e "Tmux config: ${CYAN}${TMUX_CONF_TARGET}${NC}"
+    [ -n "${LOG}" ] && echo -e "Log file:    ${CYAN}${LOG}${NC}"
     echo ""
 
     check_dependencies || exit 3

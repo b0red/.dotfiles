@@ -4,7 +4,7 @@
 # =============================================================================
 # Author      : b0red
 # Repository  : https://github.com/b0red/.dotfiles
-# Version     : 15.10.0
+# Version     : 15.11.0
 # Date        : 2026-08-06
 # Description : Backs up existing dotfiles, creates symlinks, installs apps,
 #               updates submodules, and clones companion repos (.tmux, .vim).
@@ -26,7 +26,7 @@ IFS=$'\n\t'
 # =============================================================================
 SCRIPT_NAME=$(basename "$0")
 SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
-VERSION="15.10.0"
+VERSION="15.11.0"
 VERSION_DATE="2026-08-06"
 INTERACTIVE=0
 
@@ -56,19 +56,22 @@ EXIT_ENV=2
 EXIT_ABORT=3
 EXIT_DRYRUN=4
 EXIT_PERM=5
+EXIT_NOTIFY=5   # notification test — shares code 5 with EXIT_PERM per guidelines table
 
-# Colours — source shared include if available, else inline fallback
-if [ -f "$DIR/ColorCodes.inc" ]; then
-    # shellcheck source=/dev/null
-    . "$DIR/ColorCodes.inc"
-else
-    RED='\033[0;31m'
-    GREEN='\033[0;32m'
-    YELLOW='\033[1;33m'
-    BLUE='\033[0;34m'
-    BOLD='\033[1m'
-    NC='\033[0m'
-fi
+# Notification config — sourced from a machine-local include if present.
+# Pushover: APP_TOKEN + USER_KEY (matches .bashrc.d/functions.bash `push()`)
+# Gotify:   GOTIFY_URL + GOTIFY_TOKEN
+# Email:    NOTIFY_EMAIL (requires `mail`/mailx)
+NOTIFY_VARS_FILE="$HOME/bin/email_variables.inc"
+
+# Colours (inline — no ColorCodes.inc dependency; ColorCodes.inc is a
+# machine-local ~/bin include, not part of this portable repo)
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+BOLD='\033[1m'
+NC='\033[0m'
 
 # =============================================================================
 # RECURSION GUARD
@@ -234,6 +237,54 @@ safe_exec() {
         return 0
     fi
     "$@"
+}
+
+# notify_send: Pushover -> Gotify -> Email, first configured backend wins.
+# Config is machine-local (never committed) — $NOTIFY_VARS_FILE for Pushover,
+# plain environment variables for Gotify/Email. Returns 0 only if a message
+# was actually accepted by a backend; 1 if nothing is configured or all
+# configured backends failed.
+notify_send() {
+    local subject="$1" message="$2"
+
+    if [ -f "$NOTIFY_VARS_FILE" ]; then
+        # shellcheck source=/dev/null
+        . "$NOTIFY_VARS_FILE"
+    fi
+
+    if [ -n "${APP_TOKEN:-}" ] && [ -n "${USER_KEY:-}" ]; then
+        if curl -fsS -m 10 \
+            -F "token=${APP_TOKEN}" \
+            -F "user=${USER_KEY}" \
+            -F "title=${subject}" \
+            -F "message=${message}" \
+            https://api.pushover.net/1/messages.json >/dev/null 2>&1; then
+            log_debug "Notification sent via Pushover"
+            return 0
+        fi
+        log_debug "Pushover send failed — falling back"
+    fi
+
+    if [ -n "${GOTIFY_URL:-}" ] && [ -n "${GOTIFY_TOKEN:-}" ]; then
+        if curl -fsS -m 10 \
+            -F "title=${subject}" \
+            -F "message=${message}" \
+            "${GOTIFY_URL%/}/message?token=${GOTIFY_TOKEN}" >/dev/null 2>&1; then
+            log_debug "Notification sent via Gotify"
+            return 0
+        fi
+        log_debug "Gotify send failed — falling back"
+    fi
+
+    if [ -n "${NOTIFY_EMAIL:-}" ] && command -v mail >/dev/null 2>&1; then
+        if printf '%s\n' "$message" | mail -s "$subject" "$NOTIFY_EMAIL" 2>/dev/null; then
+            log_debug "Notification sent via email to $NOTIFY_EMAIL"
+            return 0
+        fi
+        log_debug "Email send failed"
+    fi
+
+    return 1
 }
 
 backup_manifest_init() {
@@ -1511,6 +1562,12 @@ show_help() {
     echo "  --test-notify     Test the notification system and exit"
     echo "  --notify-only     Run but only emit notifications (no installs)"
     echo ""
+    echo -e "${BOLD}Notifications:${NC}"
+    echo "  Priority: Pushover -> Gotify -> Email (first configured backend wins)"
+    echo "  Pushover: APP_TOKEN + USER_KEY in \$HOME/bin/email_variables.inc"
+    echo "  Gotify:   GOTIFY_URL + GOTIFY_TOKEN environment variables"
+    echo "  Email:    NOTIFY_EMAIL environment variable (requires 'mail')"
+    echo ""
     echo -e "${BOLD}Description:${NC}"
     echo "  Installs dotfiles by:"
     echo "    1. Backing up existing dotfiles"
@@ -1598,14 +1655,28 @@ parse_args() {
             exit 0
             ;;
         --test-notify)
-            echo -e "${YELLOW}⚠️  Notification system not yet configured.${NC}"
-            echo "   Add notify integration and re-run --test-notify."
-            exit 0
+            logfile_init
+            log_info "Testing notification backend (Pushover -> Gotify -> Email)..."
+            if notify_send "run_me_first.sh test" "Test notification from $(hostname) at $(date '+%Y-%m-%d %H:%M:%S')"; then
+                log_success "✓ Test notification sent"
+            else
+                log_warning "⚠️  No notification backend configured, or all configured backends failed."
+                log_info "   Pushover: set APP_TOKEN + USER_KEY in $NOTIFY_VARS_FILE"
+                log_info "   Gotify:   export GOTIFY_URL and GOTIFY_TOKEN"
+                log_info "   Email:    export NOTIFY_EMAIL (requires the 'mail' command)"
+            fi
+            exit $EXIT_NOTIFY
             ;;
         --notify-only)
-            echo -e "${YELLOW}⚠️  Notification system not yet configured.${NC}"
-            echo "   Add notify integration before using --notify-only."
-            exit $EXIT_ERROR
+            logfile_init
+            log_info "Sending notification only (no installation actions will run)..."
+            if notify_send "run_me_first.sh" "Dotfiles installer invoked with --notify-only on $(hostname) at $(date '+%Y-%m-%d %H:%M:%S')"; then
+                log_success "✓ Notification sent"
+                exit $EXIT_OK
+            else
+                log_error "❌ No notification backend configured — nothing sent"
+                exit $EXIT_ERROR
+            fi
             ;;
         "")
             main

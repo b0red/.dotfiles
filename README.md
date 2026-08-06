@@ -55,7 +55,7 @@ The script will:
 ./run_me_first.sh                   # Normal installation
 ./run_me_first.sh --help            # Show help message
 ./run_me_first.sh -?                # Show detailed info
-./run_me_first.sh --version         # Show version (v15.10.0)
+./run_me_first.sh --version         # Show version (v15.11.0)
 ./run_me_first.sh --check           # Validate existing installation, optionally re-run
 ./run_me_first.sh --revert          # Revert changes (restore backups)
 ./run_me_first.sh --select-apps     # Choose specific packages to install
@@ -68,11 +68,26 @@ DEBUG=1 ./run_me_first.sh           # Debug with environment variable
 TRACE_DEBUG=1 ./run_me_first.sh     # Trace with environment variable
 ```
 
-> **Note:** `--notify-only` and `--test-notify` output a placeholder — the notification backend is not yet wired up.
+> **Note:** `--notify-only` and `--test-notify` send via Pushover → Gotify → Email (first configured backend wins). Pushover reads `APP_TOKEN`/`USER_KEY` from `~/bin/email_variables.inc` (machine-local, not in the repo); Gotify and Email are configured via `GOTIFY_URL`/`GOTIFY_TOKEN`/`NOTIFY_EMAIL` environment variables. With nothing configured, both flags report that clearly instead of failing silently.
 
 ---
 
 ## Recent Changes
+
+### v15.12.0 (2026-08-06)
+- **`tmux_installer.sh` notification backend wired up**: `--test-notify` and `--notify-only` now send via the same Pushover → Gotify → Email `notify_send()` pattern as `run_me_first.sh`, instead of printing a placeholder
+- `.gitignore`: added `.dotfiles.code-workspace` (VS Code workspace file)
+- Logged two known gaps in "Known Issues": Coffee-managed tmux plugins still need manual tinkering, and some `~/.config` files tmux depends on aren't symlinked/copied by either installer yet
+
+### v15.11.0 (2026-08-06)
+- **Notification backend wired up**: `--test-notify` and `--notify-only` now actually send, via Pushover → Gotify → Email (first configured backend wins) instead of printing a placeholder
+  - Pushover: reads `APP_TOKEN`/`USER_KEY` from `~/bin/email_variables.inc` (machine-local include, matches the existing `push()` function in `.bashrc.d/functions.bash`)
+  - Gotify: `GOTIFY_URL` + `GOTIFY_TOKEN` environment variables
+  - Email: `NOTIFY_EMAIL` environment variable, requires the `mail` command
+  - `--test-notify` always exits 5 (Vibecoding notification-test code); `--notify-only` exits 0 on successful send, 1 if nothing is configured
+- **`symlink.sh`**: added the missing Vibecoding v5.6 canonical header block (was flagged as a compliance gap)
+- **`run_me_first.sh`**: dropped the dead `ColorCodes.inc` conditional — that file is a machine-local `~/bin` include, never shipped in this repo, and the other scripts already went inline-only
+- **`tmux_installer.sh` (v2.1.0)**: every run now writes a timestamped log to `~/.dotfiles/logs/tmux-install-*.log`, mirroring `run_me_first.sh`'s logging
 
 ### v15.10.0 (2026-08-06)
 - **Tmux Auto-Start prompt**: `.bashrc` now asks whether to launch the custom `~/.start_tmux.sh` layout or plain `tmux` (useful for a bare session to SSH into another shell from) — `read -t 3` falls through to the custom launcher if no answer arrives within 3 seconds
@@ -262,7 +277,7 @@ Checks EUID, USER, and LOGNAME to determine privilege.
 ├── .gitignore              # Excludes: extra_alias.bash, local_alias.bash, logs, oldfiles
 ├── symlink.sh              # Distro-specific symlink helper (called by run_me_first.sh)
 ├── system_detector.sh      # Standalone POSIX system info reporter (v5.2.0)
-├── run_me_first.sh         # Main installer script (v15.10.0)
+├── run_me_first.sh         # Main installer script (v15.11.0)
 ├── tmux/                   # Tmux config subtree (symlinked to ~/.tmux)
 ├── vim/                    # Vim config subtree (symlinked to ~/.vim)
 ├── oldfiles/               # Backup directory (pristine originals + archived old scripts)
@@ -945,8 +960,9 @@ The `loaded_files` associative array in `.bashrc` prevents duplicate loading. If
 
 | File | Location | Issue |
 |------|----------|-------|
-| `run_me_first.sh` | `--notify-only` / `--test-notify` | Notification backend not wired up — flags are accepted but do nothing |
 | `symlink.sh` | — | No flags (called by installer, not user-facing — acceptable by design) |
+| `tmux_installer.sh` / Coffee | Plugin management | Coffee-managed plugins under `tmux/coffee/plugins/` still need manual tinkering — not fully hands-off yet |
+| Installer (both scripts) | `~/.config` | Some config files tmux depends on under `~/.config` are not symlinked or copied by either installer — must be set up manually for now |
 
 ### Audit Methodology Note
 
@@ -962,13 +978,21 @@ Static tools only see what the code says. Runtime tracing reveals what the insta
 
 | File | Guideline | Issue |
 |------|-----------|-------|
-| `run_me_first.sh` | Part V §1 | Inline ANSI codes only — `ColorCodes.inc` referenced but not present in repo |
 | `system_detector.sh` | Part II §2 | Uses `#!/bin/sh` (intentional POSIX exception) — no Vibecoding canonical header |
-| `symlink.sh` | Part II §2 | Missing compliant script header (called internally, not user-facing) |
 
 ---
 
 ## Version History
+- **v15.12.0** (2026-08-06)
+  - `tmux_installer.sh` (v2.2.0): notification backend wired up for `--test-notify`/`--notify-only`, mirroring `run_me_first.sh`'s Pushover → Gotify → Email `notify_send()`
+  - `.gitignore`: added `.dotfiles.code-workspace`
+  - Documented two known gaps: Coffee plugin management still needs manual tinkering; some `~/.config` files tmux depends on aren't symlinked/copied by either installer yet
+
+- **v15.11.0** (2026-08-06)
+  - `run_me_first.sh`: notification backend wired up for `--test-notify`/`--notify-only` (Pushover → Gotify → Email, `notify_send()`); dropped the dead `ColorCodes.inc` conditional in favor of inline-only colors
+  - `symlink.sh`: added the missing Vibecoding v5.6 canonical header block
+  - `tmux_installer.sh` (v2.1.0): every run now writes a timestamped log to `~/.dotfiles/logs/tmux-install-*.log`
+
 - **v15.10.0** (2026-08-06)
   - `.bashrc` Tmux Auto-Start now prompts for custom (`~/.start_tmux.sh`) vs. plain `tmux`, defaulting to custom after a 3-second timeout (`read -t 3 -n 1`)
 
@@ -1062,6 +1086,6 @@ If you find this useful, consider supporting: [PayPal](https://paypal.me/fotosby
 
 ---
 
-**Last Updated**: 2026-06-21
-**Script Version**: v15.8.0
+**Last Updated**: 2026-08-06
+**Script Version**: v15.11.0
 **Guidelines**: Vibecoding v5.6 / Semantic Versioning 2.0.0

@@ -1,6 +1,6 @@
 # ToDo.md - Dotfiles Project Task Tracker
-# Version: 1.5.0 (2026-06-21)
-# Last Updated: 2026-06-21
+# Version: 1.8.0 (2026-08-06)
+# Last Updated: 2026-08-06
 
 ### ToDO:
 #### General:
@@ -16,10 +16,37 @@
 [x] maybe make so run_me_first.sh checks for previous runs or if first run? @done (2026-05-11)
 [x] refactor the code to be more modular, functions for each task, easier to read and maintain @done (2026-06-21)
 [x] add error handling, if a command fails, it should log the error and continue with the next one @done (2026-05-11)
+[x] refactor tmux_installer.sh to Vibecoding v5.6 canonical structure @done (2026-06-21)
+[x] add prompt for custom vs plain tmux on auto-start (.bashrc) @done (2026-08-06)
+[x] wire up notification backend for --notify-only / --test-notify @done (2026-08-06, run_me_first.sh v15.11.0 — Pushover -> Gotify -> Email)
+[x] add Vibecoding v5.6 canonical header to symlink.sh @done (2026-08-06)
+[x] resolve run_me_first.sh's stale ColorCodes.inc reference @done (2026-08-06, dropped in favor of inline-only colors)
+[x] wire up notification backend for tmux_installer.sh's --notify-only / --test-notify @done (2026-08-06, tmux_installer.sh v2.2.0 — same Pushover -> Gotify -> Email notify_send() pattern)
+[x] add .dotfiles.code-workspace to .gitignore @done (2026-08-06)
+[] Coffee-managed tmux plugins (tmux/coffee/plugins/) still need manual tinkering — not fully hands-off yet
+[] symlink or copy the ~/.config files tmux depends on — neither installer handles this yet
 
 ---
 
 ## Changelog
+
+### v1.8.0 (2026-08-06)
+- Wired up tmux_installer.sh's notification backend (v2.2.0) — same Pushover -> Gotify -> Email `notify_send()` pattern as run_me_first.sh
+- Logged .gitignore's `.dotfiles.code-workspace` entry as done
+- Added two new open items: Coffee plugin management (manual tinkering still needed) and unhandled `~/.config` files tmux depends on
+
+### v1.7.0 (2026-08-06)
+- Wired up run_me_first.sh's notification backend (Pushover -> Gotify -> Email via new `notify_send()`) — v15.11.0
+- Added Vibecoding v5.6 header block to symlink.sh
+- Dropped run_me_first.sh's dead ColorCodes.inc reference (file only ever existed as a machine-local ~/bin include)
+- Added timestamped file logging to tmux_installer.sh (~/.dotfiles/logs/tmux-install-*.log) — v2.1.0
+- Noted tmux_installer.sh's --notify-only/--test-notify are still placeholders (only run_me_first.sh's backend was wired up)
+
+### v1.6.0 (2026-08-06)
+- Synced ToDo.md with README's Recent Changes / Version History (was stale since v1.5.0 / README v15.8.0)
+- Logged tmux_installer.sh Vibecoding refactor (README v15.9.0) and the tmux auto-start prompt (README v15.10.0) as done
+- TMUX section reconciled against actual script state: rename, distro/package-manager support, and custom keybindings/status bar were already implemented but still marked open
+- Pulled README's "Known Issues / Migration TODOs" (notification backend, symlink.sh header, ColorCodes.inc reference) into General as open items
 
 ### v1.5.0 (2026-06-21)
 - `run_me_first.sh` refactored to Vibecoding v5.6 canonical structure (v15.8.0)
@@ -55,14 +82,13 @@
 #### TMUX:
 
 ##### Major:
-[] add logging, create a log file and write all actions and errors to it, with timestamps
-[] rename the script to something more descriptive, like tmux_setup.sh or tmux_install.sh
+[x] add logging, create a log file and write all actions and errors to it, with timestamps @done (2026-08-06, tmux_installer.sh v2.1.0 — writes to ~/.dotfiles/logs/tmux-install-*.log)
+[x] rename the script to something more descriptive, like tmux_setup.sh or tmux_install.sh @done (renamed to tmux_installer.sh)
 [] add support for more tmux themes, like powerline, gruvbox, etc.
-[] add support for more tmux configurations, like custom keybindings, status bar
+[x] add support for more tmux configurations, like custom keybindings, status bar @done (see README Custom Keybindings / Status Bar sections)
 
 ##### Minor:
-[] add support for more distros, like Arch, Debian, etc.
-[] add support for more package managers, like apt, pacman, etc.
+[x] add support for more distros/package managers, like apt, pacman, dnf, zypper, apk, brew @done (tmux_installer.sh installs deps via apt-get/dnf/pacman/zypper/apk/brew)
 [] add support for more shells, like zsh, fish, etc.
 [] add support for more terminal emulators, like alacritty, kitty, etc.
 
