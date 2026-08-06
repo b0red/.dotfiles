@@ -4,7 +4,7 @@
 # =============================================================================
 # Author      : b0red
 # Repository  : https://github.com/b0red/.dotfiles
-# Version     : 15.11.0
+# Version     : 15.12.0
 # Date        : 2026-08-06
 # Description : Backs up existing dotfiles, creates symlinks, installs apps,
 #               updates submodules, and clones companion repos (.tmux, .vim).
@@ -26,7 +26,7 @@ IFS=$'\n\t'
 # =============================================================================
 SCRIPT_NAME=$(basename "$0")
 SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
-VERSION="15.11.0"
+VERSION="15.12.0"
 VERSION_DATE="2026-08-06"
 INTERACTIVE=0
 
@@ -123,7 +123,17 @@ validate_installation() {
         log_warning "  ⚠️  Tmux auto-start not linked: ~/.start_tmux.sh"
         issues=$((issues + 1))
     fi
-    
+
+    if [ ! -L "$HOME/.gitconfig" ]; then
+        log_warning "  ⚠️  Symlink missing: $HOME/.gitconfig"
+        issues=$((issues + 1))
+    fi
+
+    if [ ! -L "$HOME/.config/mc" ]; then
+        log_warning "  ⚠️  Symlink missing: $HOME/.config/mc"
+        issues=$((issues + 1))
+    fi
+
     # Check submodules
     if [ -d "$DIR/.git" ]; then
         if ! git -C "$DIR" submodule foreach --quiet 'test -d .git' 2>/dev/null; then
@@ -1419,6 +1429,51 @@ symlink_external_repos() {
 # CONFIG FOLDER SYMLINKING
 # =============================================================================
 
+setup_config_symlinks() {
+    log_info "Linking config files..."
+
+    if [ "${DRY_RUN:-0}" -eq 1 ]; then
+        log_info "  [dry-run] would link: $DIR/git/gitconfig -> ~/.gitconfig"
+        log_info "  [dry-run] would link: $DIR/config/mc -> ~/.config/mc"
+        return 0
+    fi
+
+    local errors=0
+
+    _link_config() {
+        local src="$1" dest="$2" label="$3"
+        if [ ! -e "$src" ]; then
+            log_warning "⚠️ $label source not found in repo: $src, skipping"
+            return 0
+        fi
+        if [ -L "$dest" ] && [ "$(readlink "$dest")" = "$src" ]; then
+            log_success "✓ $label already linked"
+            return 0
+        fi
+        if [ -e "$dest" ] || [ -L "$dest" ]; then
+            if backup_target "$dest"; then
+                rm -rf "$dest" 2>/dev/null || true
+            fi
+        fi
+        mkdir -p "$(dirname "$dest")" 2>/dev/null
+        if ln -sfn "$src" "$dest"; then
+            log_success "✓ Linked: $dest -> $src"
+        else
+            log_error "❌ Failed to link $label"
+            errors=$((errors + 1))
+        fi
+    }
+
+    _link_config "$DIR/git/gitconfig" "$HOME/.gitconfig" ".gitconfig"
+    _link_config "$DIR/config/mc"     "$HOME/.config/mc" "mc config"
+
+    if [ $errors -gt 0 ]; then
+        log_warning "⚠️ $errors error(s) occurred during config symlinking"
+        return 1
+    fi
+    return 0
+}
+
 # =============================================================================
 # SHELL CONFIGURATION
 # =============================================================================
@@ -1460,7 +1515,7 @@ revert_changes() {
     local reverted=0 failed=0 removed=0
 
     log_info "Removing symlinks created by the installer..."
-    for src in "${DOT_ARRAY[@]}" "$HOME/.tmux" "$HOME/.vim" "$HOME/.tmux.conf" "$HOME/.vimrc" "$HOME/.start_tmux.sh"; do
+    for src in "${DOT_ARRAY[@]}" "$HOME/.tmux" "$HOME/.vim" "$HOME/.tmux.conf" "$HOME/.vimrc" "$HOME/.start_tmux.sh" "$HOME/.gitconfig" "$HOME/.config/mc"; do
         if [ -L "$src" ]; then
             if rm -f "$src" 2>/dev/null; then
                 log_success "✓ Removed symlink: $src"
@@ -1575,7 +1630,7 @@ show_help() {
     echo "    3. Installing essential applications"
     echo "    4. Updating git submodules"
     echo "    5. Cloning additional repos (.tmux, .vim)"
-    echo "    6. Symlinking config folders from ~/.config"
+    echo "    6. Linking ~/.gitconfig and ~/.config/mc to the repo"
     echo ""
     echo -e "${BOLD}Environment Variables:${NC}"
     echo "  DEBUG=1         Enable debug output (same as -d)"
@@ -1774,6 +1829,7 @@ main() {
     if ! update_submodules;        then log_warning "⚠️ Submodule update failed, but continuing"; fi
     if ! clone_repos;              then log_warning "⚠️ Repository cloning failed, but continuing"; fi
     if ! symlink_external_repos;   then log_warning "⚠️ External repo symlinking failed, but continuing"; fi
+    if ! setup_config_symlinks;    then log_warning "⚠️ Config symlinking failed, but continuing"; fi
     if ! source_bashrc;            then log_warning "⚠️ Bashrc sourcing failed, but continuing"; fi
 
     mark_installation_complete

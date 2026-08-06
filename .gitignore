@@ -18,15 +18,29 @@ old-files/
 # Machine-specific app lists (optional)
 .install_apps.inc.local
 
+# Machine-specific config files (optional)
+.config/kitty/kitty.conf.local
+
+# Installer-generated runtime state (was previously mistyped as
+# ~/dotfiles/.installation-state, which never matched — fixed 2026-08-06)
+.installation-state
+
 # Claude Code working directory
 .claude/
 
 # vs workspace settings
 .dotfiles.code-workspace
+dotfiles.code-workspace
+
+# Stale installer/editor-generated backups that shouldn't be committed
+tmux/.tmux.conf.bak-*
+tmux/.tmux.conf.[0-9]*
+tmux/*.old
 
 # Coffee-managed tmux plugins — installed/updated by Coffee, not tracked here.
 # The *.yaml files alongside them ARE tracked (they tell Coffee what to install).
 tmux/coffee/plugins/tmux-battery/
+tmux/coffee/plugins/tmux-claude-usage/
 tmux/coffee/plugins/tmux-continuum/
 tmux/coffee/plugins/tmux-cpu/
 tmux/coffee/plugins/tmux-menus/
@@ -39,3 +53,6 @@ tmux/coffee/plugins/tmux-sidebar/
 tmux/coffee/plugins/tmux-task-monitor/
 tmux/coffee/plugins/tmux-mullvad/
 tmux/coffee/plugins/tmux-weather/
+
+# vim-plug-managed plugins — installed/updated via :PlugInstall, not tracked here.
+vim/plugged/*/

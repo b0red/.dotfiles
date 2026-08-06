@@ -1,5 +1,5 @@
 # ToDo.md - Dotfiles Project Task Tracker
-# Version: 1.8.0 (2026-08-06)
+# Version: 1.9.0 (2026-08-06)
 # Last Updated: 2026-08-06
 
 ### ToDO:
@@ -23,12 +23,25 @@
 [x] resolve run_me_first.sh's stale ColorCodes.inc reference @done (2026-08-06, dropped in favor of inline-only colors)
 [x] wire up notification backend for tmux_installer.sh's --notify-only / --test-notify @done (2026-08-06, tmux_installer.sh v2.2.0 — same Pushover -> Gotify -> Email notify_send() pattern)
 [x] add .dotfiles.code-workspace to .gitignore @done (2026-08-06)
+[x] symlink or copy the ~/.config files tmux depends on @done (2026-08-06, tmux_installer.sh v2.3.0 link_config_dir() — ~/.config/tmux/{coffee,tmux.conf})
+[x] link ~/.gitconfig and restore ~/.config/mc @done (2026-08-06, run_me_first.sh v15.12.0 setup_config_symlinks() — also fixed a dangling ~/.config/mc symlink and restored config/mc/ from the last known-good Feb 2026 backup)
+[x] fix ghost gitlink bug recurrence (tmux-claude-usage) @done (2026-08-06, same bug class as the already-fixed tmux-mullvad; also cleaned up dead tmux/plugins/tmux-resurrect and untracked vim/plugged/* gitlinks)
+[x] untrack accidentally-committed machine state (.installation-state, stale tmux.conf/*.old backups, duplicate workspace file) @done (2026-08-06); removed dead .cygwin.d/ entirely; fixed .installation-state's broken .gitignore pattern (was ~/dotfiles/... — wrong path, predated the ~/.dotfiles migration)
 [] Coffee-managed tmux plugins (tmux/coffee/plugins/) still need manual tinkering — not fully hands-off yet
-[] symlink or copy the ~/.config files tmux depends on — neither installer handles this yet
+[] .bashrc.d/.bashrc.d.rar — untracked but still sitting on disk, unreviewed (unrar not installed, contents unknown)
+[] tmux/.tmux-git.conf is tracked but unlinked — depends on ~/.tmux-extras/tmux-git.sh which lives outside the repo; low priority, guarded by an existence check so it's not broken, just inert
+[] symlink.sh distro-profile support is a complete no-op (documented in README, not implemented — no distro profile files exist in the repo)
 
 ---
 
 ## Changelog
+
+### v1.9.0 (2026-08-06)
+- Restored mc config (config/mc/, seeded from the Feb 2026 backup) and wired up ~/.gitconfig + ~/.config/mc symlinking in run_me_first.sh (v15.12.0, setup_config_symlinks())
+- Wired up ~/.config/tmux/{coffee,tmux.conf} symlinking in tmux_installer.sh (v2.3.0, link_config_dir())
+- Fixed a recurring ghost-gitlink bug (tmux-claude-usage, same class as the already-fixed tmux-mullvad); cleaned up dead tmux/plugins/tmux-resurrect and untracked vim/plugged/* gitlinks
+- Untracked/removed a batch of accidentally-committed machine state and cruft: .installation-state (plus fixed its broken .gitignore pattern), stale tmux.conf backups, *.old files, duplicate dotfiles.code-workspace, and the dead .cygwin.d/ leftover
+- Logged three remaining low-priority gaps: .bashrc.d.rar (unreviewed archive), tmux/.tmux-git.conf (inert, depends on a machine-local script), symlink.sh's distro-profile no-op
 
 ### v1.8.0 (2026-08-06)
 - Wired up tmux_installer.sh's notification backend (v2.2.0) — same Pushover -> Gotify -> Email `notify_send()` pattern as run_me_first.sh

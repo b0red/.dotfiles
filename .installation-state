@@ -1,6 +1,0 @@
-LAST_RUN=2026-06-25_01:01:30
-VERSION=26.04 LTS (Resolute Raccoon)
-COMPLETED_STEPS=backup,symlink,apps,submodules,repos
-installed_at=2026-06-25_01-01-02
-distro=ubuntu
-distro_base=debian

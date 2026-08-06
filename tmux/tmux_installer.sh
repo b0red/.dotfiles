@@ -2,7 +2,7 @@
 # =============================================================================
 # Name:         tmux_installer.sh
 # Author:       b0red
-# Version:      2.2.0
+# Version:      2.3.0
 # Created:      2026-01-29
 # Last Modified:2026-08-06
 # Description:  Install and configure tmux with the Coffee plugin manager.
@@ -22,7 +22,7 @@ IFS=$'\n\t'
 readonly SCRIPT_NAME="tmux_installer.sh"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 readonly SCRIPT_DIR
-readonly VERSION="2.2.0"
+readonly VERSION="2.3.0"
 
 # Paths derived from SCRIPT_DIR so they're correct regardless of where the
 # dotfiles repo is cloned.
@@ -245,6 +245,48 @@ create_symlink() {
 }
 
 # =============================================================================
+# link_config_dir: link ~/.config/tmux/{coffee,tmux.conf} into the repo.
+# Coffee reads its plugin YAMLs from ~/.config/tmux/coffee (see README) — link
+# straight to $SCRIPT_DIR rather than through ~/.tmux, so this keeps working
+# even when run standalone before run_me_first.sh has created ~/.tmux.
+# =============================================================================
+link_config_dir() {
+    log_section "Linking ~/.config/tmux"
+
+    local cfg_dir="${HOME}/.config/tmux"
+    safe_exec mkdir -p "${cfg_dir}"
+
+    _link_cfg() {
+        local src="$1" dest="$2" label="$3"
+        if [ ! -e "${src}" ]; then
+            log_warn "${label} source not found: ${src}, skipping"
+            return 0
+        fi
+        if [ -L "${dest}" ] && [ "$(readlink "${dest}")" = "${src}" ]; then
+            log_success "${label} already linked"
+            return 0
+        fi
+        if [ -L "${dest}" ]; then
+            safe_exec rm -f "${dest}"
+        elif [ -e "${dest}" ]; then
+            local backup
+            backup="${dest}.backup-$(date +%Y%m%d-%H%M%S)"
+            safe_exec mv "${dest}" "${backup}"
+            log_success "Backed up existing file → ${backup}"
+        fi
+        if safe_exec ln -s "${src}" "${dest}"; then
+            log_success "Linked: ${dest} → ${src}"
+        else
+            log_error "Failed to link ${label}"
+            return 1
+        fi
+    }
+
+    _link_cfg "${SCRIPT_DIR}/coffee"  "${cfg_dir}/coffee"    "Coffee plugin config dir"
+    _link_cfg "${TMUX_CONF_TARGET}"   "${cfg_dir}/tmux.conf" "tmux.conf"
+}
+
+# =============================================================================
 # install_coffee: clone and set up the Coffee plugin manager
 # =============================================================================
 install_coffee() {
@@ -341,6 +383,18 @@ verify_installation() {
         log_error "Symlink missing or broken: ${TMUX_CONF_LINK}"
     fi
 
+    # Check ~/.config/tmux links
+    if [ -L "${HOME}/.config/tmux/coffee" ]; then
+        log_success "Coffee config dir linked: ~/.config/tmux/coffee"
+    else
+        log_warn "Not linked: ~/.config/tmux/coffee"
+    fi
+    if [ -L "${HOME}/.config/tmux/tmux.conf" ]; then
+        log_success "tmux.conf linked: ~/.config/tmux/tmux.conf"
+    else
+        log_warn "Not linked: ~/.config/tmux/tmux.conf"
+    fi
+
     # Check tmux parses the config
     if command -v tmux >/dev/null 2>&1; then
         if tmux -f "${TMUX_CONF_LINK}" list-keys >/dev/null 2>&1; then
@@ -393,8 +447,9 @@ ${BOLD}NOTIFICATIONS${NC}
 ${BOLD}WHAT IT DOES${NC}
   1. Checks for git and tmux (offers to install if missing)
   2. Creates: ~/.tmux.conf → ${TMUX_CONF_TARGET}
-  3. Installs Coffee plugin manager to ${COFFEE_DIR}
-  4. Verifies symlink and tmux config
+  3. Links ~/.config/tmux/coffee and ~/.config/tmux/tmux.conf into the repo
+  4. Installs Coffee plugin manager to ${COFFEE_DIR}
+  5. Verifies symlinks and tmux config
 
 ${BOLD}NOTES${NC}
   The dotfiles installer (run_me_first.sh) already handles step 2.
@@ -503,6 +558,7 @@ main() {
 
     check_dependencies || exit 3
     create_symlink      || exit 1
+    link_config_dir     || log_warn "Config dir linking failed — continuing"
     install_coffee      || log_warn "Coffee installation failed — continuing"
     verify_installation
 

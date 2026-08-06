@@ -55,7 +55,7 @@ The script will:
 ./run_me_first.sh                   # Normal installation
 ./run_me_first.sh --help            # Show help message
 ./run_me_first.sh -?                # Show detailed info
-./run_me_first.sh --version         # Show version (v15.11.0)
+./run_me_first.sh --version         # Show version (v15.12.0)
 ./run_me_first.sh --check           # Validate existing installation, optionally re-run
 ./run_me_first.sh --revert          # Revert changes (restore backups)
 ./run_me_first.sh --select-apps     # Choose specific packages to install
@@ -73,6 +73,13 @@ TRACE_DEBUG=1 ./run_me_first.sh     # Trace with environment variable
 ---
 
 ## Recent Changes
+
+### v15.13.0 (2026-08-06)
+- **`~/.gitconfig` and `~/.config/mc` now linked by the installer**: new `setup_config_symlinks()` step (`run_me_first.sh`) links `git/gitconfig` → `~/.gitconfig` and the new `config/mc/` → `~/.config/mc`. Fills in the `CONFIG FOLDER SYMLINKING` section that had sat as an empty stub since `symlink_config_folders()` was removed in v15.8.0. Idempotent (skips already-correct symlinks) and included in `--revert` and `--check`/`validate_installation`.
+- **`config/mc/` added to the repo**: seeded from `oldfiles/mc.bak-2026-02-16_21-37-51/` (`ini` + `panels.ini`) — this was the last known-good mc config, previously backed up but never committed. This also fixes a **dangling `~/.config/mc` symlink** that was pointing at a target that never existed in the repo.
+- **`tmux_installer.sh` (v2.3.0) now links `~/.config/tmux/coffee` and `~/.config/tmux/tmux.conf`** into the repo (`link_config_dir()`), matching what README's own troubleshooting section already documented but no script actually did. Verified in `verify_installation()`.
+- **Git repo hygiene — fixed a recurring "ghost submodule" bug**: `tmux/coffee/plugins/tmux-claude-usage` was tracked as a gitlink (mode `160000`) with no `.gitmodules` entry — the same bug already found and fixed once for `tmux-mullvad` (commit `be2b9b9`). Untracked it and added it to `.gitignore` alongside the other Coffee-managed plugins. Also removed `tmux/plugins/tmux-resurrect` (empty, unreferenced ghost gitlink left over from the pre-Coffee TPM era) and untracked the 7 `vim/plugged/*` gitlinks (real plugin content stays on disk, managed by `:PlugInstall` as documented — just stops git from tracking broken submodule pointers for them).
+- **Untracked accidentally-committed machine state**: `.installation-state` (the `.gitignore` entry for it was actually broken — `~/dotfiles/.installation-state`, wrong path, predates the `~/.dotfiles` migration — now fixed to a correct relative pattern), plus stale `tmux/.tmux.conf.*` backups, `tmux/start_tmux.sh.old`, `oldfiles/RunMe.sh.old`, and a duplicate `dotfiles.code-workspace` (the real one is the gitignored `.dotfiles.code-workspace`). Removed the dead `.cygwin.d/` leftover entirely (unreferenced; matches the already-stated Cygwin cleanup from v15.8.0). Untracked `.bashrc.d/.bashrc.d.rar` (unreferenced archive, kept on disk, not inspected).
 
 ### v15.12.0 (2026-08-06)
 - **`tmux_installer.sh` notification backend wired up**: `--test-notify` and `--notify-only` now send via the same Pushover → Gotify → Email `notify_send()` pattern as `run_me_first.sh`, instead of printing a placeholder
@@ -156,6 +163,10 @@ The installer creates these symlinks in your home directory. Your originals are 
 | `~/.profile` | `~/.dotfiles/.profile` |
 | `~/.tmux.conf` | `~/.tmux/.tmux.conf` |
 | `~/.vimrc` | `~/.vim/.vimrc` |
+| `~/.gitconfig` | `~/.dotfiles/git/gitconfig` |
+| `~/.config/mc` | `~/.dotfiles/config/mc` |
+| `~/.config/tmux/coffee` | `~/.dotfiles/tmux/coffee` (created by `tmux_installer.sh`) |
+| `~/.config/tmux/tmux.conf` | `~/.dotfiles/tmux/.tmux.conf` (created by `tmux_installer.sh`) |
 
 ---
 
@@ -268,16 +279,19 @@ Checks EUID, USER, and LOGNAME to determine privilege.
 │   └── welcome.sh          # Optional: fortune, rem, verse (if installed)
 │
 ├── git/
-│   └── gitconfig           # Git configuration template
+│   └── gitconfig           # Git config, linked to ~/.gitconfig by run_me_first.sh
+│
+├── config/
+│   └── mc/                 # Midnight Commander config, linked to ~/.config/mc
 │
 ├── helpers/
 │   └── diagnose.sh         # Diagnostic and test utility: --quick (default), --test, --pkg, --all
 │
 ├── .install_apps.inc       # Application list for run_me_first.sh
 ├── .gitignore              # Excludes: extra_alias.bash, local_alias.bash, logs, oldfiles
-├── symlink.sh              # Distro-specific symlink helper (called by run_me_first.sh)
+├── symlink.sh              # Distro-specific profile linker — currently a no-op, see Known Issues
 ├── system_detector.sh      # Standalone POSIX system info reporter (v5.2.0)
-├── run_me_first.sh         # Main installer script (v15.11.0)
+├── run_me_first.sh         # Main installer script (v15.12.0)
 ├── tmux/                   # Tmux config subtree (symlinked to ~/.tmux)
 ├── vim/                    # Vim config subtree (symlinked to ~/.vim)
 ├── oldfiles/               # Backup directory (pristine originals + archived old scripts)
@@ -960,9 +974,9 @@ The `loaded_files` associative array in `.bashrc` prevents duplicate loading. If
 
 | File | Location | Issue |
 |------|----------|-------|
-| `symlink.sh` | — | No flags (called by installer, not user-facing — acceptable by design) |
+| `symlink.sh` | — | No flags (called by installer, not user-facing — acceptable by design). Currently a **complete no-op on every distro**: it's built to link `.common_profile` plus one of nine distro-specific profile files (`.ubu_profile`, `.deb_profile`, `.arch_profile`, `.suse_profile`, `.rhel_profile`, `.fedora_profile`, `.kali_profile`, `.rpi_profile`, `.common_profile`), but none of them exist in the repo yet — every branch silently no-ops via its graceful "not in repo yet" fallback. |
 | `tmux_installer.sh` / Coffee | Plugin management | Coffee-managed plugins under `tmux/coffee/plugins/` still need manual tinkering — not fully hands-off yet |
-| Installer (both scripts) | `~/.config` | Some config files tmux depends on under `~/.config` are not symlinked or copied by either installer — must be set up manually for now |
+| `.bashrc` | `~/.tmux-extras/tmux-git.sh` | `tmux/.tmux-git.conf` is tracked in the repo but nothing links it anywhere — `.bashrc` conditionally sources `~/.tmux-extras/tmux-git.sh` (a machine-local script outside the repo, guarded by an existence check), and that script would need this config copied to wherever it expects it |
 
 ### Audit Methodology Note
 
@@ -983,6 +997,13 @@ Static tools only see what the code says. Runtime tracing reveals what the insta
 ---
 
 ## Version History
+- **v15.13.0** (2026-08-06)
+  - `run_me_first.sh` (v15.12.0): new `setup_config_symlinks()` links `~/.gitconfig` and `~/.config/mc` — fills in the `CONFIG FOLDER SYMLINKING` stub left empty since v15.8.0's removal of `symlink_config_folders()`; wired into `main()`, `revert_changes()`, and `validate_installation()`
+  - `config/mc/` added to the repo (seeded from the last known-good `oldfiles/mc.bak-2026-02-16_21-37-51/` backup), fixing a dangling `~/.config/mc` symlink
+  - `tmux_installer.sh` (v2.3.0): new `link_config_dir()` links `~/.config/tmux/coffee` and `~/.config/tmux/tmux.conf`
+  - Fixed a recurring ghost-gitlink bug: `tmux/coffee/plugins/tmux-claude-usage` was tracked as a submodule pointer with no `.gitmodules` entry, same as the already-fixed `tmux-mullvad` case — untracked and gitignored. Also removed the dead `tmux/plugins/tmux-resurrect` gitlink and untracked the 7 `vim/plugged/*` gitlinks (content stays on disk, managed by `:PlugInstall`)
+  - Untracked accidentally-committed machine state (`.installation-state` — its `.gitignore` pattern was broken, fixed now), stale tmux.conf/`*.old` backups, and a duplicate `dotfiles.code-workspace`; removed the dead `.cygwin.d/` leftover entirely
+
 - **v15.12.0** (2026-08-06)
   - `tmux_installer.sh` (v2.2.0): notification backend wired up for `--test-notify`/`--notify-only`, mirroring `run_me_first.sh`'s Pushover → Gotify → Email `notify_send()`
   - `.gitignore`: added `.dotfiles.code-workspace`
@@ -1087,5 +1108,5 @@ If you find this useful, consider supporting: [PayPal](https://paypal.me/fotosby
 ---
 
 **Last Updated**: 2026-08-06
-**Script Version**: v15.11.0
+**Script Version**: v15.12.0
 **Guidelines**: Vibecoding v5.6 / Semantic Versioning 2.0.0
