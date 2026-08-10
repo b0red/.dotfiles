@@ -1,4 +1,4 @@
-qqq# ToDo.md - Dotfiles Project Task Tracker
+# ToDo.md - Dotfiles Project Task Tracker
 # Version: 1.10.0 (2026-08-06)
 # Last Updated: 2026-08-06
 
