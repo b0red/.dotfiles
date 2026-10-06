@@ -2,15 +2,19 @@
 # =============================================================================
 # Name:         tmux_installer.sh
 # Author:       b0red
-# Version:      2.3.0
+# Version:      2.3.1
 # Created:      2026-01-29
-# Last Modified:2026-08-06
+# Last Modified:2026-10-06
 # Description:  Install and configure tmux with the Coffee plugin manager.
 #               Creates ~/.tmux.conf symlink pointing into the dotfiles repo,
 #               installs Coffee, and verifies the configuration.
 #               Runs standalone — can be used without the full dotfiles installer.
 # Usage:        ./tmux_installer.sh [OPTIONS]
 # Dependencies: git, tmux (will offer to install missing ones)
+#
+# Changes in 2.3.1:
+#   - Fixed: Ctrl-C/SIGTERM ran the (no-op) cleanup and then the script carried on
+#     running. INT/TERM now exit 130/143; cleanup runs once from the EXIT trap.
 # =============================================================================
 
 set -euo pipefail
@@ -22,7 +26,7 @@ IFS=$'\n\t'
 readonly SCRIPT_NAME="tmux_installer.sh"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 readonly SCRIPT_DIR
-readonly VERSION="2.3.0"
+readonly VERSION="2.3.1"
 
 # Paths derived from SCRIPT_DIR so they're correct regardless of where the
 # dotfiles repo is cloned.
@@ -540,7 +544,11 @@ validate_environment() {
 cleanup() {
     : # nothing to clean up
 }
-trap cleanup EXIT INT TERM
+# INT/TERM exit with 128+signal; the EXIT trap then runs cleanup once. (Trapping
+# cleanup on INT/TERM directly let the script carry on after Ctrl-C.)
+trap cleanup EXIT
+trap 'exit 130' INT
+trap 'exit 143' TERM
 
 # =============================================================================
 # main

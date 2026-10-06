@@ -2,14 +2,18 @@
 # =============================================================================
 # Name:         diagnose.sh
 # Author:       b0red
-# Version:      1.0.0
+# Version:      1.0.1
 # Created:      2026-06-21
-# Last Modified:2026-06-21
+# Last Modified:2026-10-06
 # Description:  Dotfiles diagnostic and test utility.
 #               Three modes: quick environment check (default), full test suite,
 #               and pkg_aliases deep-dive.
 # Usage:        ./diagnose.sh [--quick | --test | --pkg | --all]
 # Dependencies: bash >= 4.0, ~/.dotfiles/.bashrc.d/ tree
+#
+# Changes in 1.0.1:
+#   - Fixed: Ctrl-C/SIGTERM ran the (no-op) cleanup and then the script carried on
+#     running. INT/TERM now exit 130/143; cleanup runs once from the EXIT trap.
 # =============================================================================
 
 set -euo pipefail
@@ -21,7 +25,7 @@ IFS=$'\n\t'
 readonly SCRIPT_NAME="diagnose.sh"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 readonly SCRIPT_DIR
-readonly VERSION="1.0.0"
+readonly VERSION="1.0.1"
 readonly DOTFILES_D="${HOME}/.dotfiles/.bashrc.d"
 
 MODE="quick"    # quick | test | pkg | all
@@ -464,7 +468,11 @@ validate_environment() {
 cleanup() {
     : # nothing to clean up — read-only script
 }
-trap cleanup EXIT INT TERM
+# INT/TERM exit with 128+signal; the EXIT trap then runs cleanup once. (Trapping
+# cleanup on INT/TERM directly let the script carry on after Ctrl-C.)
+trap cleanup EXIT
+trap 'exit 130' INT
+trap 'exit 143' TERM
 
 # =============================================================================
 # main

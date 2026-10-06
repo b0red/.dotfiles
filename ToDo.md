@@ -1,6 +1,6 @@
 # ToDo.md - Dotfiles Project Task Tracker
-# Version: 1.10.0 (2026-08-06)
-# Last Updated: 2026-08-06
+# Version: 1.10.1 (2026-10-06)
+# Last Updated: 2026-10-06
 
 ### ToDO:
 #### General:
@@ -27,6 +27,7 @@
 [x] link ~/.gitconfig and restore ~/.config/mc @done (2026-08-06, run_me_first.sh v15.12.0 setup_config_symlinks() — also fixed a dangling ~/.config/mc symlink and restored config/mc/ from the last known-good Feb 2026 backup)
 [x] fix ghost gitlink bug recurrence (tmux-claude-usage) @done (2026-08-06, same bug class as the already-fixed tmux-mullvad; also cleaned up dead tmux/plugins/tmux-resurrect and untracked vim/plugged/* gitlinks)
 [x] untrack accidentally-committed machine state (.installation-state, stale tmux.conf/*.old backups, duplicate workspace file) @done (2026-08-06); removed dead .cygwin.d/ entirely; fixed .installation-state's broken .gitignore pattern (was ~/dotfiles/... — wrong path, predated the ~/.dotfiles migration)
+[x] fix trap cleanup EXIT INT TERM in diagnose.sh / tmux_installer.sh (Ctrl-C ran cleanup, then the script kept going) @done (2026-10-06, diagnose.sh v1.0.1, tmux_installer.sh v2.3.1 — same bug fixed in 31 ~/bin scripts and Vibecoding v6.0.1)
 [x] fix command_check() defined 4x across functions.bash/pkg_aliases.bash/aliases.bash/docker.bash, silently clobbering the colored interactive version @done (2026-08-06, functions.bash is now the one public version; pkg_aliases.bash's internal copy renamed to private _pkg_has_cmd())
 [x] activate welcome.sh's fortune/rem/verse greeting @done (2026-08-06, removed a dead ~/.welcome/<tool> marker-file gate nothing ever created — now matches README's documented "if installed" behavior)
 [x] fix psg() defined differently in env.bash (core, weaker) vs aliases.bash (interactive, better) — scripts silently got the worse version @done (2026-08-06, unified into env.bash with the -af implementation so it's identical everywhere)

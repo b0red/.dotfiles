@@ -74,6 +74,9 @@ TRACE_DEBUG=1 ./run_me_first.sh     # Trace with environment variable
 
 ## Recent Changes
 
+### diagnose.sh v1.0.1 / tmux_installer.sh v2.3.1 (2026-10-06)
+- **Fixed Ctrl-C not stopping `diagnose.sh` and `tmux_installer.sh`**: both used `trap cleanup EXIT INT TERM` with a no-op `cleanup()` that never exits — bash ran it on Ctrl-C/SIGTERM and then carried on with the next command (an aborted tmux install kept installing). Now `trap cleanup EXIT` + `trap 'exit 130' INT` + `trap 'exit 143' TERM`. Same bug class fixed across `~/bin` and in the Vibecoding contract (v6.0.1, Annex A Addendum A-5).
+
 ### v15.14.0 (2026-08-06)
 - **Fixed `command_check()` — defined 4 times, silently broken**: `functions.bash` (colored interactive output), `pkg_aliases.bash`, `aliases.bash`, and `docker.bash` (three identical silent one-liners) all defined a function with this name. `.bashrc` sources them in that exact order, so bash's last-definition-wins semantics meant the colored version never actually ran in a real shell — whichever dumb duplicate loaded last always won. `functions.bash` is now the one public `command_check()` (and names the command in its output); `pkg_aliases.bash`'s internal copy was renamed to a private `_pkg_has_cmd()` since its sudo/doas/dnf/brew detection must stay silent; the two dead duplicates in `aliases.bash`/`docker.bash` were removed.
 - **Scanned for the same bug class and fixed three more**:
