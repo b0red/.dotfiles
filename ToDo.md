@@ -1,5 +1,5 @@
 # ToDo.md - Dotfiles Project Task Tracker
-# Version: 1.21.0 (2026-10-08)
+# Version: 1.22.0 (2026-10-08)
 # Last Updated: 2026-10-08
 
 ### ToDO:
@@ -47,6 +47,7 @@
 [x] removed tmux-battery (unused on a desktop, no status segment) @done (2026-10-07, `coffee remove` + YAML + @batt_* icons); tmux-mullvad kept for now
 [x] plugin version pinning @done (2026-10-07, decided NO — Coffee manages updates; caffeine-lock.json records the installed versions, so a bad update can be traced and rolled back from git)
 [x] tmux script picker + Docker menu @done (2026-10-08, script_picker.sh / menus/docker.sh / docker_actions.sh; Docker menu meant for dellubuntu)
+[x] tmux-menus Sessions menu (list sessions, switch, detach a session's clients) @done (2026-10-08, tmux/menus/sessions.sh)
 [x] Docker menu against dellubuntu @done (2026-10-08, works from WSL over ssh via @docker_menu_host — verified read-only against the real host)
 [] optional: deploy on dellubuntu itself (git pull + tmux/tmux_installer.sh) to use the menus in a tmux running ON the server; there it uses local Docker
 [x] check run_me_first.sh for old DeTerminator-style OS detection @done (2026-10-08, none — uses /etc/os-release + ID_LIKE; found and fixed os-release overwriting the script's VERSION, which polluted .installation-state)

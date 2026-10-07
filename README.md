@@ -74,6 +74,9 @@ TRACE_DEBUG=1 ./run_me_first.sh     # Trace with environment variable
 
 ## Recent Changes
 
+### v15.25.0 (2026-10-08)
+- **New tmux-menus "Sessions" menu** (`tmux/menus/sessions.sh`): lists all sessions (windows, attached clients, current); per session switch to it or detach its clients (y/n confirm, session keeps running); detach this terminal, pick a client to detach, detach all other clients, session tree. Session names are only put into tmux commands when they're plain `[A-Za-z0-9_-]`. Tested on an isolated tmux server with a real attached client: detach (y) detaches, `n` keeps it, switch moves the client.
+
 ### v15.24.0 (2026-10-08)
 - **Docker menu now works from WSL**: it ran in the local (WSL) tmux, which has no Docker, so it only said "Docker is not installed on this host" — and the "All containers" popup closed instantly on its error. `docker_actions.sh` v1.1.0 uses local Docker when present, otherwise **docker over ssh** on `@docker_menu_host` (new `.tmux.conf` option, `dellubuntu`; key auth, `BatchMode`, `ssh -n` for non-interactive calls so it can't swallow prompt input). Fatal errors now pause before the window/popup closes.
 - **Container picker instead of one menu entry per container**: dellubuntu runs 71 containers — a tmux menu holds ~33. `menus/docker.sh` v1.1.0: Containers… (fzf: Enter logs, Ctrl-S shell, Ctrl-T stats, Ctrl-O inspect, Ctrl-R restart y/N), All containers, lazydocker, plus a "Docker host: …" line.
@@ -367,7 +370,7 @@ Checks EUID, USER, and LOGNAME to determine privilege.
 │   ├── tmux_installer.sh   #   Links config, installs Coffee, copies custom menus
 │   ├── script_picker.sh    #   fzf picker for ~/bin scripts (Tools menu → s)
 │   ├── docker_actions.sh   #   Container actions for the Docker menu
-│   ├── menus/              #   tmux-menus custom menus (tools.sh, docker.sh)
+│   ├── menus/              #   tmux-menus custom menus (tools.sh, docker.sh, sessions.sh)
 │   └── coffee/             #   Coffee plugin YAMLs + lockfile (plugins/ dirs gitignored)
 ├── vim/                    # Vim config subtree (symlinked to ~/.vim)
 ├── oldfiles/               # Backup directory (pristine originals + archived old scripts)
@@ -745,6 +748,8 @@ Prefix + C, opens the Coffee TUI. It has 4 menus;
 | `prefix + d` | Detach |
 
 **Script picker** (Tools menu → `s`): fzf list of every `~/bin/*.sh` with its `# Description:` header (read from the file — nothing is executed to build the list) and a source preview. **Enter** = dry-run in a new window (`--dry-run`; scripts without it open their source instead), **Ctrl-X** = real run after asking for arguments and y/N, **Ctrl-V** = view source. Directory: `SCRIPT_PICKER_DIR` (default `~/bin`).
+
+**Sessions menu** (`prefix + \` → Custom items → **Sessions**): every tmux session with its window count, attached clients and which one is current (rebuilt on each open). Per session: **Switch to it** or **Detach its clients** (asks y/n; the session keeps running). Also: **Detach this terminal**, **Clients…** (tmux `choose-client`; press `d` to detach the highlighted client), **Detach all other clients** (asks), and the **Session tree**. Sessions with unusual names (spaces, `#`, …) are listed as a count only — use the Session tree for those.
 
 **Docker menu** (`prefix + \` → Custom items → **Docker**): **Containers…** opens an fzf picker over all running containers — **Enter** logs (follow), **Ctrl-S** shell, **Ctrl-T** stats, **Ctrl-O** inspect, **Ctrl-R** restart (asks y/N); each opens in a new window. Plus **All containers** (`docker ps -a`) and **lazydocker**. Uses the local Docker if the machine has one; otherwise runs docker **over ssh** on the host in `@docker_menu_host` (set to `dellubuntu` in `.tmux.conf`; needs key-based ssh). The menu shows which host it will use. All work is done by `tmux/docker_actions.sh`, which validates container and host names; errors stay on screen until a key is pressed.
 
