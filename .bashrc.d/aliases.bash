@@ -305,6 +305,21 @@ alias tm='tmux new-session -s main \; split-window -h \; split-window -v -p 30'
 alias tmx='tmux attach -t 0 2>/dev/null || tmux new-session'
 alias tmkill='tmux ls 2>/dev/null | grep : | cut -d: -f1 | xargs -r tmux kill-session -t'
 
+tmux-manual() {
+    ### Show the tmux manual (tmux/MANUAL.md), coloured with batcat if available
+    local manual="$HOME/.dotfiles/tmux/MANUAL.md"
+
+    if [[ ! -f "$manual" ]]; then
+        echo "tmux-manual: $manual not found" >&2
+        return 1
+    fi
+    if command -v batcat >/dev/null 2>&1; then
+        batcat --paging=always --style=plain --language=md -- "$manual"
+    else
+        less -- "$manual"
+    fi
+}
+
 # Updates (dotfiles/bin)
 alias dotupdate='cd ~/.dotfiles && git pull && source ~/.bashrc'
 alias binupdate='cd ~/bin && git pull origin master 2>/dev/null'

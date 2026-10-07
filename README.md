@@ -74,6 +74,9 @@ TRACE_DEBUG=1 ./run_me_first.sh     # Trace with environment variable
 
 ## Recent Changes
 
+### v15.26.0 (2026-10-08)
+- **New `tmux/MANUAL.md`** — an easy-to-read manual for everything tmux here: sessions, windows, panes, copy/paste, the menus (Tools / Sessions / Docker), quick popups, save/restore, the status bar, what each plugin is for, troubleshooting and file locations. Key facts taken from the live key table of the full config, not from older docs. Open it from tmux (Tools menu → `?`, coloured via `batcat`) or a shell (`tmux-manual`, new function in `aliases.bash`). Tools menu v1.2.0.
+
 ### v15.25.0 (2026-10-08)
 - **New tmux-menus "Sessions" menu** (`tmux/menus/sessions.sh`): lists all sessions (windows, attached clients, current); per session switch to it or detach its clients (y/n confirm, session keeps running); detach this terminal, pick a client to detach, detach all other clients, session tree. Session names are only put into tmux commands when they're plain `[A-Za-z0-9_-]`. Tested on an isolated tmux server with a real attached client: detach (y) detaches, `n` keeps it, switch moves the client.
 
@@ -365,6 +368,7 @@ Checks EUID, USER, and LOGNAME to determine privilege.
 ├── run_me_first.sh         # Main installer script (v15.14.0)
 ├── tmux/                   # Tmux config subtree (symlinked to ~/.tmux)
 │   ├── .tmux.conf          #   Main config (~/.tmux.conf links here)
+│   ├── MANUAL.md           #   How to use it all — keys, menus, plugins (tmux-manual)
 │   ├── start_tmux.sh       #   Session layout launcher (~/.start_tmux.sh links here)
 │   ├── tmux_guard.inc      #   Shared "never tmux inside tmux" check
 │   ├── tmux_installer.sh   #   Links config, installs Coffee, copies custom menus
@@ -729,6 +733,8 @@ Prefix + C, opens the Coffee TUI. It has 4 menus;
 * Remove
 
 [Read more: Coffee](https://github.com/PraaneshSelvaraj/coffee.tmux)
+
+> **Forgot how something works?** See [`tmux/MANUAL.md`](tmux/MANUAL.md) — every key, menu and plugin in "I want to…" tables. In tmux: `prefix + \` → Custom items → Tools → `?`; in a shell: `tmux-manual`.
 
 #### Custom Keybindings
 

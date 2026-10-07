@@ -1,5 +1,7 @@
 # Tmux + Coffee — Quick Reference Card
 
+> Day-to-day usage (keys, menus, plugins) is in **[MANUAL.md](MANUAL.md)** — in tmux: Tools menu → `?`, in a shell: `tmux-manual`. This card covers install and troubleshooting.
+
 ## Installation (First Time)
 
 Tmux configuration is bundled with the dotfiles repo. The main installer handles everything:

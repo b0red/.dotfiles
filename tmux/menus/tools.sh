@@ -2,7 +2,7 @@
 #
 # Name: tools.sh
 # Author: Patrick
-# Version: 1.1.0
+# Version: 1.2.0
 # Created: 2026-10-07
 # Last Modified: 2026-10-08
 # Description: tmux-menus custom item "Tools": launchers for monitors and utilities that
@@ -61,6 +61,8 @@ static_content() {
     set -- "$@" \
         0.0 C c "Coffee plugin manager" \
         "display-popup -E '$HOME/.local/share/coffee/.venv/bin/python $HOME/.local/share/coffee/ui.py'" \
+        0.0 C "?" "Manual (tmux/MANUAL.md)" \
+        "display-popup -w 90% -h 90% -T Manual -E 'if command -v batcat >/dev/null 2>&1; then batcat --paging=always --style=plain --language=md $HOME/.tmux/MANUAL.md; else less $HOME/.tmux/MANUAL.md; fi'" \
         0.0 S \
         0.0 T "-#[nodim]Direct keys: prefix + h b l (popups), t T (task monitor)"
 
