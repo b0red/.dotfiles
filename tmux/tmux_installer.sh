@@ -2,7 +2,7 @@
 # =============================================================================
 # Name:         tmux_installer.sh
 # Author:       b0red
-# Version:      2.4.0
+# Version:      2.4.1
 # Created:      2026-01-29
 # Last Modified:2026-10-07
 # Description:  Install and configure tmux with the Coffee plugin manager.
@@ -11,6 +11,11 @@
 #               Runs standalone — can be used without the full dotfiles installer.
 # Usage:        ./tmux_installer.sh [OPTIONS]
 # Dependencies: git, tmux (will offer to install missing ones)
+#
+# Changes in 2.4.1:
+#   - Fixed: ~/.tmux.conf and ~/.config/tmux/{coffee,tmux.conf} were deleted and
+#     re-created on every run. Links are now compared by resolved path
+#     (already_linked), and left alone when they already point at the repo.
 #
 # Changes in 2.4.0:
 #   - Added install_custom_menus(): copies tmux/menus/*.sh (e.g. the Tools menu) into
@@ -30,7 +35,7 @@ IFS=$'\n\t'
 readonly SCRIPT_NAME="tmux_installer.sh"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 readonly SCRIPT_DIR
-readonly VERSION="2.4.0"
+readonly VERSION="2.4.1"
 
 # Paths derived from SCRIPT_DIR so they're correct regardless of where the
 # dotfiles repo is cloned.
@@ -223,6 +228,24 @@ check_dependencies() {
 }
 
 # =============================================================================
+# already_linked: true if $2 is a symlink that resolves to the same file as $1.
+# Compares fully resolved paths, not the raw link text: existing links point via
+# ~/.tmux (itself a symlink to the repo) while $SCRIPT_DIR is the repo path, so a
+# string compare never matched and every run deleted and re-created the links.
+# =============================================================================
+already_linked() {
+    local src="$1"
+    local dest="$2"
+    local src_real=""
+    local dest_real=""
+
+    [ -L "${dest}" ] || return 1
+    src_real="$(readlink -f -- "${src}")" || return 1
+    dest_real="$(readlink -f -- "${dest}")" || return 1
+    [ -n "${src_real}" ] && [ "${src_real}" = "${dest_real}" ]
+}
+
+# =============================================================================
 # create_symlink: link ~/.tmux.conf → repo .tmux.conf
 # =============================================================================
 create_symlink() {
@@ -234,9 +257,14 @@ create_symlink() {
         return 1
     fi
 
+    if already_linked "${TMUX_CONF_TARGET}" "${TMUX_CONF_LINK}"; then
+        log_success "${TMUX_CONF_LINK} already linked → $(readlink -f -- "${TMUX_CONF_LINK}")"
+        return 0
+    fi
+
     if [ -L "${TMUX_CONF_LINK}" ]; then
-        safe_exec rm -f "${TMUX_CONF_LINK}"
-        log_info "Removed existing symlink"
+        safe_exec rm -f -- "${TMUX_CONF_LINK}"
+        log_info "Removed existing symlink (pointed elsewhere)"
     elif [ -e "${TMUX_CONF_LINK}" ]; then
         local backup
         backup="${TMUX_CONF_LINK}.backup-$(date +%Y%m%d-%H%M%S)"
@@ -270,7 +298,7 @@ link_config_dir() {
             log_warn "${label} source not found: ${src}, skipping"
             return 0
         fi
-        if [ -L "${dest}" ] && [ "$(readlink "${dest}")" = "${src}" ]; then
+        if already_linked "${src}" "${dest}"; then
             log_success "${label} already linked"
             return 0
         fi

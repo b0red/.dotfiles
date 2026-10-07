@@ -1,5 +1,5 @@
 # ToDo.md - Dotfiles Project Task Tracker
-# Version: 1.13.0 (2026-10-07)
+# Version: 1.14.0 (2026-10-07)
 # Last Updated: 2026-10-07
 
 ### ToDO:
@@ -37,8 +37,8 @@
 [x] rewrite start_tmux.sh to the Vibecoding template @done (2026-10-07, start_tmux.sh v1.0.0; guard shared via tmux/tmux_guard.inc, now also catches ssh-to-self; removed malformed u/plugin line from .tmux.conf)
 [x] move launcher keybindings into a tmux-menus Tools menu (kept in repo, copied by tmux_installer.sh) @done (2026-10-07, tmux/menus/tools.sh, tmux_installer.sh v2.4.0; fixed C-a double bind, @menus_config_file path, broken j/u bindings)
 [] tmux-menus custom_items/ is root-owned and world-writable (777) — any local user could plant a menu script that runs as patrick; needs: sudo chown -R patrick:patrick ~/.dotfiles/tmux/coffee/plugins/tmux-menus/custom_items && chmod 755 it
-[] tmux_installer.sh re-creates ~/.config/tmux/{coffee,tmux.conf} links on every run (compares readlink against $SCRIPT_DIR paths, but existing links go via ~/.tmux) — harmless, just noisy
-[] decide on `alias mc='sudo mc'` (aliases.bash:273) — the start_tmux.sh mc pane runs mc as root every session, and its Ctrl-O subshell is a root shell; likely the original source of the nested tmux (now blocked by the guard)
+[x] tmux_installer.sh re-created ~/.tmux.conf and ~/.config/tmux/{coffee,tmux.conf} links on every run @done (2026-10-07, v2.4.1 already_linked() compares resolved paths)
+[x] decide on `alias mc='sudo mc'` @done (2026-10-07, commented out — mc runs as the user; use `sudo mc` explicitly when root is needed)
 [] Coffee-managed tmux plugins (tmux/coffee/plugins/) still need manual tinkering — not fully hands-off yet
 [] .bashrc.d/.bashrc.d.rar — untracked but still sitting on disk, unreviewed (unrar not installed, contents unknown)
 [] tmux/.tmux-git.conf is tracked but unlinked — depends on ~/.tmux-extras/tmux-git.sh which lives outside the repo; low priority, guarded by an existence check so it's not broken, just inert

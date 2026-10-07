@@ -270,7 +270,7 @@ alias ports='sudo netstat -tulanp 2>/dev/null || sudo ss -tulanp'
 alias sshrestart='sudo service ssh restart 2>/dev/null || sudo systemctl restart ssh'
 
 # Midnight Commander
-command -v mc >/dev/null 2>&1 && alias mc='sudo mc'
+#command -v mc >/dev/null 2>&1 && alias mc='sudo mc'
 
 #----------------------------------------------------------------------------
 # 6. Networking/Tools

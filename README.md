@@ -74,6 +74,10 @@ TRACE_DEBUG=1 ./run_me_first.sh     # Trace with environment variable
 
 ## Recent Changes
 
+### v15.18.0 (2026-10-07)
+- **`mc` no longer runs as root by default**: the `alias mc='sudo mc'` in `.bashrc.d/aliases.bash` is commented out, so `mc` (including the `start_tmux.sh` mc pane) runs as your user — mc doesn't need root, only root-owned files do (`sudo mc` / `sudoedit` when needed). This also removes the likely original trigger of the nested tmux: mc's Ctrl-O subshell was a root shell with `$TMUX` stripped. `config/mc/ini` updated by mc itself (panel size, Panelize entry order).
+- **`tmux_installer.sh` v2.4.1**: no longer deletes and re-creates `~/.tmux.conf` and `~/.config/tmux/{coffee,tmux.conf}` on every run — links are compared by resolved path (`already_linked()`), since the existing links go via `~/.tmux` and never string-matched the repo path.
+
 ### v15.17.0 (2026-10-07)
 - **New tmux-menus "Tools" menu** (`tmux/menus/tools.sh`, in the repo — the plugin dir is gitignored, so the old `keys-info.sh` custom menu was never versioned): launchers for htop/btop/lazyports (popup or window), task monitor/overview, man page, urlview and the Coffee TUI. Replaces the static `keys-info.sh` page (moved aside to `tmux-menus/keys-info.sh.disabled-20261007`).
 - **`.tmux.conf` key cleanup**: `H`, `B`, `L`, `u`, `m`, `e`, `j` moved to menus and explicitly unbound (so a config reload drops them too); `L`/`m` restored to tmux defaults. `j` (`tmux-menus hello`) and `u` (urlview not installed; also used a fixed `/tmp` file) were broken. Kept direct popup keys `h`/`b`/`l` and `t`/`T`.
@@ -714,7 +718,7 @@ On first load, `.bashrc` asks whether to start the custom layout or plain `tmux`
 If the session already exists it reloads `~/.tmux.conf` (reporting any config errors) and attaches. Otherwise it creates:
 - **Left (50% width)** — shell in `~/bin` (or `~`)
 - **Top-right (60% of right side)** — shell in `~/docker/compose` (or `~`)
-- **Bottom-right** — Midnight Commander if installed (focused on attach; the `mc` alias runs `sudo mc`)
+- **Bottom-right** — Midnight Commander if installed (focused on attach; runs as you — use `sudo mc` explicitly for root-owned files)
 - **Bottom-most (20% of bottom-right)** — `task list`, only if Taskwarrior is installed
 
 Panes are targeted by pane id, so the layout doesn't depend on `base-index` having loaded.
