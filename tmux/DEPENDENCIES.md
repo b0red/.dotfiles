@@ -1,5 +1,10 @@
 # Tmux Plugin Dependencies
 
+## This Config
+- **tmux 3.1+** — `start_tmux.sh` uses `split-window -l N%`; `.tmux.conf` uses `{ }` command blocks (3.0+)
+- **`clip.exe`** (WSL, built into Windows) — tmux `copy-command`, so copies reach the Windows clipboard in any terminal (classic conhost has no OSC 52). Guarded: ignored where absent
+- **Optional** for the Tools menu / popup keys: `htop`, `btop`, `lazyports`, `urlview`
+
 ## Plugin Manager
 - **Coffee**: https://github.com/PraaneshSelvaraj/coffee.tmux
   - Requires tmux 3.0+
@@ -19,6 +24,8 @@
 
 ### [tmux-menus](https://github.com/jaclu/tmux-menus)
 - `bc`
+- Custom menus (our `menus/tools.sh`) need the plugin's cache enabled (default) and must be
+  regular files in `custom_items/` — symlinks are ignored, so `tmux_installer.sh` copies them
 
 ## Install All Dependencies (Debian/Ubuntu)
 ```bash

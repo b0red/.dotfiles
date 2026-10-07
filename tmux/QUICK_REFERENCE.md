@@ -81,7 +81,7 @@ coffee disable <plugin>     # Disable plugin
 
 ### Check Versions
 ```bash
-tmux -V                    # Should be 3.0+
+tmux -V                    # Should be 3.1+
 python3 --version          # Should be 3.10+
 ```
 
@@ -122,7 +122,10 @@ tmux new-session
 ~/.local/share/coffee/               # Coffee installation
 ~/.local/share/coffee/.venv/         # Python virtual environment
 ~/.dotfiles/tmux/coffee/plugins/     # Installed plugins
-~/.dotfiles/tmux/start_tmux.sh       # Preconfigured session layout script
+~/.dotfiles/tmux/start_tmux.sh       # Preconfigured session layout script (--help, --dry-run)
+~/.dotfiles/tmux/tmux_guard.inc      # "Never tmux inside tmux" check (start_tmux.sh + .bashrc)
+~/.dotfiles/tmux/menus/tools.sh      # Tools menu source (copied into tmux-menus by tmux_installer.sh)
+/tmp/tmux-$UID/default               # Server socket (TMUX_TMPDIR=/tmp)
 ```
 
 ## Migration from TPM
@@ -158,11 +161,14 @@ coffee list
 ~/.dotfiles/tmux/start_tmux.sh
 ```
 
-This creates:
-- Left pane (50%): Terminal
-- Top-right (60%): Docker/compose directory
-- Middle-right: Midnight Commander (if installed)
-- Bottom-right: Taskwarrior (if installed)
+This attaches to session `linux` if it exists, otherwise creates:
+- Left pane (50%): shell in `~/bin`
+- Top-right (60% of right side): shell in `~/docker/compose` (or `~`)
+- Bottom-right: Midnight Commander (if installed, focused)
+- Bottom-most: `task list` (if Taskwarrior is installed)
+
+It refuses to run inside tmux (even when `$TMUX` was stripped by sudo/su or ssh-to-self).
+Preview without changes: `~/.dotfiles/tmux/start_tmux.sh --dry-run`
 
 ## Resources
 - Coffee: https://github.com/PraaneshSelvaraj/coffee.tmux

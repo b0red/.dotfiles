@@ -74,6 +74,10 @@ TRACE_DEBUG=1 ./run_me_first.sh     # Trace with environment variable
 
 ## Recent Changes
 
+### v15.19.1 (2026-10-07)
+- **Docs synced with the tmux work**: `DEPENDENCIES.md` / `tmux/DEPENDENCIES.md` (tmux 3.1+, `clip.exe`, optional Tools-menu apps, `mc` no longer aliased to `sudo mc`), `tmux/QUICK_REFERENCE.md` (actual `start_tmux.sh` layout, `--dry-run`, guard/menu file locations), README directory tree (contents of `tmux/`), `tmux/ToDo.md` (Oct 7 completed section).
+- **Coffee lockfile**: Coffee auto-updated tmux-menus v2.2.34 → v2.4.1 and tmux-nerd-font-window-name v3.1.0 → v3.2.2; verified the Tools menu survived and tmux-menus still indexes it (custom items are still scanned as regular files, so copying stays correct).
+
 ### v15.19.0 (2026-10-07)
 - **Copy to the Windows clipboard works in any terminal**: `.tmux.conf` now pipes every tmux copy to `clip.exe` (`copy-command`, guarded so non-WSL hosts are unaffected) in addition to OSC 52. Copy-paste had stopped working because Windows Terminal is no longer installed — sessions run in the classic console (conhost), which supports neither OSC 52 nor Shift+drag selection while tmux mouse mode is on. Plain UTF-8 into `clip.exe` keeps åäö/€ intact (tested end-to-end). Copy: mouse drag (no Shift) and release, or `prefix + [`, Space, move, `y`/`Enter`. Added the copy-mode `y` binding the config comment promised (tmux-yank was removed in May).
 
@@ -329,6 +333,12 @@ Checks EUID, USER, and LOGNAME to determine privilege.
 ├── system_detector.sh      # Standalone POSIX system info reporter (v5.2.0)
 ├── run_me_first.sh         # Main installer script (v15.12.0)
 ├── tmux/                   # Tmux config subtree (symlinked to ~/.tmux)
+│   ├── .tmux.conf          #   Main config (~/.tmux.conf links here)
+│   ├── start_tmux.sh       #   Session layout launcher (~/.start_tmux.sh links here)
+│   ├── tmux_guard.inc      #   Shared "never tmux inside tmux" check
+│   ├── tmux_installer.sh   #   Links config, installs Coffee, copies custom menus
+│   ├── menus/              #   tmux-menus custom menus (tools.sh)
+│   └── coffee/             #   Coffee plugin YAMLs + lockfile (plugins/ dirs gitignored)
 ├── vim/                    # Vim config subtree (symlinked to ~/.vim)
 ├── oldfiles/               # Backup directory (pristine originals + archived old scripts)
 ├── logs/                   # Installation logs (gitignored)

@@ -14,7 +14,17 @@
 ## Completed (June 20, 2026)
  - [x] Auto-start ~/.start_tmux.sh from .bashrc on first interactive login (guarded: PS1 set, BASHRC_SOURCED=1, not already in tmux)
 
+## Completed (October 7, 2026)
+ - [x] Never start tmux inside tmux: shared tmux_guard.inc (process ancestry, root/sudo, ssh-to-self)
+ - [x] start_tmux.sh v1.0.0 on the Vibecoding template (flags, --dry-run, pane ids)
+ - [x] Continuum autosave wired into status-right; leftover tmux.service removed; @continuum-boot off
+ - [x] Tools menu (menus/tools.sh) — launchers moved out of one-off keys; C-a double bind fixed
+ - [x] Copy to Windows clipboard via clip.exe (works in conhost too); copy-mode `y`
+ - [x] tmux_installer.sh v2.4.1: copies custom menus, stops re-creating correct links
+
 ## tmux-menus
 1) Create a meny for different scripts (from ~/bash) that can easily be exeecuted from the meny
     2 olika, en för Docker containers och en för "vanliga script"
+    (Status 2026-10-07: the menu framework is in place — add new menus as tmux/menus/*.sh
+    next to tools.sh and re-run tmux_installer.sh. Docker + scripts menus not built yet.)
     

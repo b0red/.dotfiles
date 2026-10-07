@@ -14,7 +14,7 @@ without them.
 |------|------------|---------|
 | `bash` | 4.0+ | All scripts (`run_me_first.sh` checks at startup) |
 | `git` | any | Installer, submodule setup, `tmux_installer.sh` |
-| `tmux` | 3.0+ | Core config, Coffee plugin manager |
+| `tmux` | 3.1+ | Core config, Coffee plugin manager (`start_tmux.sh` uses `split-window -l N%`, 3.1+) |
 | `python3` | 3.10+ | Coffee plugin manager (venv + dependencies) |
 | `python3-venv` | — | Coffee venv creation in `tmux_installer.sh` |
 
@@ -47,6 +47,9 @@ a manual or partial install knows what to grab.
 | `bc` | tmux-menus | Basic calculator |
 | `yq` ≥ 4 | tmux-nerd-font-window-name | YAML parser |
 | Nerd Font | tmux-nerd-font-window-name | Must be set in your terminal emulator |
+| `clip.exe` | `.tmux.conf` `copy-command` (WSL only) | Built into Windows; tmux copies go to the Windows clipboard. Skipped automatically where absent |
+| `urlview` | Tools menu (`tmux/menus/tools.sh`) | Optional; the "URLs in this pane" entry only appears when installed |
+| `htop`, `btop`, `lazyports` | `prefix + h/b/l` popups, Tools menu | Optional launchers |
 
 ```bash
 sudo apt-get install -y bc
@@ -99,7 +102,7 @@ sudo apt-get install -y bat fd-find ripgrep broot most prettyping btop ncdu
 | Tool | Used by | Notes |
 |------|---------|-------|
 | `task` (taskwarrior) | `tasks` alias, `start_tmux.sh` pane 4 | Pane only created if present |
-| `mc` (Midnight Commander) | `start_tmux.sh` pane 3, `mc` alias | Pane runs `mc` if present |
+| `mc` (Midnight Commander) | `start_tmux.sh` pane 3 | Pane runs `mc` if present, as your user (the old `sudo mc` alias is disabled — use `sudo mc` explicitly for root-owned files) |
 | `fzf` | Various functions | Fuzzy finder |
 | `jq` | `docker.bash` functions | JSON processor |
 | `entr` | — | File watcher for automation |
