@@ -1,5 +1,5 @@
 # ToDo.md - Dotfiles Project Task Tracker
-# Version: 1.11.0 (2026-10-07)
+# Version: 1.12.0 (2026-10-07)
 # Last Updated: 2026-10-07
 
 ### ToDO:
@@ -33,8 +33,9 @@
 [x] fix psg() defined differently in env.bash (core, weaker) vs aliases.bash (interactive, better) — scripts silently got the worse version @done (2026-08-06, unified into env.bash with the -af implementation so it's identical everywhere)
 [x] add confirmation prompt to gclean (was the only destructive git.bash command without one) @done (2026-08-06, converted alias to function matching gundohard/greset/gcleanup's y/n pattern)
 [x] fix tmux nesting inside tmux (stacked status lines) when $TMUX is stripped by sudo/su/sudo mc @done (2026-10-07, /proc ancestry guard in .bashrc + start_tmux.sh, no auto-start as root; TMUX_TMPDIR pinned to /tmp)
-[] ~/.config/systemd/user/tmux.service (from @continuum-boot) is enabled but failed — ExecStop points to nonexistent ~/.tmux/plugins/tmux-resurrect/scripts/save.sh (resurrect never saves on stop; last save 2026-05-13), and its plain `tmux new-session -d` races start_tmux.sh/continuum-restore at boot
-[] start_tmux.sh predates the Vibecoding template — no version, no --help/--dry-run/-v/-d flags, #!/bin/bash shebang, `source-file ... || true` swallows config errors
+[x] remove leftover ~/.config/systemd/user/tmux.service (broken ExecStop, stray session at boot) and get continuum autosave working @done (2026-10-07, unit disabled + kept as tmux.service.disabled-20261007, @continuum-boot off, save hook + timestamp seed wired in .tmux.conf)
+[x] rewrite start_tmux.sh to the Vibecoding template @done (2026-10-07, start_tmux.sh v1.0.0; guard shared via tmux/tmux_guard.inc, now also catches ssh-to-self; removed malformed u/plugin line from .tmux.conf)
+[] decide on `alias mc='sudo mc'` (aliases.bash:273) — the start_tmux.sh mc pane runs mc as root every session, and its Ctrl-O subshell is a root shell; likely the original source of the nested tmux (now blocked by the guard)
 [] Coffee-managed tmux plugins (tmux/coffee/plugins/) still need manual tinkering — not fully hands-off yet
 [] .bashrc.d/.bashrc.d.rar — untracked but still sitting on disk, unreviewed (unrar not installed, contents unknown)
 [] tmux/.tmux-git.conf is tracked but unlinked — depends on ~/.tmux-extras/tmux-git.sh which lives outside the repo; low priority, guarded by an existence check so it's not broken, just inert

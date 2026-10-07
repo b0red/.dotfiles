@@ -74,6 +74,13 @@ TRACE_DEBUG=1 ./run_me_first.sh     # Trace with environment variable
 
 ## Recent Changes
 
+### v15.16.0 (2026-10-07)
+- **`start_tmux.sh` v1.0.0 — rewritten to the Vibecoding canonical template**: `-h/--help`, `-?/--info`, `-v/--version`, `-d/--debug`, `--dry-run` (exits 4), `--test-notify`/`--notify-only` (lazy-load `notification_functions.inc`); proper exit codes; resolves the `~/.start_tmux.sh` symlink for `SCRIPT_DIR`; panes targeted by pane id instead of hard-coded `1.1`–`1.4` indexes; `-l N%` instead of deprecated `-p`; refuses to run without a terminal. Config reload errors are now reported instead of swallowed by `|| true`.
+- **Nesting guard moved to shared `tmux/tmux_guard.inc`** (used by `.bashrc` auto-start and `start_tmux.sh`, so they can't drift) and now also catches **ssh to this same host** (client IP == server IP, or loopback) — the gap left in v15.15.0. Fails closed if the guard file is missing or `/proc` can't be read.
+- **Continuum autosave actually runs now**: it was never active (last save 2026-05-13) — continuum only wires its save hook into `status-right` when a `ps`-based "another server running?" check passes, and `start_tmux.sh`'s burst of tmux commands made it misfire. `.tmux.conf` now puts the hook in `status-right` itself and seeds `@continuum-save-last-timestamp` so the first save waits one interval (can't overwrite the last good save before restore).
+- **Removed leftover `tmux.service`**: `~/.config/systemd/user/tmux.service` (from the old TPM-era continuum) was enabled but failed — its `ExecStop` pointed at a nonexistent `~/.tmux/plugins/tmux-resurrect/...`, and its plain `tmux new-session -d` spawned a stray session `0` racing `start_tmux.sh` at boot. Disabled and renamed to `tmux.service.disabled-20261007`; `@continuum-boot` set to `off` (this continuum version only implements boot-start on macOS).
+- **Fixed `.tmux.conf` error on every load**: malformed `set -g u/plugin 'docker-run/tmux-claude-usage'` removed (Coffee already loads it via its YAML) — previously hidden by `start_tmux.sh`'s `|| true`.
+
 ### v15.15.0 (2026-10-07)
 - **Fixed tmux starting inside tmux (stacked status lines)**: the auto-start guards in `.bashrc` and `start_tmux.sh` only checked `$TMUX`, which `sudo -i`, `su -` and `sudo mc` subshells strip — so a pane could silently launch a second tmux (the auto-start prompt defaults to custom after 3 s). Both now also walk the process ancestry via `/proc` for a `tmux: server` parent (fails closed if `/proc` is unreadable), and never auto-start as root/sudo. Known gap: `ssh localhost` from a pane can't be detected this way.
 - **`TMUX_TMPDIR` pinned to `/tmp`** (`exports.bash` and `start_tmux.sh`): the old `~/tmp/tmux-$USER` dir never existed, so tmux was silently falling back to `/tmp` — now explicit, so every launcher (login shell, `start_tmux.sh`, systemd) hits the same socket `/tmp/tmux-$UID/default`.
@@ -687,20 +694,22 @@ Prefix + C, opens the Coffee TUI. It has 4 menus;
 On first load, `.bashrc` asks whether to start the custom layout or plain `tmux` (handy for a bare session you SSH into another shell from). No answer within 3 seconds defaults to the custom layout. To launch it manually:
 
 ```bash
-~/.start_tmux.sh
+~/.start_tmux.sh             # attach to session "linux", or create it
+~/.start_tmux.sh --dry-run   # show every tmux command without running it (exits 4)
+~/.start_tmux.sh --help      # full help: flags, exit codes, files
 ```
 
-This creates a session with:
-- **Window 1, Pane 1** — Left pane (50% width) — default shell
-	+ Opens to ~
-- **Window 1, Pane 2** — Top-right (60% height) — default shell
-	+ If docker is installed, opens to ~/docker/config
-- **Window 1, Pane 3** — Bottom-right (60% height) — default shell
-	+ opens with "Midnight Commander", requires root
-- **Window 1, Pane 4** — Bottom-right (40% height) — default shell
-	+ if Taskwarrior is installed, opens with the task list loaded
+If the session already exists it reloads `~/.tmux.conf` (reporting any config errors) and attaches. Otherwise it creates:
+- **Left (50% width)** — shell in `~/bin` (or `~`)
+- **Top-right (60% of right side)** — shell in `~/docker/compose` (or `~`)
+- **Bottom-right** — Midnight Commander if installed (focused on attach; the `mc` alias runs `sudo mc`)
+- **Bottom-most (20% of bottom-right)** — `task list`, only if Taskwarrior is installed
 
-(Requires `tmux` and optionally `mc` for file browser)
+Panes are targeted by pane id, so the layout doesn't depend on `base-index` having loaded.
+
+**Never tmux-in-tmux**: `start_tmux.sh` and the `.bashrc` auto-start share `tmux/tmux_guard.inc`, which refuses to start when `$TMUX` is set, when any parent process is a tmux server (catches `sudo -i`, `su -`, `sudo mc` subshells that strip `$TMUX`), on an ssh session from this same host, or as root/sudo. The socket is always `/tmp/tmux-$UID/default` (`TMUX_TMPDIR=/tmp`).
+
+(Requires `tmux` >= 3.1 and optionally `mc` for file browser)
 
 #### Status Bar
 

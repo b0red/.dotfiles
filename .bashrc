@@ -391,42 +391,46 @@ fi
 # handy when you want a bare session to SSH into another shell from).
 # No answer within 3 seconds falls through to the custom launcher.
 #
-# Nesting guard: $TMUX is stripped by sudo -i / su - / `sudo mc` subshells, which used
-# to start a second tmux inside a pane (stacked status lines). So we also walk the
-# process ancestry for a tmux server, and never auto-start as root.
-# Returns: 0 = inside tmux, 1 = not inside, 2 = could not determine (treated as inside)
-_bashrc_inside_tmux() {
-    local pid="$$"
-    local comm=""
-    local stat=""
+# Nesting guard lives in ~/.tmux/tmux_guard.inc (shared with start_tmux.sh): it catches
+# $TMUX being stripped by sudo -i / su - / `sudo mc` subshells and ssh-to-self, which used
+# to start a second tmux inside a pane (stacked status lines). Fails closed: if the guard
+# is missing or can't decide, tmux is not auto-started.
+if [ -n "$PS1" ] && [ "$BASHRC_SOURCED" -eq 1 ] && [ -z "${TMUX:-}" ]; then
+    tmux_guard_rc=1
+    tmux_guard_reason=""
+    if [ -f "$HOME/.tmux/tmux_guard.inc" ]; then
+        # shellcheck source-path=SCRIPTDIR source=tmux/tmux_guard.inc
+        source "$HOME/.tmux/tmux_guard.inc"
+        if tmux_guard_reason="$(tmux_guard_should_skip)"; then
+            tmux_guard_rc=0
+        else
+            tmux_guard_rc=$?
+        fi
+        unset -f tmux_guard_should_skip
+    else
+        tmux_guard_rc=2
+        tmux_guard_reason="$HOME/.tmux/tmux_guard.inc not found"
+    fi
 
-    [ -n "${TMUX:-}" ] && return 0
-    while [[ "$pid" =~ ^[0-9]+$ ]] && (( pid > 1 )); do
-        { comm="$(< "/proc/$pid/comm")"; } 2>/dev/null || return 2
-        [[ "$comm" == "tmux: server" ]] && return 0
-        { stat="$(< "/proc/$pid/stat")"; } 2>/dev/null || return 2
-        # comm in stat may contain spaces ("tmux: server"), so split after the last ')'
-        IFS=' ' read -r _ pid _ <<< "${stat##*) }"
-    done
-    return 1
-}
+    # 0 = skip silently (normal for every pane), 2 = skip loudly (guard couldn't decide)
+    if [ "$tmux_guard_rc" -eq 2 ]; then
+        echo -e "${LOAD_RED}⚠ tmux auto-start skipped: ${tmux_guard_reason}${LOAD_NC}" >&2
+    elif [ "$tmux_guard_rc" -eq 1 ]; then
+        tmux_choice=""
+        echo -e "${LOAD_GREEN}❯ Start tmux: [C]ustom (default) or [P]lain?${LOAD_NC}"
+        read -r -n 1 -t 3 -p "Choice [C/p]: " tmux_choice
+        echo
 
-if [ -n "$PS1" ] && [ "$BASHRC_SOURCED" -eq 1 ] && (( EUID != 0 )) \
-    && [ -z "${SUDO_USER:-}" ] && ! _bashrc_inside_tmux; then
-    tmux_choice=""
-    echo -e "${LOAD_GREEN}❯ Start tmux: [C]ustom (default) or [P]lain?${LOAD_NC}"
-    read -r -n 1 -t 3 -p "Choice [C/p]: " tmux_choice
-    echo
+        case "$tmux_choice" in
+            p|P)
+                command -v tmux >/dev/null 2>&1 && tmux
+                ;;
+            *)
+                [ -x "$HOME/.start_tmux.sh" ] && "$HOME/.start_tmux.sh"
+                ;;
+        esac
 
-    case "$tmux_choice" in
-        p|P)
-            command -v tmux >/dev/null 2>&1 && tmux
-            ;;
-        *)
-            [ -x "$HOME/.start_tmux.sh" ] && "$HOME/.start_tmux.sh"
-            ;;
-    esac
-
-    unset -v tmux_choice
+        unset -v tmux_choice
+    fi
+    unset -v tmux_guard_rc tmux_guard_reason
 fi
-unset -f _bashrc_inside_tmux
