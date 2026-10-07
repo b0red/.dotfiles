@@ -5,8 +5,9 @@ case $- in
     *) return ;;
 esac
 
-# Only if not in a tmux window
-[ -z "$TMUX" ] || return
+# Only if not in a tmux window. `return 0`, not a bare `return`: a bare return passes on
+# the failed test's status (1), and .bashrc then reported "Failed: welcome.sh" in every pane.
+[ -z "$TMUX" ] || return 0
 
 # Not if ~/.hushlogin exists
 [ -e "$HOME"/.hushlogin ] && return

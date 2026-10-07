@@ -99,7 +99,12 @@ fi
 # =============================================================================
 # CONFIGURATION
 # =============================================================================
-# Loading delay (seconds) - adjust as needed
+# Loading animation: off by default. It was a "did everything load?" check that cost ~3.3 s
+# per shell (0.2 s x each file + 0.5 s) -- every new tmux pane paid it. Set
+# BASHRC_SHOW_LOADING=1 (e.g. `BASHRC_SHOW_LOADING=1 bash`) to see it again.
+# Load failures are always reported, animation or not.
+: "${BASHRC_SHOW_LOADING:=0}"
+# Loading delay (seconds) per file, only used when the animation is shown
 BASHRC_LOAD_DELAY=.2
 
 # Color codes for loading feedback
@@ -113,7 +118,15 @@ LOAD_NC='\033[0m'
 show_loading() {
     local file="$1"
     local status="$2"  # "success" or "error"
-    
+
+    if [[ "$BASHRC_SHOW_LOADING" != "1" ]]; then
+        # Quiet mode: say nothing on success, but never hide a failure
+        if [[ "$status" != "success" ]]; then
+            printf "${LOAD_RED}✗ Failed to load: %s${LOAD_NC}\n" "$file" >&2
+        fi
+        return 0
+    fi
+
     # Move cursor to upper left, clear line
     printf '\033[H\033[2K'
     
@@ -127,8 +140,8 @@ show_loading() {
     sleep "$BASHRC_LOAD_DELAY"
 }
 
-# Clear screen before loading (only in interactive mode)
-if [ -n "$PS1" ]; then
+# Clear screen before loading (only when the loading animation is shown)
+if [ -n "$PS1" ] && [[ "$BASHRC_SHOW_LOADING" == "1" ]]; then
     clear
 fi
 
@@ -291,7 +304,7 @@ unset -v BASHRC_DIR loaded_files
 # =============================================================================
 # FINAL LOADING MESSAGE
 # =============================================================================
-if [ -n "$PS1" ]; then
+if [ -n "$PS1" ] && [[ "$BASHRC_SHOW_LOADING" == "1" ]]; then
     # Clear the loading message and show completion
     printf '\033[H\033[2K'
     echo -e "${LOAD_GREEN}✅ All dotfiles loaded${LOAD_NC}"
@@ -344,14 +357,6 @@ if [[ $- == *i* ]] && [ -z "$TMUX" ]; then
     
     # Cleanup variables to keep the environment clean
     unset SSH_KEYS key k
-fi
-
-# =============================================================================
-# TMUX GIT INTEGRATION
-# =============================================================================
-if [ -f ~/.tmux-extras/tmux-git.sh ]; then 
-    # shellcheck source=/dev/null
-    source ~/.tmux-extras/tmux-git.sh
 fi
 
 # =============================================================================

@@ -2,15 +2,19 @@
 # =============================================================================
 # Name:         tmux_installer.sh
 # Author:       b0red
-# Version:      2.4.1
+# Version:      2.5.0
 # Created:      2026-01-29
-# Last Modified:2026-10-07
+# Last Modified:2026-10-08
 # Description:  Install and configure tmux with the Coffee plugin manager.
 #               Creates ~/.tmux.conf symlink pointing into the dotfiles repo,
 #               installs Coffee, and verifies the configuration.
 #               Runs standalone — can be used without the full dotfiles installer.
 # Usage:        ./tmux_installer.sh [OPTIONS]
 # Dependencies: git, tmux (will offer to install missing ones)
+#
+# Changes in 2.5.0:
+#   - check_dependencies(): when everything is present, prints one line
+#     ("All dependencies installed (git, tmux)") instead of one line per tool.
 #
 # Changes in 2.4.1:
 #   - Fixed: ~/.tmux.conf and ~/.config/tmux/{coffee,tmux.conf} were deleted and
@@ -35,7 +39,7 @@ IFS=$'\n\t'
 readonly SCRIPT_NAME="tmux_installer.sh"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 readonly SCRIPT_DIR
-readonly VERSION="2.4.1"
+readonly VERSION="2.5.0"
 
 # Paths derived from SCRIPT_DIR so they're correct regardless of where the
 # dotfiles repo is cloned.
@@ -190,12 +194,15 @@ pkg_install() {
 check_dependencies() {
     local installed=0
     local missing=0
+    local present=()
+    local present_list=""
+    local prog=""
 
     log_section "Checking Dependencies"
 
     for prog in git tmux; do
         if command -v "$prog" >/dev/null 2>&1; then
-            log_success "$prog is installed"
+            present+=("$prog")
             installed=$((installed + 1))
         else
             log_error "'$prog' is not installed"
@@ -217,6 +224,20 @@ check_dependencies() {
         fi
     done
 
+    if [ "${#present[@]}" -gt 0 ]; then
+        printf -v present_list '%s, ' "${present[@]}"
+        present_list="${present_list%, }"
+    fi
+
+    # All present: one line instead of re-listing every tool.
+    if [ "$missing" -eq 0 ] && [ "$installed" -eq "${#present[@]}" ]; then
+        log_success "All dependencies installed (${present_list})"
+        return 0
+    fi
+
+    if [ -n "${present_list}" ]; then
+        log_success "Already installed: ${present_list}"
+    fi
     echo ""
     log_info "Summary: $installed ready, $missing missing"
 

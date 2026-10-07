@@ -1,5 +1,5 @@
 # ToDo.md - Dotfiles Project Task Tracker
-# Version: 1.18.0 (2026-10-08)
+# Version: 1.19.0 (2026-10-08)
 # Last Updated: 2026-10-08
 
 ### ToDO:
@@ -47,9 +47,9 @@
 [x] removed tmux-battery (unused on a desktop, no status segment) @done (2026-10-07, `coffee remove` + YAML + @batt_* icons); tmux-mullvad kept for now
 [x] plugin version pinning @done (2026-10-07, decided NO — Coffee manages updates; caffeine-lock.json records the installed versions, so a bad update can be traced and rolled back from git)
 [x] check run_me_first.sh for old DeTerminator-style OS detection @done (2026-10-08, none — uses /etc/os-release + ID_LIKE; found and fixed os-release overwriting the script's VERSION, which polluted .installation-state)
-[] tmux panes take ~4.1 s to open: BASHRC_SKIP_IN_TMUX=no re-runs the full .bashrc incl. the loading animation (0.2 s sleep x 14 files + 0.5 s) and screen clear. Skipping isn't an option (aliases/functions aren't inherited: 0 aliases with SKIP=yes). Fix: in tmux, load everything but skip the animation/clear/welcome (~0.7-1 s measured). Also: welcome.sh shows "✗ Failed" in tmux because its tmux guard returns non-zero
+[x] tmux panes took ~4.1 s to open @done (2026-10-08, loading animation off by default via BASHRC_SHOW_LOADING — ~0.7 s with all aliases; welcome.sh "Failed" in tmux fixed)
 [x] .bashrc.d/.bashrc.d.rar (unreviewed Jan 2026 remnant) @done (2026-10-08, deleted)
-[] tmux/.tmux-git.conf is tracked but unlinked — depends on ~/.tmux-extras/tmux-git.sh which lives outside the repo; low priority, guarded by an existence check so it's not broken, just inert
+[x] tmux/.tmux-git.conf unused @done (2026-10-08, deleted with the dead ~/.tmux-extras/tmux-git.sh block in .bashrc)
 [x] symlink.sh distro-profile no-op @done (2026-10-08, symlink.sh deleted and its step removed from run_me_first.sh v15.13.0 — all real linking is in run_me_first.sh)
 
 ---

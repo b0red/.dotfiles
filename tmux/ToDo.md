@@ -7,8 +7,12 @@
  - [x] Update window/pane numbering in start_tmux.sh to match base-index 1 configuration
 
 ## TODO
- - [ ] If all apps installed, from the is_it_installed(), then it should just report "All apps installed; (<appname(s)>)" instead of listing them all again.
+ - [x] If all apps installed, from the is_it_installed(), then it should just report "All apps installed; (<appname(s)>)" instead of listing them all again. @done (2026-10-08, tmux_installer.sh v2.5.0 check_dependencies())
  - [ ] Check for variable set from ~/.dotfiles/run_me_first.sh. If it's then skip this script and exit gracefully.
+       (2026-10-08: ON HOLD, needs a decision — run_me_first.sh never calls this script and doesn't install
+       Coffee/~/.config/tmux links/custom menus, so skipping the whole script would leave those missing.
+       The original pain — re-doing/clobbering links — is gone: v2.4.1 leaves correct links alone.
+       Better option: run_me_first.sh calls tmux_installer.sh as its tmux step.)
  - [ ] Set this check in run_me_first.sh so it runs before anything else.
 
 ## Completed (June 20, 2026)

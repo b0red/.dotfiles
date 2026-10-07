@@ -74,6 +74,12 @@ TRACE_DEBUG=1 ./run_me_first.sh     # Trace with environment variable
 
 ## Recent Changes
 
+### v15.22.0 (2026-10-08)
+- **New shells/tmux panes open in ~0.7 s instead of ~4 s**: the `.bashrc` loading animation (a 0.2 s pause per file + 0.5 s, with screen clears) is now **off by default** — kept in, re-enable with `BASHRC_SHOW_LOADING=1`. Load failures are always reported. All 156 aliases / 273 functions still load in every pane (measured).
+- **Fixed `✗ Failed: welcome.sh` in every tmux pane**: its tmux guard used a bare `return`, passing on the failed test's status; now `return 0`.
+- **Removed `tmux/.tmux-git.conf`** and the `.bashrc` block that sourced `~/.tmux-extras/tmux-git.sh` — that script doesn't exist on this machine and nothing else used the config.
+- **`tmux_installer.sh` v2.5.0**: when all dependencies are present, prints one line (`All dependencies installed (git, tmux)`) instead of listing each one.
+
 ### v15.21.0 (2026-10-08)
 - **`run_me_first.sh` v15.13.0**:
   - **Fixed `VERSION` being overwritten by the OS version**: `get_os_info()` sourced `/etc/os-release`, which also defines `VERSION` (and `NAME`, `ID`, …), so everything after detection — including `.installation-state` — recorded e.g. `VERSION=26.04 LTS (Resolute Raccoon)` instead of the installer version. `ID`/`ID_LIKE` are now read in subshells; verified `VERSION` survives and detection is unchanged. (Checked for leftovers of the retired `~/bin` DeTerminator/AlTernator/os_identifier/OsTest/simpleoschecker family: none — detection is the modern `/etc/os-release` + `ID_LIKE` approach.)
@@ -265,33 +271,27 @@ Backed up 1 files to /home/user/.dotfiles/oldfiles/
 
 ## Visual Loading System
 
-When you open a new shell or run `reload`, each config file loads with visual feedback:
+**Off by default** (since v15.22.0). New shells load silently; only a file that **fails** to load is reported (`✗ Failed to load: <file>`). The animation cost ~3.3 s per shell (a pause per file plus a final pause) — every new tmux pane paid it.
+
+To see the per-file animation again (useful to check everything loads):
+
+```bash
+BASHRC_SHOW_LOADING=1 bash          # one-off, in a new shell
+export BASHRC_SHOW_LOADING=1        # every shell (e.g. in ~/.bash_profile)
+```
+
+When shown, each file appears in the upper-left corner:
 
 ```
 ✓ Loading: exports.bash
 ✓ Loading: env.bash
-✓ Loading: functions.bash
-✓ Loading: pkg_aliases.bash
-✓ Loading: git.bash
-✓ Loading: docker.bash      # Only if Docker is installed
-✓ Loading: aliases.bash
+...
 ✅ All dotfiles loaded
 ```
 
-- Files appear in the upper-left corner with cursor positioning
-- Green `✓` for success, Red `❌` for errors
-- Screen clears before and after loading for a clean display
+### Adjusting Loading Speed (animation on)
 
-### Adjusting Loading Speed
-
-Edit `BASHRC_LOAD_DELAY` in `~/.bashrc`:
-
-```bash
-BASHRC_LOAD_DELAY=.2     # Default (fast)
-BASHRC_LOAD_DELAY=0.5    # More visible
-BASHRC_LOAD_DELAY=1      # One second per file
-BASHRC_LOAD_DELAY=2      # Slowest
-```
+Edit `BASHRC_LOAD_DELAY` in `~/.bashrc` (`.2` default, `0.5` more visible, `1`/`2` slowest).
 
 ---
 
@@ -517,7 +517,7 @@ Set `BASHRC_SKIP_IN_TMUX` in `~/.bash_profile` to control whether `.bashrc` load
 | Value | Behaviour |
 |-------|-----------|
 | `"yes"` | Skip in tmux panes — load only on terminal start |
-| `"no"` | Always load in tmux panes (current default) |
+| `"no"` | Always load in tmux panes (current default — **keep this**: aliases and functions aren't inherited by new shells, so `"yes"` leaves panes with 0 aliases. Loading takes ~0.7 s now that the animation is off) |
 | `"ask"` | Prompt on first tmux pane |
 
 ```bash
@@ -1044,7 +1044,6 @@ The `loaded_files` associative array in `.bashrc` prevents duplicate loading. If
 
 | File | Location | Issue |
 |------|----------|-------|
-| `.bashrc` | `~/.tmux-extras/tmux-git.sh` | `tmux/.tmux-git.conf` is tracked in the repo but nothing links it anywhere — `.bashrc` conditionally sources `~/.tmux-extras/tmux-git.sh` (a machine-local script outside the repo, guarded by an existence check), and that script would need this config copied to wherever it expects it |
 
 ### Audit Methodology Note
 
