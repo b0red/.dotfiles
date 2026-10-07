@@ -55,7 +55,7 @@ The script will:
 ./run_me_first.sh                   # Normal installation
 ./run_me_first.sh --help            # Show help message
 ./run_me_first.sh -?                # Show detailed info
-./run_me_first.sh --version         # Show version (v15.12.0)
+./run_me_first.sh --version         # Show version (v15.13.0)
 ./run_me_first.sh --check           # Validate existing installation, optionally re-run
 ./run_me_first.sh --revert          # Revert changes (restore backups)
 ./run_me_first.sh --select-apps     # Choose specific packages to install
@@ -73,6 +73,14 @@ TRACE_DEBUG=1 ./run_me_first.sh     # Trace with environment variable
 ---
 
 ## Recent Changes
+
+### v15.21.0 (2026-10-08)
+- **`run_me_first.sh` v15.13.0**:
+  - **Fixed `VERSION` being overwritten by the OS version**: `get_os_info()` sourced `/etc/os-release`, which also defines `VERSION` (and `NAME`, `ID`, …), so everything after detection — including `.installation-state` — recorded e.g. `VERSION=26.04 LTS (Resolute Raccoon)` instead of the installer version. `ID`/`ID_LIKE` are now read in subshells; verified `VERSION` survives and detection is unchanged. (Checked for leftovers of the retired `~/bin` DeTerminator/AlTernator/os_identifier/OsTest/simpleoschecker family: none — detection is the modern `/etc/os-release` + `ID_LIKE` approach.)
+  - **Removed the `symlink.sh` step**; `symlink.sh` deleted. It only linked `.common_profile` / per-distro `.<distro>_profile` files that never existed in the repo (a no-op on every distro); all real linking is done by `symlink_dotfiles()`, `symlink_external_repos()` and `setup_config_symlinks()`.
+  - ShellCheck clean: removed unused `INTERACTIVE` / `APP_SELECTION_MODE`; `SCRIPT_NAME` now used in help and `readonly`; `SCRIPT_DIR` kept as a documented canonical global.
+- Deleted the unreviewed `.bashrc.d/.bashrc.d.rar` (untracked Jan 2026 remnant).
+- Docs: removed resolved rows from Remaining Items (symlink.sh, Coffee tinkering); footer bumped.
 
 ### v15.20.1 (2026-10-07)
 - **Removed tmux-battery**: unused on this desktop (no battery segment in the status bar). Removed with `coffee remove` (plugin dir + lockfile entry), its YAML (Coffee's remove keeps the YAML, so `coffee install` would otherwise reinstall it), and the `@batt_*` icon options in `.tmux.conf`. tmux-mullvad kept for now.
@@ -339,9 +347,8 @@ Checks EUID, USER, and LOGNAME to determine privilege.
 │
 ├── .install_apps.inc       # Application list for run_me_first.sh
 ├── .gitignore              # Excludes: extra_alias.bash, local_alias.bash, logs, oldfiles
-├── symlink.sh              # Distro-specific profile linker — currently a no-op, see Known Issues
 ├── system_detector.sh      # Standalone POSIX system info reporter (v5.2.0)
-├── run_me_first.sh         # Main installer script (v15.12.0)
+├── run_me_first.sh         # Main installer script (v15.13.0)
 ├── tmux/                   # Tmux config subtree (symlinked to ~/.tmux)
 │   ├── .tmux.conf          #   Main config (~/.tmux.conf links here)
 │   ├── start_tmux.sh       #   Session layout launcher (~/.start_tmux.sh links here)
@@ -1037,8 +1044,6 @@ The `loaded_files` associative array in `.bashrc` prevents duplicate loading. If
 
 | File | Location | Issue |
 |------|----------|-------|
-| `symlink.sh` | — | No flags (called by installer, not user-facing — acceptable by design). Currently a **complete no-op on every distro**: it's built to link `.common_profile` plus one of nine distro-specific profile files (`.ubu_profile`, `.deb_profile`, `.arch_profile`, `.suse_profile`, `.rhel_profile`, `.fedora_profile`, `.kali_profile`, `.rpi_profile`, `.common_profile`), but none of them exist in the repo yet — every branch silently no-ops via its graceful "not in repo yet" fallback. |
-| `tmux_installer.sh` / Coffee | Plugin management | Coffee-managed plugins under `tmux/coffee/plugins/` still need manual tinkering — not fully hands-off yet |
 | `.bashrc` | `~/.tmux-extras/tmux-git.sh` | `tmux/.tmux-git.conf` is tracked in the repo but nothing links it anywhere — `.bashrc` conditionally sources `~/.tmux-extras/tmux-git.sh` (a machine-local script outside the repo, guarded by an existence check), and that script would need this config copied to wherever it expects it |
 
 ### Audit Methodology Note
@@ -1175,6 +1180,6 @@ If you find this useful, consider supporting: [PayPal](https://paypal.me/fotosby
 
 ---
 
-**Last Updated**: 2026-08-06
-**Script Version**: v15.12.0
-**Guidelines**: Vibecoding v5.6 / Semantic Versioning 2.0.0
+**Last Updated**: 2026-10-08
+**Script Version**: v15.13.0
+**Guidelines**: Vibecoding v6.0 / Semantic Versioning 2.0.0

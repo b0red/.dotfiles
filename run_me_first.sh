@@ -4,8 +4,8 @@
 # =============================================================================
 # Author      : b0red
 # Repository  : https://github.com/b0red/.dotfiles
-# Version     : 15.12.0
-# Date        : 2026-08-06
+# Version     : 15.13.0
+# Date        : 2026-10-08
 # Description : Backs up existing dotfiles, creates symlinks, installs apps,
 #               updates submodules, and clones companion repos (.tmux, .vim).
 # Usage       : ./run_me_first.sh [-h|-?] [--dry-run] [-v] [-d] [-r]
@@ -25,10 +25,15 @@ IFS=$'\n\t'
 # VERSION & CONFIGURATION
 # =============================================================================
 SCRIPT_NAME=$(basename "$0")
+readonly SCRIPT_NAME
+# Canonical template global. The install target is $DIR (~/.dotfiles), not wherever this
+# copy runs from, so nothing reads it yet.
+# shellcheck disable=SC2034 # canonical template global, intentionally unused
 SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
-VERSION="15.12.0"
-VERSION_DATE="2026-08-06"
-INTERACTIVE=0
+# shellcheck disable=SC2034 # same reason as above
+readonly SCRIPT_DIR
+VERSION="15.13.0"
+VERSION_DATE="2026-10-08"
 
 DEBUG=${DEBUG:-0}
 TRACE_DEBUG=${TRACE_DEBUG:-0}
@@ -44,7 +49,6 @@ TITLE="Dotfiles Installer Script"
 DOT_ARRAY=("$HOME/.profile" "$HOME/.bashrc" "$HOME/.bash_profile")
 OLD_FILE_ARRAY=("$HOME/.bashrc" "$HOME/.profile" "$HOME/.bash_profile")
 TEMP_FILES=()
-APP_SELECTION_MODE="all"      # all, selected, none
 INTERACTIVE_APP_SELECTION=${INTERACTIVE_APP_SELECTION:-0}
 SKIP_APP_INSTALL=${SKIP_APP_INSTALL:-0}
 BACKUP_MANIFEST="$OLD_FILES/backup-manifest-$DATE.txt"
@@ -565,9 +569,16 @@ get_os_info() {
     case "$os" in
         linux*)
             if [ -f /etc/os-release ]; then
-                # shellcheck disable=SC1091
-                . /etc/os-release 2>/dev/null
-                distro="${ID:-unknown}"
+                # Read ID/ID_LIKE in subshells: sourcing os-release here would overwrite
+                # this script's own VERSION (and NAME, ID...) — .installation-state was
+                # recording "VERSION=26.04 LTS (Resolute Raccoon)" instead of ours.
+                local os_id_like=""
+                # shellcheck disable=SC1091 # system file, path is fixed
+                distro="$(. /etc/os-release 2>/dev/null && printf '%s' "${ID:-unknown}")" \
+                    || distro="unknown"
+                # shellcheck disable=SC1091 # system file, path is fixed
+                os_id_like="$(. /etc/os-release 2>/dev/null && printf '%s' "${ID_LIKE:-}")" \
+                    || os_id_like=""
                 
                 case "$distro" in
                     ubuntu|debian|linuxmint|pop|peppermint|elementary|zorin)
@@ -599,8 +610,8 @@ get_os_info() {
                         DISTRO_BASE="void"
                         ;;
                     *)
-                        if [ -n "${ID_LIKE:-}" ]; then
-                            case "$ID_LIKE" in
+                        if [ -n "${os_id_like}" ]; then
+                            case "$os_id_like" in
                                 *debian*|*ubuntu*)
                                     DISTRO="$distro"
                                     DISTRO_BASE="debian"
@@ -1175,22 +1186,6 @@ symlink_dotfiles() {
     if [ -f "$DIR/.profile" ]; then add_file_header "$DIR/.profile"; fi
     if [ -f "$DIR/.bash_profile" ]; then add_file_header "$DIR/.bash_profile"; fi
     
-    if [ -x "$DIR/symlink.sh" ]; then
-        if [ "${DRY_RUN:-0}" -eq 1 ]; then
-            log_info "  [dry-run] would run distro-specific symlink script"
-        else
-            log_info "Running distro-specific symlink script..."
-            "$DIR/symlink.sh" "$DISTRO" "$DISTRO_BASE" 2>&1 | tee -a "$LOG"
-            if [ "${PIPESTATUS[0]}" -ne 0 ]; then
-                log_warning "⚠️ Distro-specific symlink script encountered issues"
-            else
-                log_success "✓ Distro-specific symlinks created"
-            fi
-        fi
-    else
-        log_warning "⚠️ symlink.sh not found or not executable"
-    fi
-    
     local bash_profile_target="$DIR/.bash_profile"
     if [ -f "$bash_profile_target" ]; then
         if ! grep -qE 'source.*bashrc|\..*bashrc' "$bash_profile_target" 2>/dev/null; then
@@ -1591,7 +1586,7 @@ show_version() {
 }
 
 show_info() {
-    echo -e "${BOLD}run_me_first.sh${NC} v${VERSION} — Dotfiles installer for first-run setup"
+    echo -e "${BOLD}${SCRIPT_NAME}${NC} v${VERSION} — Dotfiles installer for first-run setup"
     echo ""
     echo -e "  Repo    : ${BLUE}https://github.com/b0red/.dotfiles${NC}"
     echo -e "  Date    : ${VERSION_DATE}"

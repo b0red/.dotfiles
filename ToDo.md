@@ -1,6 +1,6 @@
 # ToDo.md - Dotfiles Project Task Tracker
-# Version: 1.17.0 (2026-10-07)
-# Last Updated: 2026-10-07
+# Version: 1.18.0 (2026-10-08)
+# Last Updated: 2026-10-08
 
 ### ToDO:
 #### General:
@@ -46,9 +46,11 @@
 [x] tmux-mullvad.yaml was root-owned @done (2026-10-07, chowned to patrick — verified, no non-patrick files left in the repo)
 [x] removed tmux-battery (unused on a desktop, no status segment) @done (2026-10-07, `coffee remove` + YAML + @batt_* icons); tmux-mullvad kept for now
 [x] plugin version pinning @done (2026-10-07, decided NO — Coffee manages updates; caffeine-lock.json records the installed versions, so a bad update can be traced and rolled back from git)
-[] .bashrc.d/.bashrc.d.rar — untracked but still sitting on disk, unreviewed (unrar not installed, contents unknown)
+[x] check run_me_first.sh for old DeTerminator-style OS detection @done (2026-10-08, none — uses /etc/os-release + ID_LIKE; found and fixed os-release overwriting the script's VERSION, which polluted .installation-state)
+[] tmux panes take ~4.1 s to open: BASHRC_SKIP_IN_TMUX=no re-runs the full .bashrc incl. the loading animation (0.2 s sleep x 14 files + 0.5 s) and screen clear. Skipping isn't an option (aliases/functions aren't inherited: 0 aliases with SKIP=yes). Fix: in tmux, load everything but skip the animation/clear/welcome (~0.7-1 s measured). Also: welcome.sh shows "✗ Failed" in tmux because its tmux guard returns non-zero
+[x] .bashrc.d/.bashrc.d.rar (unreviewed Jan 2026 remnant) @done (2026-10-08, deleted)
 [] tmux/.tmux-git.conf is tracked but unlinked — depends on ~/.tmux-extras/tmux-git.sh which lives outside the repo; low priority, guarded by an existence check so it's not broken, just inert
-[] symlink.sh distro-profile support is a complete no-op (documented in README, not implemented — no distro profile files exist in the repo)
+[x] symlink.sh distro-profile no-op @done (2026-10-08, symlink.sh deleted and its step removed from run_me_first.sh v15.13.0 — all real linking is in run_me_first.sh)
 
 ---
 
