@@ -71,6 +71,9 @@ coffee disable <plugin>     # Disable plugin
 |-----------|--------|
 | `Ctrl-a` + `\|` | Split vertical |
 | `Ctrl-a` + `-` | Split horizontal |
+| Mouse drag + release (no Shift) | Copy to Windows clipboard (via clip.exe) |
+| `Ctrl-a` + `[`, Space, move, `y` | Copy in copy mode (also to Windows clipboard) |
+| `Ctrl-a` + `]` | Paste tmux buffer |
 | `Ctrl-a` + `\` → Panes | Toggle synchronized panes (type to all) — was `Ctrl-a e` |
 | `Alt` + `←→↑↓` | Navigate panes |
 

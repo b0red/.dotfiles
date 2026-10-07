@@ -1,5 +1,5 @@
 # ToDo.md - Dotfiles Project Task Tracker
-# Version: 1.14.0 (2026-10-07)
+# Version: 1.15.0 (2026-10-07)
 # Last Updated: 2026-10-07
 
 ### ToDO:
@@ -36,6 +36,8 @@
 [x] remove leftover ~/.config/systemd/user/tmux.service (broken ExecStop, stray session at boot) and get continuum autosave working @done (2026-10-07, unit disabled + kept as tmux.service.disabled-20261007, @continuum-boot off, save hook + timestamp seed wired in .tmux.conf)
 [x] rewrite start_tmux.sh to the Vibecoding template @done (2026-10-07, start_tmux.sh v1.0.0; guard shared via tmux/tmux_guard.inc, now also catches ssh-to-self; removed malformed u/plugin line from .tmux.conf)
 [x] move launcher keybindings into a tmux-menus Tools menu (kept in repo, copied by tmux_installer.sh) @done (2026-10-07, tmux/menus/tools.sh, tmux_installer.sh v2.4.0; fixed C-a double bind, @menus_config_file path, broken j/u bindings)
+[x] fix copy/paste to Windows clipboard @done (2026-10-07, copy-command clip.exe + copy-mode y; root cause: Windows Terminal not installed, conhost has no OSC 52 / Shift+drag)
+[] reinstall Windows Terminal (winget install --id Microsoft.WindowsTerminal) and set it as default terminal — restores Shift+drag selection and OSC 52
 [] tmux-menus custom_items/ is root-owned and world-writable (777) — any local user could plant a menu script that runs as patrick; needs: sudo chown -R patrick:patrick ~/.dotfiles/tmux/coffee/plugins/tmux-menus/custom_items && chmod 755 it
 [x] tmux_installer.sh re-created ~/.tmux.conf and ~/.config/tmux/{coffee,tmux.conf} links on every run @done (2026-10-07, v2.4.1 already_linked() compares resolved paths)
 [x] decide on `alias mc='sudo mc'` @done (2026-10-07, commented out — mc runs as the user; use `sudo mc` explicitly when root is needed)

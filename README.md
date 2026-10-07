@@ -74,6 +74,9 @@ TRACE_DEBUG=1 ./run_me_first.sh     # Trace with environment variable
 
 ## Recent Changes
 
+### v15.19.0 (2026-10-07)
+- **Copy to the Windows clipboard works in any terminal**: `.tmux.conf` now pipes every tmux copy to `clip.exe` (`copy-command`, guarded so non-WSL hosts are unaffected) in addition to OSC 52. Copy-paste had stopped working because Windows Terminal is no longer installed — sessions run in the classic console (conhost), which supports neither OSC 52 nor Shift+drag selection while tmux mouse mode is on. Plain UTF-8 into `clip.exe` keeps åäö/€ intact (tested end-to-end). Copy: mouse drag (no Shift) and release, or `prefix + [`, Space, move, `y`/`Enter`. Added the copy-mode `y` binding the config comment promised (tmux-yank was removed in May).
+
 ### v15.18.0 (2026-10-07)
 - **`mc` no longer runs as root by default**: the `alias mc='sudo mc'` in `.bashrc.d/aliases.bash` is commented out, so `mc` (including the `start_tmux.sh` mc pane) runs as your user — mc doesn't need root, only root-owned files do (`sudo mc` / `sudoedit` when needed). This also removes the likely original trigger of the nested tmux: mc's Ctrl-O subshell was a root shell with `$TMUX` stripped. `config/mc/ini` updated by mc itself (panel size, Panelize entry order).
 - **`tmux_installer.sh` v2.4.1**: no longer deletes and re-creates `~/.tmux.conf` and `~/.config/tmux/{coffee,tmux.conf}` on every run — links are compared by resolved path (`already_linked()`), since the existing links go via `~/.tmux` and never string-matched the repo path.
