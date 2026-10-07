@@ -1,5 +1,5 @@
 # ToDo.md - Dotfiles Project Task Tracker
-# Version: 1.19.0 (2026-10-08)
+# Version: 1.20.0 (2026-10-08)
 # Last Updated: 2026-10-08
 
 ### ToDO:
@@ -46,6 +46,8 @@
 [x] tmux-mullvad.yaml was root-owned @done (2026-10-07, chowned to patrick — verified, no non-patrick files left in the repo)
 [x] removed tmux-battery (unused on a desktop, no status segment) @done (2026-10-07, `coffee remove` + YAML + @batt_* icons); tmux-mullvad kept for now
 [x] plugin version pinning @done (2026-10-07, decided NO — Coffee manages updates; caffeine-lock.json records the installed versions, so a bad update can be traced and rolled back from git)
+[x] tmux script picker + Docker menu @done (2026-10-08, script_picker.sh / menus/docker.sh / docker_actions.sh; Docker menu meant for dellubuntu)
+[] deploy on dellubuntu (192.168.1.110): git pull, then ~/.dotfiles/tmux/tmux_installer.sh to copy the menus; verify the Docker menu against real containers (only tested with a fake docker CLI so far)
 [x] check run_me_first.sh for old DeTerminator-style OS detection @done (2026-10-08, none — uses /etc/os-release + ID_LIKE; found and fixed os-release overwriting the script's VERSION, which polluted .installation-state)
 [x] tmux panes took ~4.1 s to open @done (2026-10-08, loading animation off by default via BASHRC_SHOW_LOADING — ~0.7 s with all aliases; welcome.sh "Failed" in tmux fixed)
 [x] .bashrc.d/.bashrc.d.rar (unreviewed Jan 2026 remnant) @done (2026-10-08, deleted)

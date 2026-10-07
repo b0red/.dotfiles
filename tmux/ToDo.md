@@ -8,12 +8,11 @@
 
 ## TODO
  - [x] If all apps installed, from the is_it_installed(), then it should just report "All apps installed; (<appname(s)>)" instead of listing them all again. @done (2026-10-08, tmux_installer.sh v2.5.0 check_dependencies())
- - [ ] Check for variable set from ~/.dotfiles/run_me_first.sh. If it's then skip this script and exit gracefully.
-       (2026-10-08: ON HOLD, needs a decision — run_me_first.sh never calls this script and doesn't install
-       Coffee/~/.config/tmux links/custom menus, so skipping the whole script would leave those missing.
-       The original pain — re-doing/clobbering links — is gone: v2.4.1 leaves correct links alone.
-       Better option: run_me_first.sh calls tmux_installer.sh as its tmux step.)
- - [ ] Set this check in run_me_first.sh so it runs before anything else.
+ - [x] Check for variable set from ~/.dotfiles/run_me_first.sh. If it's then skip this script and exit gracefully.
+       @done (2026-10-08, resolved the other way round: run_me_first.sh v15.14.0 runs tmux_installer.sh
+       as its tmux step, asking first — Enter/5 s timeout = yes. Skipping tmux_installer.sh would have
+       left Coffee, ~/.config/tmux links and custom menus uninstalled.)
+ - [x] Set this check in run_me_first.sh so it runs before anything else. @done (2026-10-08, see above)
 
 ## Completed (June 20, 2026)
  - [x] Auto-start ~/.start_tmux.sh from .bashrc on first interactive login (guarded: PS1 set, BASHRC_SOURCED=1, not already in tmux)
@@ -29,6 +28,6 @@
 ## tmux-menus
 1) Create a meny for different scripts (from ~/bash) that can easily be exeecuted from the meny
     2 olika, en för Docker containers och en för "vanliga script"
-    (Status 2026-10-07: the menu framework is in place — add new menus as tmux/menus/*.sh
-    next to tools.sh and re-run tmux_installer.sh. Docker + scripts menus not built yet.)
+    @done (2026-10-08: Docker menu = tmux/menus/docker.sh (for dellubuntu); scripts = fzf picker,
+    Tools menu → s, tmux/script_picker.sh)
     

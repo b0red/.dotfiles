@@ -2,9 +2,9 @@
 #
 # Name: tools.sh
 # Author: Patrick
-# Version: 1.0.0
+# Version: 1.1.0
 # Created: 2026-10-07
-# Last Modified: 2026-10-07
+# Last Modified: 2026-10-08
 # Description: tmux-menus custom item "Tools": launchers for monitors and utilities that
 #              used to be one-off prefix keys in .tmux.conf. Shown under
 #              Main menu (prefix \) -> Custom items -> Tools.
@@ -46,6 +46,8 @@ static_content() {
         "run-shell '$HOME/.tmux/coffee/plugins/tmux-task-monitor/scripts/launch_overview.sh'" \
         0.0 S \
         0.0 T "-#[nodim]Utilities" \
+        0.0 C s "Run a ~/bin script..." \
+        "display-popup -w 90% -h 85% -T 'Scripts (~/bin)' -E '$HOME/.tmux/script_picker.sh'" \
         0.0 C m "Man page..." "command-prompt -p 'Man page:' 'split-window \"exec man %%\"'"
 
     if command -v urlview >/dev/null 2>&1; then

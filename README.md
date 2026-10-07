@@ -55,7 +55,7 @@ The script will:
 ./run_me_first.sh                   # Normal installation
 ./run_me_first.sh --help            # Show help message
 ./run_me_first.sh -?                # Show detailed info
-./run_me_first.sh --version         # Show version (v15.13.0)
+./run_me_first.sh --version         # Show version (v15.14.0)
 ./run_me_first.sh --check           # Validate existing installation, optionally re-run
 ./run_me_first.sh --revert          # Revert changes (restore backups)
 ./run_me_first.sh --select-apps     # Choose specific packages to install
@@ -73,6 +73,12 @@ TRACE_DEBUG=1 ./run_me_first.sh     # Trace with environment variable
 ---
 
 ## Recent Changes
+
+### v15.23.0 (2026-10-08)
+- **Script picker** (`tmux/script_picker.sh` v1.0.0, Tools menu → `s`): fzf over `~/bin/*.sh` with descriptions read from headers (no script is executed to list them). Enter = `--dry-run` in a new window (or view source if unsupported), Ctrl-X = real run with arguments + y/N, Ctrl-V = view source. Paths are validated to be executables inside the picked directory; windows are opened with argv (no shell quoting). Tested end-to-end in a real tmux popup.
+- **Docker menu** (`tmux/menus/docker.sh` + `tmux/docker_actions.sh` v1.0.0) for the Docker host (dellubuntu): per running container logs/shell/stats/inspect/restart(y/N), lazydocker, `docker ps -a`. Container names are filtered in the menu and re-validated in the helper (rejects e.g. `evil;touch /tmp/pwn`, `-flag`, format codes). Tested with a fake docker CLI through a real tmux client — every action made exactly the intended docker call.
+- **`run_me_first.sh` v15.14.0 runs `tmux_installer.sh`** as its tmux step (Coffee, `~/.config/tmux` links, custom menus): asks `Run tmux_installer.sh now? [Y/n]`, Enter or no answer within 5 s = yes; `n` skips. Passes `--dry-run` through; a failure is a warning, not an abort. Tested: n / timeout / no terminal / dry-run / failing installer.
+- Tools menu v1.1.0 (picker entry).
 
 ### v15.22.0 (2026-10-08)
 - **New shells/tmux panes open in ~0.7 s instead of ~4 s**: the `.bashrc` loading animation (a 0.2 s pause per file + 0.5 s, with screen clears) is now **off by default** — kept in, re-enable with `BASHRC_SHOW_LOADING=1`. Load failures are always reported. All 156 aliases / 273 functions still load in every pane (measured).
@@ -348,13 +354,15 @@ Checks EUID, USER, and LOGNAME to determine privilege.
 ├── .install_apps.inc       # Application list for run_me_first.sh
 ├── .gitignore              # Excludes: extra_alias.bash, local_alias.bash, logs, oldfiles
 ├── system_detector.sh      # Standalone POSIX system info reporter (v5.2.0)
-├── run_me_first.sh         # Main installer script (v15.13.0)
+├── run_me_first.sh         # Main installer script (v15.14.0)
 ├── tmux/                   # Tmux config subtree (symlinked to ~/.tmux)
 │   ├── .tmux.conf          #   Main config (~/.tmux.conf links here)
 │   ├── start_tmux.sh       #   Session layout launcher (~/.start_tmux.sh links here)
 │   ├── tmux_guard.inc      #   Shared "never tmux inside tmux" check
 │   ├── tmux_installer.sh   #   Links config, installs Coffee, copies custom menus
-│   ├── menus/              #   tmux-menus custom menus (tools.sh)
+│   ├── script_picker.sh    #   fzf picker for ~/bin scripts (Tools menu → s)
+│   ├── docker_actions.sh   #   Container actions for the Docker menu
+│   ├── menus/              #   tmux-menus custom menus (tools.sh, docker.sh)
 │   └── coffee/             #   Coffee plugin YAMLs + lockfile (plugins/ dirs gitignored)
 ├── vim/                    # Vim config subtree (symlinked to ~/.vim)
 ├── oldfiles/               # Backup directory (pristine originals + archived old scripts)
@@ -730,6 +738,10 @@ Prefix + C, opens the Coffee TUI. It has 4 menus;
 | `prefix + Tab` | Toggle sidebar with tree view |
 | `prefix + Space` | Next layout (cycles trough all variants) |
 | `prefix + d` | Detach |
+
+**Script picker** (Tools menu → `s`): fzf list of every `~/bin/*.sh` with its `# Description:` header (read from the file — nothing is executed to build the list) and a source preview. **Enter** = dry-run in a new window (`--dry-run`; scripts without it open their source instead), **Ctrl-X** = real run after asking for arguments and y/N, **Ctrl-V** = view source. Directory: `SCRIPT_PICKER_DIR` (default `~/bin`).
+
+**Docker menu** (`prefix + \` → Custom items → **Docker**, meant for the Docker host — dellubuntu): lazydocker popup (if installed), all containers (`docker ps -a`), and one entry per *running* container (rebuilt each time the menu opens) → follow logs / shell / stats / inspect / restart (asks y/N). All actions go through `tmux/docker_actions.sh`, which validates the container name; names that aren't plain Docker names are not shown. On a host without Docker the menu says so.
 
 **Tools menu** (`prefix + \` → Custom items → Tools) holds the less frequent launchers that used to be keys: htop/btop/lazyports as popup *or* window (`H`/`B`/`L` were keys), task monitor/overview, man page prompt (was `m`), URLs in the current pane via urlview (was `u`; shown only when urlview is installed), and the Coffee TUI. Synchronize-panes (was `e`) is in the built-in **Panes** menu. `prefix + L` and `prefix + m` are back to tmux's defaults (switch to last session, mark pane).
 
@@ -1180,5 +1192,5 @@ If you find this useful, consider supporting: [PayPal](https://paypal.me/fotosby
 ---
 
 **Last Updated**: 2026-10-08
-**Script Version**: v15.13.0
+**Script Version**: v15.14.0
 **Guidelines**: Vibecoding v6.0 / Semantic Versioning 2.0.0

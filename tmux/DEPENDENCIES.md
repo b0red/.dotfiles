@@ -4,6 +4,8 @@
 - **tmux 3.1+** — `start_tmux.sh` uses `split-window -l N%`; `.tmux.conf` uses `{ }` command blocks (3.0+)
 - **`clip.exe`** (WSL, built into Windows) — tmux `copy-command`, so copies reach the Windows clipboard in any terminal (classic conhost has no OSC 52). Guarded: ignored where absent
 - **Optional** for the Tools menu / popup keys: `htop`, `btop`, `lazyports`, `urlview`
+- **`fzf`** — script picker (Tools → `s`)
+- **Docker menu** (Docker host only): `docker` CLI with the user in the `docker` group; optional `lazydocker`
 
 ## Plugin Manager
 - **Coffee**: https://github.com/PraaneshSelvaraj/coffee.tmux

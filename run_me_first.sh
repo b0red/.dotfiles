@@ -4,7 +4,7 @@
 # =============================================================================
 # Author      : b0red
 # Repository  : https://github.com/b0red/.dotfiles
-# Version     : 15.13.0
+# Version     : 15.14.0
 # Date        : 2026-10-08
 # Description : Backs up existing dotfiles, creates symlinks, installs apps,
 #               updates submodules, and clones companion repos (.tmux, .vim).
@@ -32,7 +32,7 @@ readonly SCRIPT_NAME
 SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
 # shellcheck disable=SC2034 # same reason as above
 readonly SCRIPT_DIR
-VERSION="15.13.0"
+VERSION="15.14.0"
 VERSION_DATE="2026-10-08"
 
 DEBUG=${DEBUG:-0}
@@ -1421,6 +1421,55 @@ symlink_external_repos() {
 }
 
 # =============================================================================
+# TMUX SETUP (delegated to tmux/tmux_installer.sh)
+# =============================================================================
+# tmux_installer.sh owns the tmux side: Coffee plugin manager, ~/.config/tmux links and
+# the tmux-menus custom menus — none of which this script does itself. Asks first; no
+# answer within 5 seconds (or just Enter) means yes. Its link steps are idempotent, so
+# re-linking what symlink_external_repos() already did is harmless.
+run_tmux_installer() {
+    local installer="$DIR/tmux/tmux_installer.sh"
+    local reply=""
+    local rc=0
+    local args=()
+
+    log_info ""
+    log_info "🧩 tmux setup: Coffee plugin manager, ~/.config/tmux links, custom menus"
+    if [ ! -x "$installer" ]; then
+        log_warning "⚠️ $installer not found or not executable — skipping tmux setup"
+        return 1
+    fi
+
+    if [ -t 0 ]; then
+        read -r -n 1 -t 5 -p "Run tmux_installer.sh now? [Y/n] (yes in 5 s): " reply || reply=""
+        echo
+    else
+        log_info "No terminal to ask on — running tmux_installer.sh (default: yes)"
+    fi
+    case "$reply" in
+        n|N)
+            log_info "Skipped — run it later with: $installer"
+            return 0
+            ;;
+    esac
+
+    if [ "${DRY_RUN:-0}" -eq 1 ]; then
+        args+=(--dry-run)
+    fi
+    log_info "Running: $installer ${args[*]}"
+    "$installer" "${args[@]}"
+    rc=$?
+
+    # tmux_installer.sh exits 4 after a completed dry-run
+    if [ "$rc" -eq 0 ] || { [ "${DRY_RUN:-0}" -eq 1 ] && [ "$rc" -eq 4 ]; }; then
+        log_success "✓ tmux setup complete"
+        return 0
+    fi
+    log_warning "⚠️ tmux_installer.sh exited with code $rc — see its log in $DIR/logs/"
+    return 1
+}
+
+# =============================================================================
 # CONFIG FOLDER SYMLINKING
 # =============================================================================
 
@@ -1626,6 +1675,7 @@ show_help() {
     echo "    4. Updating git submodules"
     echo "    5. Cloning additional repos (.tmux, .vim)"
     echo "    6. Linking ~/.gitconfig and ~/.config/mc to the repo"
+    echo "    7. tmux setup via tmux/tmux_installer.sh (asks first; yes after 5 s)"
     echo ""
     echo -e "${BOLD}Environment Variables:${NC}"
     echo "  DEBUG=1         Enable debug output (same as -d)"
@@ -1825,6 +1875,7 @@ main() {
     if ! clone_repos;              then log_warning "⚠️ Repository cloning failed, but continuing"; fi
     if ! symlink_external_repos;   then log_warning "⚠️ External repo symlinking failed, but continuing"; fi
     if ! setup_config_symlinks;    then log_warning "⚠️ Config symlinking failed, but continuing"; fi
+    if ! run_tmux_installer;       then log_warning "⚠️ tmux setup had issues, but continuing"; fi
     if ! source_bashrc;            then log_warning "⚠️ Bashrc sourcing failed, but continuing"; fi
 
     mark_installation_complete
