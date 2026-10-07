@@ -1,6 +1,6 @@
 # ToDo.md - Dotfiles Project Task Tracker
-# Version: 1.10.1 (2026-10-06)
-# Last Updated: 2026-10-06
+# Version: 1.11.0 (2026-10-07)
+# Last Updated: 2026-10-07
 
 ### ToDO:
 #### General:
@@ -32,6 +32,9 @@
 [x] activate welcome.sh's fortune/rem/verse greeting @done (2026-08-06, removed a dead ~/.welcome/<tool> marker-file gate nothing ever created — now matches README's documented "if installed" behavior)
 [x] fix psg() defined differently in env.bash (core, weaker) vs aliases.bash (interactive, better) — scripts silently got the worse version @done (2026-08-06, unified into env.bash with the -af implementation so it's identical everywhere)
 [x] add confirmation prompt to gclean (was the only destructive git.bash command without one) @done (2026-08-06, converted alias to function matching gundohard/greset/gcleanup's y/n pattern)
+[x] fix tmux nesting inside tmux (stacked status lines) when $TMUX is stripped by sudo/su/sudo mc @done (2026-10-07, /proc ancestry guard in .bashrc + start_tmux.sh, no auto-start as root; TMUX_TMPDIR pinned to /tmp)
+[] ~/.config/systemd/user/tmux.service (from @continuum-boot) is enabled but failed — ExecStop points to nonexistent ~/.tmux/plugins/tmux-resurrect/scripts/save.sh (resurrect never saves on stop; last save 2026-05-13), and its plain `tmux new-session -d` races start_tmux.sh/continuum-restore at boot
+[] start_tmux.sh predates the Vibecoding template — no version, no --help/--dry-run/-v/-d flags, #!/bin/bash shebang, `source-file ... || true` swallows config errors
 [] Coffee-managed tmux plugins (tmux/coffee/plugins/) still need manual tinkering — not fully hands-off yet
 [] .bashrc.d/.bashrc.d.rar — untracked but still sitting on disk, unreviewed (unrar not installed, contents unknown)
 [] tmux/.tmux-git.conf is tracked but unlinked — depends on ~/.tmux-extras/tmux-git.sh which lives outside the repo; low priority, guarded by an existence check so it's not broken, just inert

@@ -53,10 +53,10 @@
 # =============================================================================
 # TMUX TMPDIR
 # =============================================================================
-if [ -z "${TMUX_TMPDIR:-}" ]; then
-    TMUX_TMPDIR="$HOME/tmp/tmux-$(id -un)"
-    export TMUX_TMPDIR
-fi
+# Always /tmp (socket: /tmp/tmux-$UID/default) so login shells, start_tmux.sh and the
+# systemd tmux.service all reach the same server. The old ~/tmp/tmux-$USER dir never
+# existed, so tmux was silently falling back to /tmp anyway.
+export TMUX_TMPDIR="/tmp"
 
 # =============================================================================
 # HISTORY SETTINGS

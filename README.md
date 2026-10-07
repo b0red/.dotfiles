@@ -74,6 +74,10 @@ TRACE_DEBUG=1 ./run_me_first.sh     # Trace with environment variable
 
 ## Recent Changes
 
+### v15.15.0 (2026-10-07)
+- **Fixed tmux starting inside tmux (stacked status lines)**: the auto-start guards in `.bashrc` and `start_tmux.sh` only checked `$TMUX`, which `sudo -i`, `su -` and `sudo mc` subshells strip — so a pane could silently launch a second tmux (the auto-start prompt defaults to custom after 3 s). Both now also walk the process ancestry via `/proc` for a `tmux: server` parent (fails closed if `/proc` is unreadable), and never auto-start as root/sudo. Known gap: `ssh localhost` from a pane can't be detected this way.
+- **`TMUX_TMPDIR` pinned to `/tmp`** (`exports.bash` and `start_tmux.sh`): the old `~/tmp/tmux-$USER` dir never existed, so tmux was silently falling back to `/tmp` — now explicit, so every launcher (login shell, `start_tmux.sh`, systemd) hits the same socket `/tmp/tmux-$UID/default`.
+
 ### diagnose.sh v1.0.1 / tmux_installer.sh v2.3.1 (2026-10-06)
 - **Fixed Ctrl-C not stopping `diagnose.sh` and `tmux_installer.sh`**: both used `trap cleanup EXIT INT TERM` with a no-op `cleanup()` that never exits — bash ran it on Ctrl-C/SIGTERM and then carried on with the next command (an aborted tmux install kept installing). Now `trap cleanup EXIT` + `trap 'exit 130' INT` + `trap 'exit 143' TERM`. Same bug class fixed across `~/bin` and in the Vibecoding contract (v6.0.1, Annex A Addendum A-5).
 

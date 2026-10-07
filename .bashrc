@@ -390,7 +390,29 @@ fi
 # Ask whether to launch the custom ~/.start_tmux.sh or plain tmux (plain is
 # handy when you want a bare session to SSH into another shell from).
 # No answer within 3 seconds falls through to the custom launcher.
-if [ -n "$PS1" ] && [ "$BASHRC_SOURCED" -eq 1 ] && [ -z "$TMUX" ]; then
+#
+# Nesting guard: $TMUX is stripped by sudo -i / su - / `sudo mc` subshells, which used
+# to start a second tmux inside a pane (stacked status lines). So we also walk the
+# process ancestry for a tmux server, and never auto-start as root.
+# Returns: 0 = inside tmux, 1 = not inside, 2 = could not determine (treated as inside)
+_bashrc_inside_tmux() {
+    local pid="$$"
+    local comm=""
+    local stat=""
+
+    [ -n "${TMUX:-}" ] && return 0
+    while [[ "$pid" =~ ^[0-9]+$ ]] && (( pid > 1 )); do
+        { comm="$(< "/proc/$pid/comm")"; } 2>/dev/null || return 2
+        [[ "$comm" == "tmux: server" ]] && return 0
+        { stat="$(< "/proc/$pid/stat")"; } 2>/dev/null || return 2
+        # comm in stat may contain spaces ("tmux: server"), so split after the last ')'
+        IFS=' ' read -r _ pid _ <<< "${stat##*) }"
+    done
+    return 1
+}
+
+if [ -n "$PS1" ] && [ "$BASHRC_SOURCED" -eq 1 ] && (( EUID != 0 )) \
+    && [ -z "${SUDO_USER:-}" ] && ! _bashrc_inside_tmux; then
     tmux_choice=""
     echo -e "${LOAD_GREEN}❯ Start tmux: [C]ustom (default) or [P]lain?${LOAD_NC}"
     read -r -n 1 -t 3 -p "Choice [C/p]: " tmux_choice
@@ -407,3 +429,4 @@ if [ -n "$PS1" ] && [ "$BASHRC_SOURCED" -eq 1 ] && [ -z "$TMUX" ]; then
 
     unset -v tmux_choice
 fi
+unset -f _bashrc_inside_tmux

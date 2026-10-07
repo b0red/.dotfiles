@@ -11,10 +11,50 @@
 
 set -euo pipefail
 
-#----------------------------------------------------------------------------- 
-# 1. NESTING GUARD: Don't run if already inside tmux
 #-----------------------------------------------------------------------------
-[ -n "${TMUX:-}" ] && exit 0
+# 0. SOCKET LOCATION: Always use /tmp (socket: /tmp/tmux-$UID/default)
+#-----------------------------------------------------------------------------
+# Pinned here as well as in exports.bash so the script is self-contained and every
+# launcher (login shell, systemd, cron) talks to the same server.
+export TMUX_TMPDIR="/tmp"
+
+#-----------------------------------------------------------------------------
+# 1. NESTING GUARD: Never run tmux inside tmux
+#-----------------------------------------------------------------------------
+# $TMUX alone is not enough: sudo -i, su -, and `sudo mc` subshells strip it, which
+# let a second tmux start inside a pane (stacked status lines). So we also walk the
+# process ancestry looking for a tmux server.
+# Returns: 0 = inside tmux, 1 = not inside, 2 = could not determine
+_inside_tmux() {
+    local pid="$$"
+    local comm=""
+    local stat=""
+
+    [ -n "${TMUX:-}" ] && return 0
+    while [[ "$pid" =~ ^[0-9]+$ ]] && (( pid > 1 )); do
+        { comm="$(< "/proc/$pid/comm")"; } 2>/dev/null || return 2
+        [[ "$comm" == "tmux: server" ]] && return 0
+        { stat="$(< "/proc/$pid/stat")"; } 2>/dev/null || return 2
+        # comm in stat may contain spaces ("tmux: server"), so split after the last ')'
+        IFS=' ' read -r _ pid _ <<< "${stat##*) }"
+    done
+    return 1
+}
+
+guard_rc=0
+_inside_tmux || guard_rc=$?
+if (( guard_rc == 0 )); then
+    exit 0
+elif (( guard_rc == 2 )); then
+    echo -e "start_tmux: cannot read process ancestry from /proc; refusing to start" >&2
+    exit 1
+fi
+
+# Never auto-start tmux as root (sudo -i / su shells sourcing this setup)
+if (( EUID == 0 )) || [ -n "${SUDO_USER:-}" ]; then
+    echo -e "start_tmux: running as root/sudo; not starting tmux" >&2
+    exit 0
+fi
 
 # Set session name to current nodename
 SESSION_NAME="$(uname -s | tr '[:upper:]' '[:lower:]')"
