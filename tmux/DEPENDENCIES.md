@@ -5,7 +5,7 @@
 - **`clip.exe`** (WSL, built into Windows) — tmux `copy-command`, so copies reach the Windows clipboard in any terminal (classic conhost has no OSC 52). Guarded: ignored where absent
 - **Optional** for the Tools menu / popup keys: `htop`, `btop`, `lazyports`, `urlview`
 - **`fzf`** — script picker (Tools → `s`)
-- **Docker menu** (Docker host only): `docker` CLI with the user in the `docker` group; optional `lazydocker`
+- **Docker menu**: local `docker` CLI (user in the `docker` group) **or** key-based ssh to `@docker_menu_host` with docker there; `fzf` for the picker; optional `lazydocker` (on the Docker host)
 
 ## Plugin Manager
 - **Coffee**: https://github.com/PraaneshSelvaraj/coffee.tmux

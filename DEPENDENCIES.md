@@ -50,7 +50,7 @@ a manual or partial install knows what to grab.
 | `clip.exe` | `.tmux.conf` `copy-command` (WSL only) | Built into Windows; tmux copies go to the Windows clipboard. Skipped automatically where absent |
 | `urlview` | Tools menu (`tmux/menus/tools.sh`) | Optional; the "URLs in this pane" entry only appears when installed |
 | `fzf` | `tmux/script_picker.sh` (Tools menu → `s`) | Script picker for `~/bin` |
-| `docker` (+ `docker` group), `lazydocker` | Docker menu (`tmux/menus/docker.sh`) | Docker host only; menu says so when Docker is absent |
+| `docker` (+ `docker` group) or ssh key auth to `@docker_menu_host`; `lazydocker` | Docker menu (`tmux/menus/docker.sh`) | Without local Docker the menu runs docker over ssh (WSL → dellubuntu) |
 | `htop`, `btop`, `lazyports` | `prefix + h/b/l` popups, Tools menu | Optional launchers |
 
 ```bash

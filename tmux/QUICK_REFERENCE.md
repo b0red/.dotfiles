@@ -52,7 +52,7 @@ coffee disable <plugin>     # Disable plugin
 | `Ctrl-a` + `d` | Detach session |
 | `Ctrl-a` + `\` | tmux-menus main menu (Custom items → **Tools**: htop/btop/lazyports windows, task monitor, man page, urlview, Coffee) |
 | `Ctrl-a` + `\` → Custom items → Tools → `s` | Script picker for `~/bin` (Enter = dry-run, Ctrl-X = real run, Ctrl-V = source) |
-| `Ctrl-a` + `\` → Custom items → Docker | Containers: logs / shell / stats / inspect / restart (Docker host only) |
+| `Ctrl-a` + `\` → Custom items → Docker → `c` | Container picker: Enter logs, Ctrl-S shell, Ctrl-T stats, Ctrl-O inspect, Ctrl-R restart (local Docker, else ssh to `@docker_menu_host`) |
 | `Ctrl-a` + `a` | Send a literal `Ctrl-a` (nested/remote tmux, bash start-of-line) |
 | `Ctrl-a` + `h` / `b` / `l` | htop / btop / lazyports popup |
 | `Ctrl-a` + `t` / `T` | Task monitor / overview |
@@ -129,7 +129,7 @@ tmux new-session
 ~/.dotfiles/tmux/menus/tools.sh      # Tools menu source (copied into tmux-menus by tmux_installer.sh)
 ~/.dotfiles/tmux/menus/docker.sh     # Docker menu source (same)
 ~/.dotfiles/tmux/script_picker.sh    # ~/bin script picker (Tools → s)
-~/.dotfiles/tmux/docker_actions.sh   # Docker menu actions (validates container names)
+~/.dotfiles/tmux/docker_actions.sh   # Docker menu backend: picker + actions, local or over ssh
 /tmp/tmux-$UID/default               # Server socket (TMUX_TMPDIR=/tmp)
 ```
 

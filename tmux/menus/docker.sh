@@ -2,24 +2,22 @@
 #
 # Name: docker.sh
 # Author: Patrick
-# Version: 1.0.0
+# Version: 1.1.0
 # Created: 2026-10-08
 # Last Modified: 2026-10-08
-# Description: tmux-menus custom item "Docker": lazydocker, all containers, and one entry
-#              per running container (rebuilt every time the menu opens) leading to
-#              logs / shell / stats / inspect / restart. Meant for the Docker host
-#              (dellubuntu); on a host without Docker it just says so.
+# Description: tmux-menus custom item "Docker": container picker (fzf: logs / shell /
+#              stats / inspect / restart), all containers, lazydocker. Works against the
+#              local Docker if this machine has one, otherwise over ssh to the host in the
+#              tmux option @docker_menu_host (e.g. from WSL to dellubuntu).
 # Usage: Not run directly. tmux_installer.sh copies this file into
 #        tmux-menus/custom_items/ (symlinks there are ignored by the plugin).
-# Dependencies: tmux-menus (jaclu), POSIX sh, docker CLI; tmux/docker_actions.sh;
-#               optional: lazydocker
+# Dependencies: tmux-menus (jaclu), POSIX sh; tmux/docker_actions.sh (does all the work)
 #
-# All actions go through docker_actions.sh, which re-validates the container name and
-# calls docker with argv. Names are also filtered here (Docker's charset, no leading
-# "-") before they are put into a tmux command string, so no container data can break
-# the quoting.
+# Changes in 1.1.0: one menu entry per container replaced by an fzf picker (71 running
+# containers don't fit in a menu), and remote Docker over ssh. No container data is put
+# into tmux command strings any more; the picker passes names as argv.
 
-# Helper that performs the actions (repo: tmux/docker_actions.sh, via ~/.tmux)
+# Helper that performs everything (repo: tmux/docker_actions.sh, via ~/.tmux)
 docker_helper="$HOME/.tmux/docker_actions.sh"
 
 static_content() {
@@ -27,76 +25,30 @@ static_content() {
     set -- \
         0.0 M Left "Back to Custom items  $nav_prev" "$f_custom_items_index" \
         0.0 M Home "Back to Main menu     $nav_home" main.sh \
-        0.0 S
-
-    if command -v lazydocker >/dev/null 2>&1; then
-        set -- "$@" \
-            0.0 C L "lazydocker" "display-popup -w 95% -h 90% -T lazydocker -E lazydocker"
-    fi
-    set -- "$@" \
-        0.0 C A "All containers (docker ps -a)" \
-        "display-popup -w 95% -h 80% -T 'docker ps -a' -E '$docker_helper ps'" \
         0.0 S \
-        0.0 T "-#[nodim]Running containers"
+        0.0 C c "Containers... (pick, then logs/shell/stats/inspect/restart)" \
+        "display-popup -w 95% -h 80% -T Docker -E '$docker_helper pick'" \
+        0.0 C a "All containers (docker ps -a)" \
+        "display-popup -w 95% -h 80% -T 'docker ps -a' -E '$docker_helper ps'" \
+        0.0 C l "lazydocker" \
+        "display-popup -w 95% -h 90% -T lazydocker -E '$docker_helper lazydocker'" \
+        0.0 S
 
     menu_generate_part 1 "$@"
 }
 
+# Rebuilt on every open: which Docker host the entries above will use. No ssh here, so
+# opening the menu stays instant.
 dynamic_content() {
-    keys="123456789abcdefghijkmnoqrstuvwxyz"
-    shown=0
-    skipped=0
-    tab="$(printf '\t')"
-
-    set --
-    if ! command -v docker >/dev/null 2>&1; then
-        set -- 0.0 T "-#[nodim]Docker is not installed on this host"
-        menu_generate_part 2 "$@"
-        return
-    fi
-    if ! list="$(docker ps --format '{{.Names}}\t{{.Status}}' 2>/dev/null)"; then
-        set -- 0.0 T "-#[nodim]Cannot reach the Docker daemon (docker group?)"
-        menu_generate_part 2 "$@"
-        return
-    fi
-    if [ -z "$list" ]; then
-        set -- 0.0 T "-#[nodim]No running containers"
-        menu_generate_part 2 "$@"
-        return
-    fi
-
-    # here-doc, not a pipe: the loop must run in this shell so `set --` sticks
-    while IFS="$tab" read -r name status; do
-        case "$name" in
-            "" | -* | *[!a-zA-Z0-9_.-]*)
-                skipped=$((skipped + 1))
-                continue
-                ;;
-        esac
-        if [ "$shown" -ge "${#keys}" ]; then
-            skipped=$((skipped + 1))
-            continue
+    if command -v docker >/dev/null 2>&1; then
+        set -- 0.0 T "-#[nodim]Docker host: this machine"
+    else
+        host="$(tmux show-options -gqv @docker_menu_host 2>/dev/null | tr -cd 'A-Za-z0-9._@-')"
+        if [ -n "$host" ]; then
+            set -- 0.0 T "-#[nodim]Docker host: $host (via ssh)"
+        else
+            set -- 0.0 T "-#[nodim]No Docker here; set @docker_menu_host in .tmux.conf"
         fi
-        shown=$((shown + 1))
-        key="$(printf '%s' "$keys" | cut -c"$shown")"
-        # status is display text only: keep it to harmless characters, short
-        status="$(printf '%s' "$status" | tr -cd 'A-Za-z0-9 ().:-' | cut -c1-24)"
-
-        set -- "$@" \
-            0.0 C "$key" "$name  ($status)" \
-            "display-menu -T '#[align=centre] $name ' -x C -y C \
-'Logs (follow)' l 'new-window -n log-$name \"$docker_helper logs $name\"' \
-'Shell' s 'new-window -n sh-$name \"$docker_helper shell $name\"' \
-'Stats' t 'display-popup -w 90% -h 40% -T stats-$name -E \"$docker_helper stats $name\"' \
-'Inspect' i 'new-window -n insp-$name \"$docker_helper inspect $name\"' \
-'' \
-'Restart...' r 'display-popup -w 60% -h 30% -T restart-$name -E \"$docker_helper restart $name\"'"
-    done <<EOF
-$list
-EOF
-
-    if [ "$skipped" -gt 0 ]; then
-        set -- "$@" 0.0 T "-#[nodim]$skipped more not shown (use All containers)"
     fi
     menu_generate_part 2 "$@"
 }
