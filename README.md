@@ -74,6 +74,12 @@ TRACE_DEBUG=1 ./run_me_first.sh     # Trace with environment variable
 
 ## Recent Changes
 
+### v15.20.0 (2026-10-07)
+- **Coffee plugins `.gitignore`: one wildcard** (`tmux/coffee/plugins/*/` + `!…/tmux-ip-toggle/`) replaces 14 per-plugin lines, so adding a plugin no longer needs a `.gitignore` edit. Plugin YAMLs and our own `tmux-ip-toggle` stay tracked (verified per directory).
+- **Removed dead weather config incl. a committed API key**: the `@tmux-weather-*` options belonged to ilya-manin/tmux-weather, which isn't installed — the installed aaronpowell/tmux-weather (wttr.in, keyless) only reads `@forecast-*`. **The key was public in git history since 2026-05 (public repo) and must be revoked/regenerated at the provider.** Cleaned a stray comment line out of `tmux-weather.yaml`.
+- Removed a stray tmux client debug log from `tmux/coffee/plugins/` (untracked).
+- Not done, by design: registering `tmux-ip-toggle` with Coffee — this Coffee version parses `local: true` but never uses it; every YAML needs a `url` that gets `git clone`d, so a local entry would break `coffee install`.
+
 ### v15.19.1 (2026-10-07)
 - **Docs synced with the tmux work**: `DEPENDENCIES.md` / `tmux/DEPENDENCIES.md` (tmux 3.1+, `clip.exe`, optional Tools-menu apps, `mc` no longer aliased to `sudo mc`), `tmux/QUICK_REFERENCE.md` (actual `start_tmux.sh` layout, `--dry-run`, guard/menu file locations), README directory tree (contents of `tmux/`), `tmux/ToDo.md` (Oct 7 completed section).
 - **Coffee lockfile**: Coffee auto-updated tmux-menus v2.2.34 → v2.4.1 and tmux-nerd-font-window-name v3.1.0 → v3.2.2; verified the Tools menu survived and tmux-menus still indexes it (custom items are still scanned as regular files, so copying stays correct).

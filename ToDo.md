@@ -1,5 +1,5 @@
 # ToDo.md - Dotfiles Project Task Tracker
-# Version: 1.15.1 (2026-10-07)
+# Version: 1.16.0 (2026-10-07)
 # Last Updated: 2026-10-07
 
 ### ToDO:
@@ -41,7 +41,11 @@
 [x] tmux-menus custom_items/ was root-owned and world-writable (777) @done (2026-10-07, now patrick:patrick 755 — verified)
 [x] tmux_installer.sh re-created ~/.tmux.conf and ~/.config/tmux/{coffee,tmux.conf} links on every run @done (2026-10-07, v2.4.1 already_linked() compares resolved paths)
 [x] decide on `alias mc='sudo mc'` @done (2026-10-07, commented out — mc runs as the user; use `sudo mc` explicitly when root is needed)
-[] Coffee-managed tmux plugins (tmux/coffee/plugins/) still need manual tinkering — not fully hands-off yet
+[x] Coffee plugins: wildcard .gitignore, dead weather config removed, stray log removed @done (2026-10-07; tmux-ip-toggle can't be registered with Coffee — `local:` is unimplemented and a url-less YAML breaks `coffee install`)
+[] REVOKE the weather API key fbadfb59… at its provider (likely OpenWeatherMap) — it was public in git history from 2026-05 until 2026-10-07 (repo is public); removing it from the file doesn't remove it from history
+[] sudo chown patrick:patrick tmux/coffee/plugins/tmux-mullvad.yaml (root-owned; Coffee/you can't edit or remove it without sudo)
+[] decide: remove tmux-battery (no battery segment in the status bar, desktop) and tmux-mullvad (nothing references it)?
+[] decide: pin plugin versions (`tag:` in each YAML) so `coffee update`/UI "update all" can't change plugins unexpectedly
 [] .bashrc.d/.bashrc.d.rar — untracked but still sitting on disk, unreviewed (unrar not installed, contents unknown)
 [] tmux/.tmux-git.conf is tracked but unlinked — depends on ~/.tmux-extras/tmux-git.sh which lives outside the repo; low priority, guarded by an existence check so it's not broken, just inert
 [] symlink.sh distro-profile support is a complete no-op (documented in README, not implemented — no distro profile files exist in the repo)

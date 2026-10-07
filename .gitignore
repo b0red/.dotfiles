@@ -38,21 +38,11 @@ tmux/.tmux.conf.[0-9]*
 tmux/*.old
 
 # Coffee-managed tmux plugins — installed/updated by Coffee, not tracked here.
-# The *.yaml files alongside them ARE tracked (they tell Coffee what to install).
-tmux/coffee/plugins/tmux-battery/
-tmux/coffee/plugins/tmux-claude-usage/
-tmux/coffee/plugins/tmux-continuum/
-tmux/coffee/plugins/tmux-cpu/
-tmux/coffee/plugins/tmux-menus/
-tmux/coffee/plugins/tmux-nerd-font-window-name/
-tmux/coffee/plugins/tmux-online-status/
-tmux/coffee/plugins/tmux-power-zoom/
-tmux/coffee/plugins/tmux-prefix-highlight/
-tmux/coffee/plugins/tmux-resurrect/
-tmux/coffee/plugins/tmux-sidebar/
-tmux/coffee/plugins/tmux-task-monitor/
-tmux/coffee/plugins/tmux-mullvad/
-tmux/coffee/plugins/tmux-weather/
+# One wildcard so a newly added plugin needs no .gitignore edit. The *.yaml files next
+# to them ARE tracked (they tell Coffee what to install), and so is tmux-ip-toggle/,
+# our own plugin that Coffee doesn't manage (loaded directly from .tmux.conf).
+tmux/coffee/plugins/*/
+!tmux/coffee/plugins/tmux-ip-toggle/
 
 # vim-plug-managed plugins — installed/updated via :PlugInstall, not tracked here.
 vim/plugged/*/
