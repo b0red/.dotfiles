@@ -50,6 +50,10 @@ coffee disable <plugin>     # Disable plugin
 | `Ctrl-a` + `-` | Split horizontal |
 | `Ctrl-a` + `\|` | Split vertical |
 | `Ctrl-a` + `d` | Detach session |
+| `Ctrl-a` + `\` | tmux-menus main menu (Custom items → **Tools**: htop/btop/lazyports windows, task monitor, man page, urlview, Coffee) |
+| `Ctrl-a` + `a` | Send a literal `Ctrl-a` (nested/remote tmux, bash start-of-line) |
+| `Ctrl-a` + `h` / `b` / `l` | htop / btop / lazyports popup |
+| `Ctrl-a` + `t` / `T` | Task monitor / overview |
 | `Alt` + `Arrow` | Navigate panes (no prefix!) |
 | `Tab` | Toggle sidebar |
 
@@ -67,7 +71,7 @@ coffee disable <plugin>     # Disable plugin
 |-----------|--------|
 | `Ctrl-a` + `\|` | Split vertical |
 | `Ctrl-a` + `-` | Split horizontal |
-| `Ctrl-a` + `e` | Synchronize panes (type to all) |
+| `Ctrl-a` + `\` → Panes | Toggle synchronized panes (type to all) — was `Ctrl-a e` |
 | `Alt` + `←→↑↓` | Navigate panes |
 
 ## Troubleshooting

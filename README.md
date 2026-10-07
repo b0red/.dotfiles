@@ -74,6 +74,13 @@ TRACE_DEBUG=1 ./run_me_first.sh     # Trace with environment variable
 
 ## Recent Changes
 
+### v15.17.0 (2026-10-07)
+- **New tmux-menus "Tools" menu** (`tmux/menus/tools.sh`, in the repo — the plugin dir is gitignored, so the old `keys-info.sh` custom menu was never versioned): launchers for htop/btop/lazyports (popup or window), task monitor/overview, man page, urlview and the Coffee TUI. Replaces the static `keys-info.sh` page (moved aside to `tmux-menus/keys-info.sh.disabled-20261007`).
+- **`.tmux.conf` key cleanup**: `H`, `B`, `L`, `u`, `m`, `e`, `j` moved to menus and explicitly unbound (so a config reload drops them too); `L`/`m` restored to tmux defaults. `j` (`tmux-menus hello`) and `u` (urlview not installed; also used a fixed `/tmp` file) were broken. Kept direct popup keys `h`/`b`/`l` and `t`/`T`.
+- **Fixed `C-a` bound twice**: `bind C-a send-prefix` was silently overridden by `bind C-a last-window`, so a literal `C-a` couldn't be sent. `C-a C-a` stays last-window; `prefix + a` now sends the prefix.
+- **Fixed `@menus_config_file`** pointing at nonexistent `~/.dotfiles/tmux/tmux.conf` (missing dot) — the menu's "Reload tmux conf" now gets the real file.
+- **`tmux_installer.sh` v2.4.0**: new `install_custom_menus()` copies `tmux/menus/*.sh` into tmux-menus' `custom_items/` (only when changed) and warns when that directory is world-writable; dry-run lines no longer split one argument per line (`printf %q` instead of `"$*"`); removed unused `DEBUG`/`INTERACTIVE` variables (ShellCheck clean).
+
 ### v15.16.0 (2026-10-07)
 - **`start_tmux.sh` v1.0.0 — rewritten to the Vibecoding canonical template**: `-h/--help`, `-?/--info`, `-v/--version`, `-d/--debug`, `--dry-run` (exits 4), `--test-notify`/`--notify-only` (lazy-load `notification_functions.inc`); proper exit codes; resolves the `~/.start_tmux.sh` symlink for `SCRIPT_DIR`; panes targeted by pane id instead of hard-coded `1.1`–`1.4` indexes; `-l N%` instead of deprecated `-p`; refuses to run without a terminal. Config reload errors are now reported instead of swallowed by `|| true`.
 - **Nesting guard moved to shared `tmux/tmux_guard.inc`** (used by `.bashrc` auto-start and `start_tmux.sh`, so they can't drift) and now also catches **ssh to this same host** (client IP == server IP, or loopback) — the gap left in v15.15.0. Fails closed if the guard file is missing or `/proc` can't be read.
@@ -677,17 +684,22 @@ Prefix + C, opens the Coffee TUI. It has 4 menus;
 
 | Binding | Action |
 |---------|--------|
+| `prefix + \` | tmux-menus main menu → **Custom items → Tools** (see below) |
 | `prefix + C` | Open Coffee plugin-manager (Capital C)|
-| `prefix + h` | Open Htop in display-popup (80% size) |
-| `prefix + H` | Open Htop in new window |
-| `prefix + o` | Open B-Top in display-popup (80% size) |
-| `prefix + O` | Open B-Top in new window |
-| `prefix + t` | Open Task Monitor in display-popup (80% size)|
-| `prefix + T` | Open System Resouce Overview Dashboard in display-popup (80% size)|
+| `prefix + h` | Htop in display-popup (80% size) |
+| `prefix + b` | B-Top in display-popup (80% size) |
+| `prefix + l` | lazyports in display-popup |
+| `prefix + t` | Task Monitor popup |
+| `prefix + T` | System Resource Overview dashboard popup |
+| `prefix + C-a` / `prefix + C-s` | Last window |
+| `prefix + a` | Send a literal `C-a` (nested/remote tmux, bash start-of-line) |
 | `prefix + Tab` | Toggle sidebar with tree view |
 | `prefix + Space` | Next layout (cycles trough all variants) |
 | `prefix + d` | Detach |
-| `~~ prefix + m` | Open man page (prompt for command) ~~|
+
+**Tools menu** (`prefix + \` → Custom items → Tools) holds the less frequent launchers that used to be keys: htop/btop/lazyports as popup *or* window (`H`/`B`/`L` were keys), task monitor/overview, man page prompt (was `m`), URLs in the current pane via urlview (was `u`; shown only when urlview is installed), and the Coffee TUI. Synchronize-panes (was `e`) is in the built-in **Panes** menu. `prefix + L` and `prefix + m` are back to tmux's defaults (switch to last session, mark pane).
+
+The menu's source is [`tmux/menus/tools.sh`](tmux/menus/tools.sh). tmux-menus ignores symlinks in its `custom_items/` folder, so `tmux_installer.sh` **copies** it there — re-run the installer after editing a menu, then reload the config (`prefix + r`).
 
 #### Session Creation
 

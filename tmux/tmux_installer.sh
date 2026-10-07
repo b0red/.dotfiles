@@ -2,15 +2,19 @@
 # =============================================================================
 # Name:         tmux_installer.sh
 # Author:       b0red
-# Version:      2.3.1
+# Version:      2.4.0
 # Created:      2026-01-29
-# Last Modified:2026-10-06
+# Last Modified:2026-10-07
 # Description:  Install and configure tmux with the Coffee plugin manager.
 #               Creates ~/.tmux.conf symlink pointing into the dotfiles repo,
 #               installs Coffee, and verifies the configuration.
 #               Runs standalone — can be used without the full dotfiles installer.
 # Usage:        ./tmux_installer.sh [OPTIONS]
 # Dependencies: git, tmux (will offer to install missing ones)
+#
+# Changes in 2.4.0:
+#   - Added install_custom_menus(): copies tmux/menus/*.sh (e.g. the Tools menu) into
+#     tmux-menus' custom_items/, and warns if that directory is world-writable.
 #
 # Changes in 2.3.1:
 #   - Fixed: Ctrl-C/SIGTERM ran the (no-op) cleanup and then the script carried on
@@ -26,7 +30,7 @@ IFS=$'\n\t'
 readonly SCRIPT_NAME="tmux_installer.sh"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 readonly SCRIPT_DIR
-readonly VERSION="2.3.1"
+readonly VERSION="2.4.0"
 
 # Paths derived from SCRIPT_DIR so they're correct regardless of where the
 # dotfiles repo is cloned.
@@ -40,8 +44,6 @@ LOG=""
 readonly NOTIFY_VARS_FILE="${HOME}/bin/email_variables.inc"
 
 DRY_RUN=0
-DEBUG=0
-INTERACTIVE=0
 
 # =============================================================================
 # Colors (inline — no ColorCodes.inc dependency)
@@ -89,7 +91,9 @@ log_dry()     { echo -e "${YELLOW}[DRY-RUN]${NC} Would: $*"; _log_write "DRY-RUN
 # =============================================================================
 safe_exec() {
     if [ "${DRY_RUN}" -eq 1 ]; then
-        log_dry "$*"
+        # printf %q, not "$*": with IFS=$'\n\t', "$*" joins arguments with newlines and
+        # split every dry-run line across several lines
+        log_dry "$(printf '%q ' "$@")"
         return 0
     fi
     "$@"
@@ -359,6 +363,66 @@ install_coffee() {
 }
 
 # =============================================================================
+# install_custom_menus: copy tmux/menus/*.sh into tmux-menus' custom_items/.
+# Copied, not symlinked: tmux-menus scans custom_items/ with `find -type f`, which
+# skips symlinks, so a linked menu would silently never appear. Only files whose
+# content differs are rewritten. Re-run after editing a menu in the repo.
+# =============================================================================
+install_custom_menus() {
+    log_section "tmux-menus Custom Menus"
+
+    local src_dir="${SCRIPT_DIR}/menus"
+    local plugin_dir="${SCRIPT_DIR}/coffee/plugins/tmux-menus"
+    local dest_dir="${plugin_dir}/custom_items"
+    local src=""
+    local dest=""
+    local found=0
+    local copied=0
+    local current=0
+
+    if [ ! -d "${plugin_dir}" ]; then
+        log_warn "tmux-menus plugin not installed yet — run 'coffee install', then re-run ${SCRIPT_NAME}"
+        return 0
+    fi
+
+    safe_exec mkdir -p "${dest_dir}"
+
+    # tmux-menus runs every script in custom_items/ as you when the menu opens, so a
+    # directory other users can write to lets them run code as you.
+    if [ -d "${dest_dir}" ] && [ -n "$(find "${dest_dir}" -maxdepth 0 -perm -o+w)" ]; then
+        log_warn "${dest_dir} is world-writable — any local user could add a menu that runs as you"
+        log_info "  Fix: sudo chown -R ${USER}:${USER} '${dest_dir}' && chmod 755 '${dest_dir}'"
+    fi
+
+    for src in "${src_dir}"/*.sh; do
+        [ -f "${src}" ] || continue
+        found=$((found + 1))
+        dest="${dest_dir}/$(basename "${src}")"
+        if [ -f "${dest}" ] && [ ! -L "${dest}" ] && cmp -s -- "${src}" "${dest}"; then
+            log_success "Up to date: $(basename "${src}")"
+            current=$((current + 1))
+            continue
+        fi
+        if safe_exec install -m 0755 -- "${src}" "${dest}"; then
+            log_success "Installed: $(basename "${src}") → ${dest_dir}/"
+            copied=$((copied + 1))
+        else
+            log_error "Failed to install ${src} → ${dest}"
+            return 1
+        fi
+    done
+
+    if [ "${found}" -eq 0 ]; then
+        log_warn "No custom menus found in ${src_dir}"
+        return 0
+    fi
+    log_info "Summary: ${copied} installed, ${current} already up to date"
+    if [ "${copied}" -gt 0 ]; then
+        log_info "Reload tmux config (prefix + r) so tmux-menus re-indexes custom items"
+    fi
+}
+
+# =============================================================================
 # verify_installation: validate symlink and config
 # =============================================================================
 verify_installation() {
@@ -453,7 +517,8 @@ ${BOLD}WHAT IT DOES${NC}
   2. Creates: ~/.tmux.conf → ${TMUX_CONF_TARGET}
   3. Links ~/.config/tmux/coffee and ~/.config/tmux/tmux.conf into the repo
   4. Installs Coffee plugin manager to ${COFFEE_DIR}
-  5. Verifies symlinks and tmux config
+  5. Copies custom tmux-menus menus (${SCRIPT_DIR}/menus/*.sh) into the plugin
+  6. Verifies symlinks and tmux config
 
 ${BOLD}NOTES${NC}
   The dotfiles installer (run_me_first.sh) already handles step 2.
@@ -486,7 +551,6 @@ parse_args() {
                 exit 0
                 ;;
             -d|--debug)
-                DEBUG=1
                 set -x
                 ;;
             --dry-run)
@@ -568,6 +632,7 @@ main() {
     create_symlink      || exit 1
     link_config_dir     || log_warn "Config dir linking failed — continuing"
     install_coffee      || log_warn "Coffee installation failed — continuing"
+    install_custom_menus || log_warn "Custom menu install failed — continuing"
     verify_installation
 
     log_section "Installation Complete"
