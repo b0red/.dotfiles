@@ -1,5 +1,5 @@
 # ToDo.md - Dotfiles Project Task Tracker
-# Version: 1.16.0 (2026-10-07)
+# Version: 1.17.0 (2026-10-07)
 # Last Updated: 2026-10-07
 
 ### ToDO:
@@ -42,10 +42,10 @@
 [x] tmux_installer.sh re-created ~/.tmux.conf and ~/.config/tmux/{coffee,tmux.conf} links on every run @done (2026-10-07, v2.4.1 already_linked() compares resolved paths)
 [x] decide on `alias mc='sudo mc'` @done (2026-10-07, commented out — mc runs as the user; use `sudo mc` explicitly when root is needed)
 [x] Coffee plugins: wildcard .gitignore, dead weather config removed, stray log removed @done (2026-10-07; tmux-ip-toggle can't be registered with Coffee — `local:` is unimplemented and a url-less YAML breaks `coffee install`)
-[] REVOKE the weather API key fbadfb59… at its provider (likely OpenWeatherMap) — it was public in git history from 2026-05 until 2026-10-07 (repo is public); removing it from the file doesn't remove it from history
-[] sudo chown patrick:patrick tmux/coffee/plugins/tmux-mullvad.yaml (root-owned; Coffee/you can't edit or remove it without sudo)
-[] decide: remove tmux-battery (no battery segment in the status bar, desktop) and tmux-mullvad (nothing references it)?
-[] decide: pin plugin versions (`tag:` in each YAML) so `coffee update`/UI "update all" can't change plugins unexpectedly
+[x] revoke the leaked weather API key (fbadfb59…) @done (2026-10-07, revoked by Patrick; still in git history but dead)
+[x] tmux-mullvad.yaml was root-owned @done (2026-10-07, chowned to patrick — verified, no non-patrick files left in the repo)
+[x] removed tmux-battery (unused on a desktop, no status segment) @done (2026-10-07, `coffee remove` + YAML + @batt_* icons); tmux-mullvad kept for now
+[x] plugin version pinning @done (2026-10-07, decided NO — Coffee manages updates; caffeine-lock.json records the installed versions, so a bad update can be traced and rolled back from git)
 [] .bashrc.d/.bashrc.d.rar — untracked but still sitting on disk, unreviewed (unrar not installed, contents unknown)
 [] tmux/.tmux-git.conf is tracked but unlinked — depends on ~/.tmux-extras/tmux-git.sh which lives outside the repo; low priority, guarded by an existence check so it's not broken, just inert
 [] symlink.sh distro-profile support is a complete no-op (documented in README, not implemented — no distro profile files exist in the repo)

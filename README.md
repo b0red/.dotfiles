@@ -74,6 +74,10 @@ TRACE_DEBUG=1 ./run_me_first.sh     # Trace with environment variable
 
 ## Recent Changes
 
+### v15.20.1 (2026-10-07)
+- **Removed tmux-battery**: unused on this desktop (no battery segment in the status bar). Removed with `coffee remove` (plugin dir + lockfile entry), its YAML (Coffee's remove keeps the YAML, so `coffee install` would otherwise reinstall it), and the `@batt_*` icon options in `.tmux.conf`. tmux-mullvad kept for now.
+- Leaked weather API key revoked at the provider; root-owned `tmux-mullvad.yaml` chowned. Plugin versions are deliberately **not** pinned — Coffee manages updates, and `caffeine-lock.json` in git records every version change.
+
 ### v15.20.0 (2026-10-07)
 - **Coffee plugins `.gitignore`: one wildcard** (`tmux/coffee/plugins/*/` + `!…/tmux-ip-toggle/`) replaces 14 per-plugin lines, so adding a plugin no longer needs a `.gitignore` edit. Plugin YAMLs and our own `tmux-ip-toggle` stay tracked (verified per directory).
 - **Removed dead weather config incl. a committed API key**: the `@tmux-weather-*` options belonged to ilya-manin/tmux-weather, which isn't installed — the installed aaronpowell/tmux-weather (wttr.in, keyless) only reads `@forecast-*`. **The key was public in git history since 2026-05 (public repo) and must be revoked/regenerated at the provider.** Cleaned a stray comment line out of `tmux-weather.yaml`.

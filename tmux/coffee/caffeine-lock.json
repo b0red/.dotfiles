@@ -46,22 +46,6 @@
             }
         },
         {
-            "name": "tmux-battery",
-            "source": [
-                "/home/patrick/.tmux/coffee/plugins/tmux-battery/battery.tmux",
-                "/home/patrick/.tmux/coffee/plugins/tmux-battery/battery_enabled.tmux"
-            ],
-            "enabled": true,
-            "install_path": "/home/patrick/.tmux/coffee/plugins/tmux-battery",
-            "skip_auto_update": false,
-            "git": {
-                "repo": "tmux-plugins/tmux-battery",
-                "tag": "v2.0.0",
-                "commit_hash": "43832651ede43f54dcf0588727c1957fe648d57d",
-                "last_pull": "2026-05-07T15:38:21.095615+00:00"
-            }
-        },
-        {
             "name": "tmux-continuum",
             "source": [
                 "/home/patrick/.tmux/coffee/plugins/tmux-continuum/continuum.tmux"
