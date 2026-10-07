@@ -74,6 +74,9 @@ TRACE_DEBUG=1 ./run_me_first.sh     # Trace with environment variable
 
 ## Recent Changes
 
+### v15.26.1 (2026-10-08)
+- Removed the unused `tmx` alias (it attached to a session named `0`, which doesn't exist here). `C-a C-s` stays as is (resurrect's save; documented in `tmux/MANUAL.md`).
+
 ### v15.26.0 (2026-10-08)
 - **New `tmux/MANUAL.md`** — an easy-to-read manual for everything tmux here: sessions, windows, panes, copy/paste, the menus (Tools / Sessions / Docker), quick popups, save/restore, the status bar, what each plugin is for, troubleshooting and file locations. Key facts taken from the live key table of the full config, not from older docs. Open it from tmux (Tools menu → `?`, coloured via `batcat`) or a shell (`tmux-manual`, new function in `aliases.bash`). Tools menu v1.2.0.
 

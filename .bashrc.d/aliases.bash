@@ -302,7 +302,6 @@ alias crontab='crontab -i'
 # shellcheck disable=SC2139
 alias {module-update,modup}='git submodule foreach '"'"'git pull origin master'"'"
 alias tm='tmux new-session -s main \; split-window -h \; split-window -v -p 30'
-alias tmx='tmux attach -t 0 2>/dev/null || tmux new-session'
 alias tmkill='tmux ls 2>/dev/null | grep : | cut -d: -f1 | xargs -r tmux kill-session -t'
 
 tmux-manual() {
