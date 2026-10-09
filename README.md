@@ -74,6 +74,9 @@ TRACE_DEBUG=1 ./run_me_first.sh     # Trace with environment variable
 
 ## Recent Changes
 
+### v15.26.2 (2026-10-09)
+- **Weather in the tmux status bar showed `location not found`**: an outage at wttr.in, not our config — on 2026-10-09 every location *name* (`Stockholm`, `London`, even the IP-based default) returned HTTP 500, while coordinates still worked. `@forecast-location` is now `59.33,18.07` (Stockholm), which bypasses wttr.in's name lookup. Note: the plugin caches wttr.in's error text as if it were a forecast (no `curl -f`), so after an outage run `rm /tmp/tmux-weather.cache` to stop waiting out the 30-minute cache.
+
 ### v15.26.1 (2026-10-08)
 - Removed the unused `tmx` alias (it attached to a session named `0`, which doesn't exist here). `C-a C-s` stays as is (resurrect's save; documented in `tmux/MANUAL.md`).
 
@@ -1210,6 +1213,6 @@ If you find this useful, consider supporting: [PayPal](https://paypal.me/fotosby
 
 ---
 
-**Last Updated**: 2026-10-08
+**Last Updated**: 2026-10-09
 **Script Version**: v15.14.0
 **Guidelines**: Vibecoding v6.0 / Semantic Versioning 2.0.0

@@ -1,6 +1,6 @@
 # ToDo.md - Dotfiles Project Task Tracker
-# Version: 1.23.1 (2026-10-08)
-# Last Updated: 2026-10-08
+# Version: 1.23.2 (2026-10-09)
+# Last Updated: 2026-10-09
 
 ### ToDO:
 #### General:
@@ -58,6 +58,7 @@
 [x] .bashrc.d/.bashrc.d.rar (unreviewed Jan 2026 remnant) @done (2026-10-08, deleted)
 [x] tmux/.tmux-git.conf unused @done (2026-10-08, deleted with the dead ~/.tmux-extras/tmux-git.sh block in .bashrc)
 [x] symlink.sh distro-profile no-op @done (2026-10-08, symlink.sh deleted and its step removed from run_me_first.sh v15.13.0 — all real linking is in run_me_first.sh)
+[x] tmux weather showed "location not found" @done (2026-10-09, wttr.in name lookup outage — @forecast-location switched to coordinates 59.33,18.07; plugin caches error text, clear /tmp/tmux-weather.cache after outages)
 
 ---
 
